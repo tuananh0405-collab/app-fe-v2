@@ -1,5 +1,5 @@
 class ProfileEntity {
-  final int id;
+  final String id;
   final String email;
   final String fullName;
   final String role;
