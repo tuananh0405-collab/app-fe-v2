@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_providers.dart';
 
 class AuthState {
   final bool isAuthenticated;
@@ -9,10 +10,21 @@ class AuthState {
 
 class AuthController extends Notifier<AuthState> {
   @override
-  AuthState build() => const AuthState(isAuthenticated: false);
+  AuthState build() {
+    // Watch login state to sync authentication
+    final loginState = ref.watch(loginControllerProvider);
+    return AuthState(isAuthenticated: loginState.isAuthenticated);
+  }
 
-  void signIn() => state = state.copyWith(isAuthenticated: true);
-  void signOut() => state = state.copyWith(isAuthenticated: false);
+  void signIn() {
+    // This is now handled by LoginController
+    // Keep this for backward compatibility with router
+  }
+  
+  void signOut() {
+    // Reset login state
+    ref.read(loginControllerProvider.notifier).reset();
+  }
 }
 
 final authControllerProvider =

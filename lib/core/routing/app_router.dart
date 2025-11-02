@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_application_1/features/profile/presentation/profile_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -124,7 +124,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutePath.profile,
         name: AppRouteName.profile,
-        builder: (c, s) => const StubScreen(title: 'Profile Menu'),
+        builder: (c, s) => const ProfileScreen(),
       ),
       GoRoute(
         path: AppRoutePath.profileView,
