@@ -4,18 +4,33 @@ import 'package:go_router/go_router.dart';
 import '../../../core/routing/routes.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../../notifications/providers/notification_providers.dart';
 import '../providers/home_data_provider.dart';
-import '../domain/models/notification_model.dart';
 import '../domain/models/shift_model.dart';
 import '../domain/models/location_status_model.dart';
+import '../../notifications/domain/models/notification_model.dart';
 import '../../../core/widgets/bottom_navigation.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notifications = ref.watch(latestNotificationsProvider);
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load notifications when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationListControllerProvider.notifier).loadNotifications();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final notificationState = ref.watch(notificationListControllerProvider);
     final currentShift = ref.watch(currentShiftProvider);
     final locationStatus = ref.watch(locationStatusProvider);
     final user = ref.watch(loginControllerProvider).user;
@@ -38,8 +53,9 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          // TODO: Implement refresh logic
-          await Future.delayed(const Duration(seconds: 1));
+          await ref
+              .read(notificationListControllerProvider.notifier)
+              .loadNotifications();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -51,6 +67,13 @@ class HomeScreen extends ConsumerWidget {
               _WelcomeHeader(userName: user?.fullName ?? 'User'),
               const SizedBox(height: 24),
 
+              // Latest Notifications
+              _LatestNotificationsSection(
+                notifications: notificationState.notifications.take(3).toList(),
+              ),
+              const SizedBox(height: 24),
+
+
               // Location Status
               _LocationStatusCard(locationStatus: locationStatus),
               const SizedBox(height: 16),
@@ -59,9 +82,6 @@ class HomeScreen extends ConsumerWidget {
               _CurrentShiftCard(shift: currentShift),
               const SizedBox(height: 24),
 
-              // Latest Notifications
-              _LatestNotificationsSection(notifications: notifications),
-              const SizedBox(height: 24),
 
               // Quick Actions
               const _QuickActionsSection(),
@@ -286,14 +306,36 @@ class _CurrentShiftCard extends StatelessWidget {
   }
 }
 
-class _LatestNotificationsSection extends ConsumerWidget {
-  final List<NotificationModel> notifications;
+class _LatestNotificationsSection extends ConsumerStatefulWidget {
+  final List<NotificationEntity> notifications;
 
   const _LatestNotificationsSection({required this.notifications});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final unreadCount = notifications.where((n) => !n.isRead).length;
+  ConsumerState<_LatestNotificationsSection> createState() =>
+      _LatestNotificationsSectionState();
+}
+
+class _LatestNotificationsSectionState
+    extends ConsumerState<_LatestNotificationsSection> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final notifications = widget.notifications;
+    final notificationState = ref.watch(notificationListControllerProvider);
+    final unreadCount = notificationState.unreadCount;
+
+    if (notifications.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,96 +379,185 @@ class _LatestNotificationsSection extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        ...notifications.take(3).map((notification) {
-          return _NotificationItem(notification: notification);
-        }),
+        SizedBox(
+          height: 160,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: _NotificationItem(notification: notifications[index]),
+              );
+            },
+          ),
+        ),
+        if (notifications.length > 1) ...[
+          const SizedBox(height: 12),
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(
+                notifications.length,
+                (index) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: _currentPage == index ? 24 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _currentPage == index
+                        ? Theme.of(context).primaryColor
+                        : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
 }
 
 class _NotificationItem extends StatelessWidget {
-  final NotificationModel notification;
+  final NotificationEntity notification;
 
   const _NotificationItem({required this.notification});
 
   @override
   Widget build(BuildContext context) {
-    final timeAgo = _getTimeAgo(notification.timestamp);
+    final timeAgo = _getTimeAgo(notification.createdAt);
 
     IconData icon;
     Color iconColor;
 
-    switch (notification.type) {
-      case NotificationType.success:
+    switch (notification.notificationType) {
+      case NotificationType.leaveApproval:
         icon = Icons.check_circle_outline;
         iconColor = Colors.green;
         break;
-      case NotificationType.warning:
-        icon = Icons.warning_amber_outlined;
+      case NotificationType.leaveRejection:
+        icon = Icons.cancel_outlined;
+        iconColor = Colors.red;
+        break;
+      case NotificationType.attendanceReminder:
+      case NotificationType.checkInReminder:
+      case NotificationType.checkOutReminder:
+        icon = Icons.access_time;
         iconColor = Colors.orange;
         break;
-      case NotificationType.error:
-        icon = Icons.error_outline;
-        iconColor = Colors.red;
+      case NotificationType.systemAnnouncement:
+        icon = Icons.campaign_outlined;
+        iconColor = Colors.purple;
         break;
       default:
         icon = Icons.info_outline;
         iconColor = Colors.blue;
     }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: notification.isRead ? 0 : 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color:
-              notification.isRead ? Colors.grey.shade200 : Colors.transparent,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            iconColor.withValues(alpha: 0.1),
+            iconColor.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: iconColor.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 8,
+            offset: const Offset(0, 4),
             color: iconColor.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: iconColor, size: 24),
-        ),
-        title: Text(
-          notification.title,
-          style: TextStyle(
-            fontWeight:
-                notification.isRead ? FontWeight.normal : FontWeight.bold,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  notification.title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: iconColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              notification.message,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+          const SizedBox(height: 12),
+          Text(
+            notification.message,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.black87,
+              height: 1.4,
             ),
-            const SizedBox(height: 4),
-            Text(
-              timeAgo,
-              style: TextStyle(
-                fontSize: 12,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(
+                Icons.access_time,
+                size: 14,
                 color: Colors.grey[600],
               ),
-            ),
-          ],
-        ),
-        isThreeLine: true,
-        onTap: () {
-          // TODO: Navigate to notification detail
-        },
+              const SizedBox(width: 4),
+              Text(
+                timeAgo,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+              if (!notification.isRead) ...[
+                const Spacer(),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
       ),
     );
   }
+
 
   String _getTimeAgo(DateTime timestamp) {
     final now = DateTime.now();

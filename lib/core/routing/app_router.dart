@@ -1,5 +1,6 @@
 import 'package:flutter_application_1/features/profile/presentation/profile_screen.dart';
 import 'package:flutter_application_1/features/profile/presentation/profile_detail_screen.dart';
+import 'package:flutter_application_1/features/notifications/presentation/pages/notifications_list_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -113,7 +114,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutePath.notifications,
         name: AppRouteName.notifications,
-        builder: (c, s) => const StubScreen(title: 'Notifications'),
+        builder: (c, s) => const NotificationsListScreen(),
       ),
       GoRoute(
         path: AppRoutePath.notificationsManage,
