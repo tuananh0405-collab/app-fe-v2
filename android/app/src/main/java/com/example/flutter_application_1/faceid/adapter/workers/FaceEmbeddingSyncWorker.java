@@ -1,0 +1,196 @@
+package com.example.flutter_application_1.faceid.adapter.workers;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
+
+import java.io.File;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.example.flutter_application_1.faceid.data.service.FaceIdService;
+import com.example.flutter_application_1.faceid.data.service.FaceIdServiceManager;
+
+/**
+ * Background Worker để sync Face Embedding với server
+ * Chạy riêng biệt với UI flow để tránh blocking user
+ */
+public class FaceEmbeddingSyncWorker extends Worker {
+    private static final String TAG = "FaceEmbeddingSyncWorker";
+    
+    public static final String KEY_USER_ID = "user_id";
+    public static final String KEY_BITMAP_PATH = "bitmap_path";
+    public static final String KEY_ACTION = "action"; // "register" | "update"
+    public static final String ACTION_REGISTER = "register";
+    public static final String ACTION_UPDATE = "update";
+    public static final String ACTION_VERIFY = "verify";
+    
+    public FaceEmbeddingSyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+        super(context, workerParams);
+    }
+    
+    @NonNull
+    @Override
+    public Result doWork() {
+        
+        String userId = getInputData().getString(KEY_USER_ID);
+        String bitmapPath = getInputData().getString(KEY_BITMAP_PATH);
+        String action = getInputData().getString(KEY_ACTION);
+        
+        if (userId == null || bitmapPath == null) {
+            Log.e(TAG, "Missing required input data");
+            return Result.failure();
+        }
+        
+        try {
+            // Load bitmap from file
+            Bitmap bitmap = loadBitmapFromPath(bitmapPath);
+            if (bitmap == null) {
+                Log.e(TAG, "Failed to load bitmap from path: " + bitmapPath);
+                return Result.failure();
+            }
+            
+            // Initialize FaceIdService if needed
+            FaceIdService faceIdService = getFaceIdService();
+            if (faceIdService == null) {
+                Log.e(TAG, "Failed to initialize FaceIdService");
+                return Result.failure();
+            }
+            
+            // Sync embedding with server
+            boolean syncResult = syncEmbeddingWithServer(faceIdService, bitmap, userId, action);
+            
+            // Cleanup bitmap file
+            cleanupBitmapFile(bitmapPath);
+            
+            if (syncResult) {
+                Log.d(TAG, "Face embedding sync completed successfully");
+                return Result.success();
+            } else {
+                Log.w(TAG, "Face embedding sync failed, will retry");
+                return Result.retry();
+            }
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Exception during face embedding sync", e);
+            return Result.failure();
+        }
+    }
+    
+    private Bitmap loadBitmapFromPath(String bitmapPath) {
+        try {
+            File file = new File(bitmapPath);
+            if (!file.exists()) {
+                Log.e(TAG, "Bitmap file does not exist: " + bitmapPath);
+                return null;
+            }
+            
+            return BitmapFactory.decodeFile(bitmapPath);
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading bitmap from path: " + bitmapPath, e);
+            return null;
+        }
+    }
+    
+    private FaceIdService getFaceIdService() {
+        final FaceIdService[] serviceRef = new FaceIdService[1];
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean initSuccess = new AtomicBoolean(false);
+        
+        // Initialize service synchronously in worker thread
+        FaceIdServiceManager.getInstance().initialize(getApplicationContext(), new FaceIdServiceManager.InitCallback() {
+            @Override
+            public void onInitialized(FaceIdService service) {
+                serviceRef[0] = service;
+                initSuccess.set(true);
+                latch.countDown();
+            }
+            
+            @Override
+            public void onError(String message) {
+                Log.e(TAG, "FaceIdService initialization error: " + message);
+                latch.countDown();
+            }
+        });
+        
+        try {
+            // Wait up to 10 seconds for initialization
+            boolean completed = latch.await(10, TimeUnit.SECONDS);
+            if (completed && initSuccess.get()) {
+                return serviceRef[0];
+            }
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Interrupted while waiting for FaceIdService initialization", e);
+        }
+        
+        return null;
+    }
+    
+    private boolean syncEmbeddingWithServer(FaceIdService faceIdService, Bitmap bitmap, String userId, String action) {
+        final AtomicBoolean syncSuccess = new AtomicBoolean(false);
+        final CountDownLatch latch = new CountDownLatch(1);
+        
+        // Branch by action: after register -> verify; after update -> update
+        boolean isUpdate = ACTION_UPDATE.equalsIgnoreCase(action);
+        boolean isVerify = ACTION_VERIFY.equalsIgnoreCase(action);
+        boolean isRegister = ACTION_REGISTER.equalsIgnoreCase(action);
+        if (isUpdate) {
+            faceIdService.updateFaceId(bitmap, userId, new FaceIdService.FaceIdCallback() {
+                @Override
+                public void onSuccess(String message) {
+                    Log.d(TAG, "Face embedding sync successful: " + message);
+                    syncSuccess.set(true);
+                    latch.countDown();
+                }
+                
+                @Override
+                public void onFailure(String errorMessage) {
+                    Log.e(TAG, "Face embedding sync failed: " + errorMessage);
+                    latch.countDown();
+                }
+            });
+        } else if (isVerify) {
+            // For verify flow, we have already verified in UI; avoid duplicate network call
+            Log.d(TAG, "Verify flow: no background sync needed, marking success");
+            syncSuccess.set(true);
+            latch.countDown();
+        } else if (isRegister) {
+            // After register, do not auto-verify in background. Defer to explicit verify flow/notification.
+            Log.d(TAG, "Register flow: skip background calls, marking success");
+            syncSuccess.set(true);
+            latch.countDown();
+        } else {
+            // Unknown action: no-op but succeed to avoid retries
+            Log.w(TAG, "Unknown action in FaceEmbeddingSyncWorker: " + action + ". Skipping network call.");
+            syncSuccess.set(true);
+            latch.countDown();
+        }
+        
+        try {
+            // Wait up to 30 seconds for sync completion
+            boolean completed = latch.await(30, TimeUnit.SECONDS);
+            return completed && syncSuccess.get();
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Interrupted while waiting for embedding sync", e);
+            return false;
+        }
+    }
+    
+    private void cleanupBitmapFile(String bitmapPath) {
+        try {
+            File file = new File(bitmapPath);
+            if (file.exists()) {
+                boolean deleted = file.delete();
+                Log.d(TAG, "Bitmap file cleanup: " + (deleted ? "success" : "failed"));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error cleaning up bitmap file: " + bitmapPath, e);
+        }
+    }
+}

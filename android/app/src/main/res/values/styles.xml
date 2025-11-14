@@ -15,4 +15,9 @@
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+    <!-- AppCompat theme for activities that extend AppCompatActivity -->
+    <style name="AppCompatTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- match Flutter system bar coloring behavior as needed -->
+        <item name="android:windowBackground">?android:colorBackground</item>
+    </style>
 </resources>

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/services/face_id_service.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../providers/auth_providers.dart';
 import '../state/login_state.dart';
@@ -35,8 +36,25 @@ class LoginController extends Notifier<LoginState> {
           refreshToken: loginResponse.refreshToken,
           user: loginResponse.user,
         );
+        
+        // ✅ Lưu user info vào native SharedPreferences để Face ID sử dụng
+        _saveUserInfoToNative(loginResponse);
       },
     );
+  }
+
+  /// Lưu user info vào native SharedPreferences (cho Face ID)
+  Future<void> _saveUserInfoToNative(dynamic loginResponse) async {
+    try {
+      await FaceIdService.saveUserInfo(
+        userId: loginResponse.user.id,
+        userName: loginResponse.user.fullName,
+        authToken: loginResponse.accessToken,
+      );
+      print('✅ User info saved to native: ${loginResponse.user.id}');
+    } catch (e) {
+      print('⚠️ Failed to save user info to native: $e');
+    }
   }
 
   void clearError() {

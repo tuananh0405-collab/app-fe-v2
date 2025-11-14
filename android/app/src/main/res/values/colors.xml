@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Face ID colors -->
+    <color name="green_success">#4CAF50</color>
+    <color name="red_error">#F44336</color>
+    <color name="processing_blue">#2196F3</color>
+    <color name="warning_orange">#FF9800</color>
+    <color name="warning_yellow">#FFC107</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#2C2C2E</color>
+    <color name="text_secondary">#8E8E93</color>
+    
+    <!-- Background Colors -->
+    <color name="background_primary">#FFFFFF</color>
+    <color name="background_light">#F9F9F9</color>
+    
+    <!-- Button Colors -->
+    <color name="button_primary">#1976D2</color>
+    <color name="button_secondary">#E3F2FD</color>
+    <color name="liveness_challenge_blue">#0000FF</color>
+    
+    <!-- FaceID Success Screen Colors -->
+    <color name="faceid_success_primary">#A9B6E1</color>
+    <color name="faceid_success_text">#4A5568</color>
+    <color name="faceid_success_subtitle">#718096</color>
+    
+    <!-- Basic Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="primary">#6367F1</color>
+    <color name="gray">#888888</color>
+    
+    <!-- Button State Colors -->
+    <color name="button_default">#2196F3</color>
+    <color name="button_pending">#9E9E9E</color>
+    <color name="button_active">#2196F3</color>
+    <color name="button_completed">#4CAF50</color>
+    <color name="button_cancelled">#F44336</color>
+    <color name="button_missed">#FF5722</color>
+    
+    <!-- Notification Colors -->
+    <color name="notification_read_background">#F8F9FA</color>
+    <color name="notification_read_text">#8E8E93</color>
+    <color name="notification_unread_text">#2C2C2E</color>
+    <color name="notification_unread_background">#E6F2FF</color>
+    
+    <!-- Additional Colors -->
+    <color name="primaryText">#232B42</color>
+    <color name="bodyText">#6A6B7C</color>
+    <color name="lightGray">#E5E5E5</color>
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FFC107</color>
+    <color name="info">#2196F3</color>
+    <color name="error_red">#F44336</color>
+    <color name="success_green">#4CAF50</color>
+</resources>

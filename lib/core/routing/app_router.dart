@@ -8,6 +8,7 @@ import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/common/presentation/stub_screen.dart';
+import '../../faceid_page.dart';
 import 'routes.dart';
 
 // Tạo GoRouter trong Provider để lắng nghe auth state
@@ -161,7 +162,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutePath.faceIdRegister,
         name: AppRouteName.faceIdRegister,
-        builder: (c, s) => const StubScreen(title: 'Register & Update FaceID'),
+        builder: (c, s) => const FaceIdPage(),
       ),
 
       // Schedule
