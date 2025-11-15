@@ -33,7 +33,7 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Setup animations
     setupAnimations({
       'headerAnimation': AnimationInfo(
@@ -86,17 +86,16 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
   void _handleSubmit() {
     final l10n = AppLocalizations.of(context);
     final leave = l10n.leave;
-    
+
     if (_formKey.currentState!.validate()) {
       if (_startDate == null || _endDate == null) {
-        showSnackbar(
-          context,
-          leave.pleaseSelectDates,
-        );
+        showSnackbar(context, leave.pleaseSelectDates);
         return;
       }
 
-      ref.read(leaveControllerProvider.notifier).createLeaveRequest(
+      ref
+          .read(leaveControllerProvider.notifier)
+          .createLeaveRequest(
             employeeId: _employeeId,
             employeeCode: _employeeCode,
             departmentId: _departmentId,
@@ -106,7 +105,8 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
             isHalfDayStart: _isHalfDayStart,
             isHalfDayEnd: _isHalfDayEnd,
             reason: _reasonController.text.trim(),
-            supportingDocumentUrl: _supportingDocUrlController.text.trim().isEmpty
+            supportingDocumentUrl:
+                _supportingDocUrlController.text.trim().isEmpty
                 ? null
                 : _supportingDocUrlController.text.trim(),
             metadata: {},
@@ -120,7 +120,7 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
     final l10n = AppLocalizations.of(context);
     final common = l10n.common;
     final leave = l10n.leave;
-    
+
     final leaveState = ref.watch(leaveControllerProvider);
     final dateFormat = DateFormat('dd/MM/yyyy');
 
@@ -197,15 +197,13 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                     const SizedBox(height: 4),
                     Text(
                       leave.fillDetailsBelow,
-                      style: theme.bodyText2.override(
-                        color: Colors.white70,
-                      ),
+                      style: theme.bodyText2.override(color: Colors.white70),
                     ),
                   ],
                 ),
               ).animateOnPageLoad(animationsMap['headerAnimation']!),
               const SizedBox(height: 24),
-              
+
               // Leave Type Dropdown
               Container(
                 decoration: BoxDecoration(
@@ -223,19 +221,27 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                   value: _leaveTypeId,
                   decoration: InputDecoration(
                     labelText: leave.leaveType,
-                    labelStyle: theme.bodyText2.override(color: theme.secondaryText),
+                    labelStyle: theme.bodyText2.override(
+                      color: theme.secondaryText,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
                     fillColor: theme.secondaryBackground,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
                   ),
                   items: [
                     DropdownMenuItem(value: 1, child: Text(leave.annualLeave)),
                     DropdownMenuItem(value: 2, child: Text(leave.sickLeave)),
-                    DropdownMenuItem(value: 3, child: Text(leave.personalLeave)),
+                    DropdownMenuItem(
+                      value: 3,
+                      child: Text(leave.personalLeave),
+                    ),
                     DropdownMenuItem(value: 4, child: Text(leave.unpaidLeave)),
                   ],
                   onChanged: (value) {
@@ -273,7 +279,9 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                     // Start Date
                     InkWell(
                       onTap: () => _selectDate(context, true),
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(12),
+                      ),
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         child: Row(
@@ -297,41 +305,49 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                                     style: theme.subtitle1.override(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: _startDate == null 
-                                        ? theme.secondaryText 
-                                        : theme.primaryText,
+                                      color: _startDate == null
+                                          ? theme.secondaryText
+                                          : theme.primaryText,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            Icon(Icons.chevron_right, color: theme.secondaryText),
+                            Icon(
+                              Icons.chevron_right,
+                              color: theme.secondaryText,
+                            ),
                           ],
                         ),
                       ),
                     ),
                     // if (_startDate != null)
-                      // Container(
-                      //   margin: const EdgeInsets.symmetric(horizontal: 16),
-                      //   child: CheckboxListTile(
-                      //     title: const Text('Nghỉ nửa ngày đầu',
-                      //       style: TextStyle(fontSize: 14)),
-                      //     value: _isHalfDayStart,
-                      //     onChanged: (value) {
-                      //       setState(() {
-                      //         _isHalfDayStart = value ?? false;
-                      //       });
-                      //     },
-                      //     controlAffinity: ListTileControlAffinity.leading,
-                      //     activeColor: Colors.purple[400],
-                      //     contentPadding: EdgeInsets.zero,
-                      //   ),
-                      // ),
-                    Divider(height: 1, color: theme.secondaryText.withValues(alpha: 0.2)),
+                    // Container(
+                    //   margin: const EdgeInsets.symmetric(horizontal: 16),
+                    //   child: CheckboxListTile(
+                    //     title: const Text('Nghỉ nửa ngày đầu',
+                    //       style: TextStyle(fontSize: 14)),
+                    //     value: _isHalfDayStart,
+                    //     onChanged: (value) {
+                    //       setState(() {
+                    //         _isHalfDayStart = value ?? false;
+                    //       });
+                    //     },
+                    //     controlAffinity: ListTileControlAffinity.leading,
+                    //     activeColor: Colors.purple[400],
+                    //     contentPadding: EdgeInsets.zero,
+                    //   ),
+                    // ),
+                    Divider(
+                      height: 1,
+                      color: theme.secondaryText.withValues(alpha: 0.2),
+                    ),
                     // End Date
                     InkWell(
                       onTap: () => _selectDate(context, false),
-                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(12),
+                      ),
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         child: Row(
@@ -355,15 +371,18 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                                     style: theme.subtitle1.override(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: _endDate == null 
-                                        ? theme.secondaryText 
-                                        : theme.primaryText,
+                                      color: _endDate == null
+                                          ? theme.secondaryText
+                                          : theme.primaryText,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            Icon(Icons.chevron_right, color: theme.secondaryText),
+                            Icon(
+                              Icons.chevron_right,
+                              color: theme.secondaryText,
+                            ),
                           ],
                         ),
                       ),
@@ -407,7 +426,9 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                   controller: _reasonController,
                   decoration: InputDecoration(
                     labelText: leave.reason,
-                    labelStyle: theme.bodyText2.override(color: theme.secondaryText),
+                    labelStyle: theme.bodyText2.override(
+                      color: theme.secondaryText,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -415,7 +436,9 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                     filled: true,
                     fillColor: theme.secondaryBackground,
                     hintText: leave.reasonPlaceholder,
-                    hintStyle: theme.bodyText2.override(color: theme.secondaryText),
+                    hintStyle: theme.bodyText2.override(
+                      color: theme.secondaryText,
+                    ),
                     contentPadding: const EdgeInsets.all(16),
                   ),
                   maxLines: 4,
@@ -445,8 +468,11 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                 child: TextFormField(
                   controller: _supportingDocUrlController,
                   decoration: InputDecoration(
-                    labelText: '${leave.supportingDocument} (${common.optional})',
-                    labelStyle: theme.bodyText2.override(color: theme.secondaryText),
+                    labelText:
+                        '${leave.supportingDocument} (${common.optional})',
+                    labelStyle: theme.bodyText2.override(
+                      color: theme.secondaryText,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -454,8 +480,13 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                     filled: true,
                     fillColor: theme.secondaryBackground,
                     hintText: 'https://example.com/document.pdf',
-                    hintStyle: theme.bodyText2.override(color: theme.secondaryText),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    hintStyle: theme.bodyText2.override(
+                      color: theme.secondaryText,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
                   ),
                   keyboardType: TextInputType.url,
                 ),
@@ -471,7 +502,9 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                   height: 56,
                   padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                   iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                  color: leaveState.isSubmitting ? theme.secondaryText : theme.primaryColor,
+                  color: leaveState.isSubmitting
+                      ? theme.secondaryText
+                      : theme.primaryColor,
                   textStyle: theme.title3.override(
                     color: Colors.white,
                     fontSize: 16,
@@ -497,4 +530,3 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
     );
   }
 }
-

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../../flutter_flow/flutter_flow.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../providers/leave_providers.dart';
 
 class UpdateLeaveScreen extends ConsumerStatefulWidget {
@@ -44,8 +46,7 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
           _isHalfDayStart = leave.isHalfDayStart;
           _isHalfDayEnd = leave.isHalfDayEnd;
           _reasonController.text = leave.reason;
-          _supportingDocUrlController.text =
-              leave.supportingDocumentUrl ?? '';
+          _supportingDocUrlController.text = leave.supportingDocumentUrl ?? '';
         });
       }
     });
@@ -84,11 +85,10 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
   void _handleSubmit() {
     if (_formKey.currentState!.validate()) {
       if (_startDate == null || _endDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Vui lòng chọn ngày bắt đầu và kết thúc'),
-            backgroundColor: Colors.red,
-          ),
+        showSnackbar(
+          context,
+          AppLocalizations.of(context).leave.pleaseSelectDates,
+          duration: 3,
         );
         return;
       }
@@ -97,16 +97,13 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
           _employeeCode == null ||
           _departmentId == null ||
           _leaveTypeId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Thông tin đơn nghỉ không hợp lệ'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        showSnackbar(context, 'Thông tin đơn nghỉ không hợp lệ', duration: 3);
         return;
       }
 
-      ref.read(leaveControllerProvider.notifier).updateLeaveRequest(
+      ref
+          .read(leaveControllerProvider.notifier)
+          .updateLeaveRequest(
             leaveId: int.parse(widget.leaveId),
             employeeId: _employeeId!,
             employeeCode: _employeeCode!,
@@ -117,7 +114,8 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
             isHalfDayStart: _isHalfDayStart,
             isHalfDayEnd: _isHalfDayEnd,
             reason: _reasonController.text.trim(),
-            supportingDocumentUrl: _supportingDocUrlController.text.trim().isEmpty
+            supportingDocumentUrl:
+                _supportingDocUrlController.text.trim().isEmpty
                 ? null
                 : _supportingDocUrlController.text.trim(),
             metadata: {},
@@ -127,6 +125,8 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
     final leaveState = ref.watch(leaveControllerProvider);
     final dateFormat = DateFormat('dd/MM/yyyy');
 
@@ -134,12 +134,7 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
     ref.listen(leaveControllerProvider, (previous, next) {
       if (next.successMessage != null &&
           next.successMessage != previous?.successMessage) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.successMessage!),
-            backgroundColor: Colors.green,
-          ),
-        );
+        showSnackbar(context, next.successMessage!, duration: 3);
         // Navigate back after successful update
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {
@@ -148,28 +143,41 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
         });
       } else if (next.errorMessage != null &&
           next.errorMessage != previous?.errorMessage) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.errorMessage!),
-            backgroundColor: Colors.red,
-          ),
-        );
+        showSnackbar(context, next.errorMessage!, duration: 4);
       }
     });
 
     if (_employeeId == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Cập nhật đơn nghỉ')),
-        body: const Center(child: CircularProgressIndicator()),
+        backgroundColor: theme.primaryBackground,
+        appBar: AppBar(
+          title: Text(
+            l10n.leave.updateLeaveRequest,
+            style: theme.title2.override(color: Colors.white),
+          ),
+          backgroundColor: theme.primaryColor,
+        ),
+        body: Center(child: FFLoadingIndicator(color: theme.primaryColor)),
       );
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.primaryBackground,
       appBar: AppBar(
-        title: const Text('Cập nhật đơn xin nghỉ',
-          style: TextStyle(fontWeight: FontWeight.w600)),
-        elevation: 0,
+        title: Text(
+          l10n.leave.updateLeaveRequest,
+          style: theme.title2.override(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        elevation: 2,
+        backgroundColor: theme.primaryColor,
+        leading: FFIconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.pop(),
+          buttonSize: 48,
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -178,157 +186,414 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Leave Type Dropdown
-              DropdownButtonFormField<int>(
-                value: _leaveTypeId,
-                decoration: const InputDecoration(
-                  labelText: 'Loại nghỉ phép',
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 1, child: Text('Nghỉ phép năm')),
-                  DropdownMenuItem(value: 2, child: Text('Nghỉ ốm')),
-                  DropdownMenuItem(value: 3, child: Text('Nghỉ việc riêng')),
-                  DropdownMenuItem(value: 4, child: Text('Nghỉ không lương')),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _leaveTypeId = value;
-                    });
-                  }
-                },
-                validator: (value) {
-                  if (value == null) {
-                    return 'Vui lòng chọn loại nghỉ phép';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Start Date
-              InkWell(
-                onTap: () => _selectDate(context, true),
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Ngày bắt đầu',
-                    border: OutlineInputBorder(),
+              // Header Card
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      theme.primaryColor.withValues(alpha: 0.1),
+                      theme.primaryColor.withValues(alpha: 0.05),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: Text(
-                    _startDate == null
-                        ? 'Chọn ngày bắt đầu'
-                        : dateFormat.format(_startDate!),
-                    style: TextStyle(
-                      color: _startDate == null ? Colors.grey : Colors.black,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: theme.primaryColor.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme.primaryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.edit_document,
+                        color: theme.primaryColor,
+                        size: 28,
+                      ),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // Half day start checkbox
-              // CheckboxListTile(
-              //   title: const Text('Nghỉ nửa ngày đầu'),
-              //   value: _isHalfDayStart,
-              //   onChanged: (value) {
-              //     setState(() {
-              //       _isHalfDayStart = value ?? false;
-              //     });
-              //   },
-              //   controlAffinity: ListTileControlAffinity.leading,
-              // ),
-              // const SizedBox(height: 8),
-
-              // End Date
-              InkWell(
-                onTap: () => _selectDate(context, false),
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Ngày kết thúc',
-                    border: OutlineInputBorder(),
-                  ),
-                  child: Text(
-                    _endDate == null
-                        ? 'Chọn ngày kết thúc'
-                        : dateFormat.format(_endDate!),
-                    style: TextStyle(
-                      color: _endDate == null ? Colors.grey : Colors.black,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.leave.updateLeaveRequest,
+                            style: theme.title3.override(
+                              color: theme.primaryText,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            l10n.leave.fillDetailsBelow,
+                            style: theme.bodyText2.override(
+                              color: theme.secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 8),
-
-              // Half day end checkbox
-              // CheckboxListTile(
-              //   title: const Text('Nghỉ nửa ngày cuối'),
-              //   value: _isHalfDayEnd,
-              //   onChanged: (value) {
-              //     setState(() {
-              //       _isHalfDayEnd = value ?? false;
-              //     });
-              //   },
-              //   controlAffinity: ListTileControlAffinity.leading,
-              // ),
-              // const SizedBox(height: 16),
-
-              // Reason
-              TextFormField(
-                controller: _reasonController,
-                decoration: const InputDecoration(
-                  labelText: 'Lý do',
-                  border: OutlineInputBorder(),
-                  hintText: 'Nhập lý do xin nghỉ',
-                ),
-                maxLines: 4,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Vui lòng nhập lý do';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Supporting Document URL (optional)
-              TextFormField(
-                controller: _supportingDocUrlController,
-                decoration: const InputDecoration(
-                  labelText: 'Link tài liệu hỗ trợ (không bắt buộc)',
-                  border: OutlineInputBorder(),
-                  hintText: 'https://example.com/document.pdf',
-                ),
-                keyboardType: TextInputType.url,
               ),
               const SizedBox(height: 24),
 
-              // Submit Button
-              ElevatedButton(
-                onPressed: leaveState.isSubmitting ? null : _handleSubmit,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
+              // Leave Type Dropdown
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.secondaryBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.primaryText.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: leaveState.isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text(
-                        'Cập nhật đơn xin nghỉ',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                child: DropdownButtonFormField<int>(
+                  value: _leaveTypeId,
+                  decoration: InputDecoration(
+                    labelText: l10n.leave.leaveType,
+                    labelStyle: theme.bodyText1.override(
+                      color: theme.secondaryText,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.category_outlined,
+                      color: theme.primaryColor,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.secondaryText.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.secondaryText.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.primaryColor,
+                        width: 2,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: theme.secondaryBackground,
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: 1,
+                      child: Text(l10n.leave.annualLeave),
+                    ),
+                    DropdownMenuItem(
+                      value: 2,
+                      child: Text(l10n.leave.sickLeave),
+                    ),
+                    DropdownMenuItem(
+                      value: 3,
+                      child: Text(l10n.leave.personalLeave),
+                    ),
+                    DropdownMenuItem(
+                      value: 4,
+                      child: Text(l10n.leave.unpaidLeave),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _leaveTypeId = value;
+                      });
+                    }
+                  },
+                  validator: (value) {
+                    if (value == null) {
+                      return l10n.leave.pleaseSelectLeaveType;
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Start Date
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.secondaryBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.primaryText.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: InkWell(
+                  onTap: () => _selectDate(context, true),
+                  borderRadius: BorderRadius.circular(12),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: l10n.leave.startDate,
+                      labelStyle: theme.bodyText1.override(
+                        color: theme.secondaryText,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.calendar_today,
+                        color: theme.primaryColor,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: theme.secondaryText.withValues(alpha: 0.3),
                         ),
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: theme.secondaryText.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: theme.primaryColor,
+                          width: 2,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: theme.secondaryBackground,
+                    ),
+                    child: Text(
+                      _startDate == null
+                          ? l10n.leave.selectDate
+                          : dateFormat.format(_startDate!),
+                      style: theme.bodyText1.override(
+                        color: _startDate == null
+                            ? theme.secondaryText
+                            : theme.primaryText,
+                      ),
+                    ),
+                  ),
+                ),
               ),
+              const SizedBox(height: 20),
+
+              // End Date
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.secondaryBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.primaryText.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: InkWell(
+                  onTap: () => _selectDate(context, false),
+                  borderRadius: BorderRadius.circular(12),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: l10n.leave.endDate,
+                      labelStyle: theme.bodyText1.override(
+                        color: theme.secondaryText,
+                      ),
+                      prefixIcon: Icon(Icons.event, color: theme.primaryColor),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: theme.secondaryText.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: theme.secondaryText.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: theme.primaryColor,
+                          width: 2,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: theme.secondaryBackground,
+                    ),
+                    child: Text(
+                      _endDate == null
+                          ? l10n.leave.selectDate
+                          : dateFormat.format(_endDate!),
+                      style: theme.bodyText1.override(
+                        color: _endDate == null
+                            ? theme.secondaryText
+                            : theme.primaryText,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Reason
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.secondaryBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.primaryText.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextFormField(
+                  controller: _reasonController,
+                  decoration: InputDecoration(
+                    labelText: l10n.leave.reason,
+                    labelStyle: theme.bodyText1.override(
+                      color: theme.secondaryText,
+                    ),
+                    hintText: l10n.leave.reasonPlaceholder,
+                    hintStyle: theme.bodyText2.override(
+                      color: theme.secondaryText.withValues(alpha: 0.6),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.note_outlined,
+                      color: theme.primaryColor,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.secondaryText.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.secondaryText.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.primaryColor,
+                        width: 2,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: theme.secondaryBackground,
+                  ),
+                  style: theme.bodyText1.override(color: theme.primaryText),
+                  maxLines: 4,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return l10n.leave.enterReason;
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Supporting Document URL (optional)
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.secondaryBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.primaryText.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextFormField(
+                  controller: _supportingDocUrlController,
+                  decoration: InputDecoration(
+                    labelText: l10n.leave.supportingDocument,
+                    labelStyle: theme.bodyText1.override(
+                      color: theme.secondaryText,
+                    ),
+                    hintText: 'https://example.com/document.pdf',
+                    hintStyle: theme.bodyText2.override(
+                      color: theme.secondaryText.withValues(alpha: 0.6),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.attach_file,
+                      color: theme.primaryColor,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.secondaryText.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.secondaryText.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.primaryColor,
+                        width: 2,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: theme.secondaryBackground,
+                  ),
+                  style: theme.bodyText1.override(color: theme.primaryText),
+                  keyboardType: TextInputType.url,
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Submit Button
+              FFButton(
+                onPressed: leaveState.isSubmitting ? null : _handleSubmit,
+                text: l10n.leave.updateLeaveRequest,
+                icon: Icon(
+                  leaveState.isSubmitting
+                      ? Icons.hourglass_empty
+                      : Icons.check_circle_outline,
+                  size: 20,
+                  color: Colors.white,
+                ),
+                options: FFButtonOptions(
+                  width: double.infinity,
+                  height: 56,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  color: theme.primaryColor,
+                  textStyle: theme.subtitle1.override(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(12),
+                  disabledColor: theme.secondaryText,
+                  disabledTextColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),

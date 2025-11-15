@@ -16,11 +16,10 @@ class LeaveListScreen extends ConsumerStatefulWidget {
 
 class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
     with TickerProviderStateMixin, AnimationControllerMixin {
-  
   @override
   void initState() {
     super.initState();
-    
+
     // Setup animations
     setupAnimations({
       'headerAnimation': AnimationInfo(
@@ -38,7 +37,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
         ),
       ),
     });
-    
+
     // Load leave records when screen opens
     Future.microtask(() {
       ref.read(leaveControllerProvider.notifier).getLeaveRecords();
@@ -54,7 +53,8 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
 
     // Listen for error messages
     ref.listen(leaveControllerProvider, (previous, next) {
-      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+      if (next.errorMessage != null &&
+          next.errorMessage != previous?.errorMessage) {
         showSnackbar(context, next.errorMessage!);
       }
     });
@@ -76,7 +76,9 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
             icon: const Icon(Icons.refresh_rounded, color: Colors.white),
             onPressed: () {
               ref.read(leaveControllerProvider.notifier).getLeaveRecords();
-              ref.read(leaveControllerProvider.notifier).getLeaveBalance(employeeId: 7);
+              ref
+                  .read(leaveControllerProvider.notifier)
+                  .getLeaveBalance(employeeId: 7);
             },
             buttonSize: 48,
           ),
@@ -87,7 +89,9 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
           : RefreshIndicator(
               onRefresh: () async {
                 ref.read(leaveControllerProvider.notifier).getLeaveRecords();
-                await ref.read(leaveControllerProvider.notifier).getLeaveBalance(employeeId: 7);
+                await ref
+                    .read(leaveControllerProvider.notifier)
+                    .getLeaveBalance(employeeId: 7);
               },
               color: theme.primaryColor,
               child: SingleChildScrollView(
@@ -96,8 +100,10 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                   children: [
                     // Leave Balance Card
                     if (leaveState.leaveBalances.isNotEmpty)
-                      _buildLeaveBalanceCard(theme, leaveState)
-                          .animateOnPageLoad(animationsMap['headerAnimation']!),
+                      _buildLeaveBalanceCard(
+                        theme,
+                        leaveState,
+                      ).animateOnPageLoad(animationsMap['headerAnimation']!),
 
                     // Leave Records List
                     if (leaveState.leaveRecords.isEmpty)
@@ -119,7 +125,12 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                         itemCount: leaveState.leaveRecords.length,
                         itemBuilder: (context, index) {
                           final leaveRecord = leaveState.leaveRecords[index];
-                          return _buildLeaveCard(context, theme, leaveRecord, index);
+                          return _buildLeaveCard(
+                            context,
+                            theme,
+                            leaveRecord,
+                            index,
+                          );
                         },
                       ),
                   ],
@@ -149,7 +160,10 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [theme.primaryColor, theme.primaryColor.withValues(alpha: 0.8)],
+          colors: [
+            theme.primaryColor,
+            theme.primaryColor.withValues(alpha: 0.8),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -175,8 +189,11 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.account_balance_wallet,
-                    color: Colors.white, size: 24),
+                  child: const Icon(
+                    Icons.account_balance_wallet,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -213,19 +230,47 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                         ),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${balance.remainingDays.toStringAsFixed(1)}/${balance.totalDays.toStringAsFixed(1)}',
-                        style: theme.subtitle1.override(
-                          color: theme.primaryColor,
-                          fontWeight: FontWeight.bold,
+                    Row(
+                      children: [
+                        Text(
+                          'Tổng: ',
+                          style: theme.bodyText2.override(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
+                        Text(
+                          '${balance.totalDays.toStringAsFixed(1)} | ',
+                          style: theme.subtitle1.override(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Còn lại: ',
+                          style: theme.bodyText2.override(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${balance.remainingDays.toStringAsFixed(1)}',
+                            style: theme.subtitle1.override(
+                              color: theme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -237,7 +282,12 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
     );
   }
 
-  Widget _buildLeaveCard(BuildContext context, FlutterFlowTheme theme, dynamic leave, int index) {
+  Widget _buildLeaveCard(
+    BuildContext context,
+    FlutterFlowTheme theme,
+    dynamic leave,
+    int index,
+  ) {
     final dateFormat = DateFormat('dd/MM/yyyy');
     final statusColor = _getStatusColor(leave.status, theme);
     final statusText = _getStatusText(leave.status);
@@ -260,19 +310,22 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
         onTap: () async {
           // Store the BuildContext before async operation
           final navigator = Navigator.of(context);
-          
+
           // Call selectLeave and wait for it to complete
-          await ref.read(leaveControllerProvider.notifier).selectLeave(leave.id!);
-          
+          await ref
+              .read(leaveControllerProvider.notifier)
+              .selectLeave(leave.id!);
+
           // Check if widget is still mounted before using context
           if (!mounted) return;
-          
+
           final state = ref.read(leaveControllerProvider);
           if (state.errorMessage == null) {
             // Use the stored navigator instead of context.push
             navigator.push(
               MaterialPageRoute(
-                builder: (context) => LeaveDetailScreen(leaveId: leave.id!.toString()),
+                builder: (context) =>
+                    LeaveDetailScreen(leaveId: leave.id!.toString()),
               ),
             );
           }

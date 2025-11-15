@@ -126,7 +126,7 @@ class ThemeTypography {
         fontFamily: 'Poppins',
         color: theme.primaryText,
         fontWeight: FontWeight.w500,
-        fontSize: 18,
+        fontSize: 14,
       );
   String get subtitle2Family => 'Poppins';
   TextStyle get subtitle2 => TextStyle(
@@ -147,7 +147,7 @@ class ThemeTypography {
         fontFamily: 'Poppins',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 14,
+        fontSize: 12,
       );
 }
 
