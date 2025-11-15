@@ -300,23 +300,16 @@ public class FaceSpoofDetector {
                 secondModelInterpreter.run(input2, output2);
             }
 
-            Log.d(TAG, "Output model 1: " + Arrays.toString(output1[0]));
-            Log.d(TAG, "Output model 2: " + Arrays.toString(output2[0]));
-
             // Apply softmax to outputs (exactly like OnDevice)
             float[] softmax1 = softMax(output1[0]);
             float[] softmax2 = softMax(output2[0]);
-
-            Log.d(TAG, "Softmax model 1: " + Arrays.toString(softmax1));
-            Log.d(TAG, "Softmax model 2: " + Arrays.toString(softmax2));
 
             // Combine probabilities by summation (exactly like OnDevice)
             float[] combined = new float[OUTPUT_DIM];
             for (int i = 0; i < OUTPUT_DIM; i++) {
                 combined[i] = softmax1[i] + softmax2[i];
             }
-            Log.d(TAG, "Combined probs: " + Arrays.toString(combined));
-
+            
             // Find max index (exactly like OnDevice)
             int label = 0;
             float maxVal = combined[0];

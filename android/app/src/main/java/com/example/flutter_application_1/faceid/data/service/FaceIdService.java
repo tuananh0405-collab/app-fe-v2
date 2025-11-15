@@ -182,7 +182,6 @@ public class FaceIdService {
     
     public boolean isInitialized() {
         if (isInitialized) {
-            Log.d(TAG, "isInitialized: Already initialized - returning true");
             return true;
         }
         
@@ -190,10 +189,8 @@ public class FaceIdService {
             // Kiểm tra xem tất cả model đã load xong chưa (với timeout 0 để không block)
             boolean allLoaded = modelLoadLatch.await(0, TimeUnit.MILLISECONDS);
             isInitialized = allLoaded;
-            Log.d(TAG, "isInitialized: Models loaded check result: " + allLoaded);
             return allLoaded;
         } catch (InterruptedException e) {
-            Log.e(TAG, "isInitialized: InterruptedException during model check", e);
             return false;
         }
     }
@@ -439,12 +436,6 @@ public class FaceIdService {
         boolean isWithinEllipse = ellipseValue <= ELLIPSE_TOLERANCE;
         boolean isGoodSize = widthRatio >= ovalConfig.minFaceSizeRatio && widthRatio <= ovalConfig.maxFaceSizeRatio && 
                             heightRatio >= ovalConfig.minFaceSizeRatio && heightRatio <= ovalConfig.maxFaceSizeRatio;
-        
-        Log.d(TAG, "checkFaceWithinOval: ellipseValue=" + String.format("%.4f", ellipseValue) + 
-              ", widthRatio=" + String.format("%.4f", widthRatio) + ", heightRatio=" + String.format("%.4f", heightRatio) + 
-              ", isWithinEllipse=" + isWithinEllipse + ", isGoodSize=" + isGoodSize +
-              ", thresholds: minSize=" + ovalConfig.minFaceSizeRatio + 
-              ", maxSize=" + ovalConfig.maxFaceSizeRatio + ", result=" + (isWithinEllipse && isGoodSize));
         
         return isWithinEllipse && isGoodSize;
     }
@@ -891,8 +882,29 @@ public class FaceIdService {
                 call.enqueue(new Callback<FaceIdResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<FaceIdResponse> call, @NonNull Response<FaceIdResponse> response) {
-                        Log.d(TAG, "registerFaceId: API response received - code: " + response.code() + 
-                              ", successful: " + response.isSuccessful() + ", body: " + (response.body() != null ? response.body().toString() : "null"));
+                        // ===== START: DETAILED RESPONSE LOGGING =====
+                        Log.d(TAG, "========================================");
+                        Log.d(TAG, "registerFaceId: DETAILED API RESPONSE");
+                        Log.d(TAG, "========================================");
+                                                Log.d(TAG, "Response Code: " + response.toString());
+                        Log.d(TAG, "Response Code: " + response.code());
+                        Log.d(TAG, "Is Successful: " + response.isSuccessful());
+                        Log.d(TAG, "Response Message: " + response.message());
+                        Log.d(TAG, "Response Headers: " + response.headers().toString());
+                        
+                        
+                        // Log Error Body nếu có
+                        if (response.errorBody() != null) {
+                            try {
+                                String errorBodyStr = response.errorBody().string();
+                                Log.e(TAG, "--- Error Body ---");
+                                Log.e(TAG, errorBodyStr);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Failed to read error body: " + e.getMessage());
+                            }
+                        }
+                        Log.d(TAG, "========================================");
+                        // ===== END: DETAILED RESPONSE LOGGING =====
                         
                         if (response.isSuccessful() && response.body() != null) {
                             FaceIdResponse responseBody = response.body();

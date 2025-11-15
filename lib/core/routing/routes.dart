@@ -7,6 +7,7 @@ class AppRouteName {
   static const attendanceReport = 'attendance-report';
 
   // Leaves
+  static const leaves = 'leaves';
   static const leavesCreate = 'leaves-create';
   static const leaveDetail = 'leave-detail';
   static const leaveEdit = 'leave-edit';
@@ -33,6 +34,9 @@ class AppRouteName {
 
   // Schedule
   static const schedule = 'schedule';
+
+  // Settings
+  static const settings = 'settings';
 }
 
 class AppRoutePath {
@@ -44,6 +48,7 @@ class AppRoutePath {
   static const attendanceReport = '/attendance/report';
 
   // Leaves
+  static const leaves = '/leaves';
   static const leavesCreate = '/leaves/create';
   static String leaveDetail(String id) => '/leaves/$id';
   static String leaveEdit(String id) => '/leaves/$id/edit';
@@ -70,4 +75,7 @@ class AppRoutePath {
 
   // Schedule
   static const schedule = '/schedule';
+
+  // Settings
+  static const settings = '/settings';
 }

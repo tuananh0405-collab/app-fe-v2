@@ -1,6 +1,11 @@
 import 'package:flutter_application_1/features/profile/presentation/profile_screen.dart';
 import 'package:flutter_application_1/features/profile/presentation/profile_detail_screen.dart';
 import 'package:flutter_application_1/features/notifications/presentation/pages/notifications_list_screen.dart';
+import 'package:flutter_application_1/features/leave/presentation/screens/leave_list_screen.dart';
+import 'package:flutter_application_1/features/leave/presentation/screens/create_leave_screen.dart';
+import 'package:flutter_application_1/features/leave/presentation/screens/leave_detail_screen.dart';
+import 'package:flutter_application_1/features/leave/presentation/screens/update_leave_screen.dart';
+import 'package:flutter_application_1/features/settings/presentation/settings_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -57,16 +62,21 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Leaves
       GoRoute(
+        path: '/leaves',
+        name: 'leaves',
+        builder: (c, s) => const LeaveListScreen(),
+      ),
+      GoRoute(
         path: AppRoutePath.leavesCreate,
         name: AppRouteName.leavesCreate,
-        builder: (c, s) => const StubScreen(title: 'Create Leave Request'),
+        builder: (c, s) => const CreateLeaveScreen(),
       ),
       GoRoute(
         path: '/leaves/:id',
         name: AppRouteName.leaveDetail,
         builder: (c, s) {
           final id = s.pathParameters['id']!;
-          return StubScreen(title: 'Leave Detail', subtitle: 'id = $id');
+          return LeaveDetailScreen(leaveId: id);
         },
         routes: [
           GoRoute(
@@ -74,10 +84,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             name: AppRouteName.leaveEdit,
             builder: (c, s) {
               final id = s.pathParameters['id']!;
-              return StubScreen(
-                title: 'Update Leave Request',
-                subtitle: 'id = $id',
-              );
+              return UpdateLeaveScreen(leaveId: id);
             },
           ),
         ],
@@ -170,6 +177,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutePath.schedule,
         name: AppRouteName.schedule,
         builder: (c, s) => const StubScreen(title: 'Schedule Management'),
+      ),
+
+      // Settings
+      GoRoute(
+        path: AppRoutePath.settings,
+        name: AppRouteName.settings,
+        builder: (c, s) => const SettingsScreen(),
       ),
     ],
   );

@@ -4,12 +4,38 @@ import 'package:go_router/go_router.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../../core/widgets/bottom_navigation.dart';
 import '../../../core/routing/routes.dart';
+import '../../../flutter_flow/flutter_flow.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with TickerProviderStateMixin, AnimationControllerMixin<ProfileScreen> {
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    // Setup animations
+    setupAnimations({
+      'listOnPageLoad': AnimationInfo(
+        trigger: AnimationTrigger.onPageLoad,
+        effects: FFAnimations.fadeInSlideUp(
+          delay: const Duration(milliseconds: 100),
+          duration: const Duration(milliseconds: 600),
+        ),
+      ),
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -18,12 +44,16 @@ class ProfileScreen extends ConsumerWidget {
         }
       },
       child: Scaffold(
+        backgroundColor: theme.primaryBackground,
         appBar: AppBar(
-          title: const Text('Profile'),
+          title: Text(
+            'Profile',
+            style: theme.title2.override(color: Colors.white),
+          ),
           centerTitle: true,
-          elevation: 0,
-          backgroundColor: Theme.of(context).primaryColor,
-          foregroundColor: Colors.white,
+          elevation: 2,
+          backgroundColor: theme.primaryColor,
+          iconTheme: IconThemeData(color: Colors.white),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.go(AppRoutePath.home),
@@ -33,9 +63,10 @@ class ProfileScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           children: [
             // Profile Section
-            _buildSectionHeader(context, 'Account'),
+            _buildSectionHeader(context, theme, 'Account'),
             _buildMenuItem(
               context: context,
+              theme: theme,
               icon: Icons.person_outline,
               title: 'View Profile Details',
               subtitle: 'See your personal information',
@@ -44,6 +75,7 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             _buildMenuItem(
               context: context,
+              theme: theme,
               icon: Icons.description_outlined,
               title: 'View Contract',
               subtitle: 'Employment contract details',
@@ -53,9 +85,10 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Devices Section
-            _buildSectionHeader(context, 'Devices & Security'),
+            _buildSectionHeader(context, theme, 'Devices & Security'),
             _buildMenuItem(
               context: context,
+              theme: theme,
               icon: Icons.devices,
               title: 'Manage Devices',
               subtitle: 'View and manage registered devices',
@@ -64,6 +97,7 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             _buildMenuItem(
               context: context,
+              theme: theme,
               icon: Icons.face,
               title: 'Face ID Registration',
               subtitle: 'Register or update your Face ID',
@@ -73,22 +107,22 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Settings Section
-            _buildSectionHeader(context, 'Settings'),
+            _buildSectionHeader(context, theme, 'Settings'),
             _buildMenuItem(
               context: context,
+              theme: theme,
               icon: Icons.lock_outline,
               title: 'Change Password',
               subtitle: 'Update your password',
               onTap: () {
                 // TODO: Navigate to change password
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Coming soon')),
-                );
+                showSnackbar(context, 'Coming soon');
               },
             ),
             const SizedBox(height: 8),
             _buildMenuItem(
               context: context,
+              theme: theme,
               icon: Icons.notifications_outlined,
               title: 'Notification Settings',
               subtitle: 'Manage notification preferences',
@@ -98,15 +132,16 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Logout Section
-            _buildSectionHeader(context, 'Account Actions'),
+            _buildSectionHeader(context, theme, 'Account Actions'),
             _buildMenuItem(
               context: context,
+              theme: theme,
               icon: Icons.logout,
               title: 'Logout',
               subtitle: 'Sign out of your account',
-              iconColor: Colors.red,
-              titleColor: Colors.red,
-              onTap: () => _showLogoutDialog(context, ref),
+              iconColor: theme.error,
+              titleColor: theme.error,
+              onTap: () => _showLogoutDialog(context),
             ),
           ],
         ),
@@ -115,22 +150,22 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
+  Widget _buildSectionHeader(BuildContext context, FlutterFlowTheme theme, String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8, top: 8),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Colors.grey[600],
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
+        style: theme.subtitle2.override(
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
 
   Widget _buildMenuItem({
     required BuildContext context,
+    required FlutterFlowTheme theme,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -138,8 +173,11 @@ class ProfileScreen extends ConsumerWidget {
     Color? iconColor,
     Color? titleColor,
   }) {
+    final effectiveIconColor = iconColor ?? theme.primaryColor;
+    
     return Card(
       elevation: 1,
+      color: theme.secondaryBackground,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -148,59 +186,72 @@ class ProfileScreen extends ConsumerWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: (iconColor ?? Theme.of(context).primaryColor)
-                .withValues(alpha: 0.1),
+            color: effectiveIconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             icon,
-            color: iconColor ?? Theme.of(context).primaryColor,
+            color: effectiveIconColor,
             size: 24,
           ),
         ),
         title: Text(
           title,
-          style: TextStyle(
+          style: theme.bodyText1.override(
             fontWeight: FontWeight.w600,
             color: titleColor,
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
+          style: theme.bodyText2,
         ),
         trailing: Icon(
           Icons.chevron_right,
-          color: Colors.grey[400],
+          color: theme.secondaryText,
         ),
       ),
     );
   }
 
-  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+  void _showLogoutDialog(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: theme.secondaryBackground,
+        title: Text('Logout', style: theme.title3),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: theme.bodyText1,
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              'Cancel',
+              style: theme.bodyText1.override(
+                color: theme.secondaryText,
+              ),
+            ),
           ),
-          ElevatedButton(
+          FFButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               ref.read(authControllerProvider.notifier).signOut();
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+            text: 'Logout',
+            options: FFButtonOptions(
+              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              color: theme.error,
+              textStyle: theme.bodyText1.override(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text('Logout'),
           ),
         ],
       ),

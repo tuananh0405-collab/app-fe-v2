@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/widgets/bottom_navigation.dart';
+import '../../../../flutter_flow/flutter_flow.dart';
 import '../../domain/models/notification_model.dart';
 import '../../providers/notification_providers.dart';
 import '../state/notification_list_state.dart';
@@ -17,12 +18,25 @@ class NotificationsListScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationsListScreenState
-    extends ConsumerState<NotificationsListScreen> {
+    extends ConsumerState<NotificationsListScreen>
+    with TickerProviderStateMixin, AnimationControllerMixin {
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    
+    // Setup animations
+    setupAnimations({
+      'listItemOnPageLoad': AnimationInfo(
+        trigger: AnimationTrigger.onPageLoad,
+        effects: FFAnimations.fadeInSlideUp(
+          delay: const Duration(milliseconds: 0),
+          duration: const Duration(milliseconds: 400),
+        ),
+      ),
+    });
+    
     // Load notifications on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(notificationListControllerProvider.notifier).loadNotifications();
@@ -47,6 +61,7 @@ class _NotificationsListScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
     final state = ref.watch(notificationListControllerProvider);
 
     return PopScope(
@@ -57,26 +72,34 @@ class _NotificationsListScreenState
         }
       },
       child: Scaffold(
+        backgroundColor: theme.primaryBackground,
         appBar: AppBar(
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Thông báo'),
+              Text(
+                'Thông báo',
+                style: theme.title2.override(color: Colors.white),
+              ),
               if (state.unreadCount > 0)
                 Text(
                   '${state.unreadCount} chưa đọc',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+                  style: theme.bodyText2.override(
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.white70,
+                  ),
                 ),
             ],
           ),
           centerTitle: true,
-          elevation: 0,
-          backgroundColor: Theme.of(context).primaryColor,
-          foregroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+          elevation: 2,
+          backgroundColor: theme.primaryColor,
+          leading: FFIconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => context.go(AppRoutePath.home),
+            buttonSize: 48,
           ),
           actions: [
             if (state.unreadCount > 0)
@@ -84,9 +107,12 @@ class _NotificationsListScreenState
                 onPressed: () {
                   _showMarkAllAsReadDialog();
                 },
-                child: const Text(
+                child: Text(
                   'Đọc tất cả',
-                  style: TextStyle(color: Colors.white, fontSize: 13),
+                  style: theme.bodyText2.override(
+                    color: Colors.white,
+                    fontSize: 13,
+                  ),
                 ),
               ),
           ],
@@ -98,13 +124,20 @@ class _NotificationsListScreenState
   }
 
   Widget _buildBody(NotificationListState state) {
+    final theme = FlutterFlowTheme.of(context);
+    
     if (state.status == NotificationListStatus.loaded &&
         state.notifications.isEmpty) {
       return _buildEmptyState();
     }
 
     if (state.status == NotificationListStatus.loading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: FFLoadingIndicator(
+          color: theme.primaryColor,
+          size: 40,
+        ),
+      );
     }
 
     if (state.status == NotificationListStatus.error) {
@@ -121,15 +154,21 @@ class _NotificationsListScreenState
             .read(notificationListControllerProvider.notifier)
             .loadNotifications(refresh: true);
       },
+      color: theme.primaryColor,
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.all(16),
         itemCount: state.notifications.length + (state.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == state.notifications.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: FFLoadingIndicator(
+                  color: theme.primaryColor,
+                  size: 30,
+                ),
+              ),
             );
           }
 
@@ -137,13 +176,15 @@ class _NotificationsListScreenState
           return _NotificationCard(
             notification: notification,
             onTap: () => _handleNotificationTap(notification),
-          );
+          ).animateOnPageLoad(animationsMap['listItemOnPageLoad']!);
         },
       ),
     );
   }
 
   Widget _buildEmptyState() {
+    final theme = FlutterFlowTheme.of(context);
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -151,19 +192,19 @@ class _NotificationsListScreenState
           Icon(
             Icons.notifications_none,
             size: 80,
-            color: Colors.grey[400],
+            color: theme.secondaryText,
           ),
           const SizedBox(height: 16),
           Text(
             'Không có thông báo',
-            style: Theme.of(context).textTheme.titleLarge,
+            style: theme.title2,
           ),
           const SizedBox(height: 8),
           Text(
             'Bạn đã xem hết tất cả!',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            style: theme.bodyText1.override(
+              color: theme.secondaryText,
+            ),
           ),
         ],
       ),
@@ -171,19 +212,21 @@ class _NotificationsListScreenState
   }
 
   Widget _buildError(String message) {
+    final theme = FlutterFlowTheme.of(context);
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline,
             size: 64,
-            color: Colors.red,
+            color: theme.error,
           ),
           const SizedBox(height: 16),
           Text(
             'Lỗi tải thông báo',
-            style: Theme.of(context).textTheme.titleLarge,
+            style: theme.title2,
           ),
           const SizedBox(height: 8),
           Padding(
@@ -191,18 +234,26 @@ class _NotificationsListScreenState
             child: Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: theme.bodyText1,
             ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton.icon(
+          FFButton(
+            text: 'Thử lại',
+            icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
             onPressed: () {
               ref
                   .read(notificationListControllerProvider.notifier)
                   .loadNotifications(refresh: true);
             },
-            icon: const Icon(Icons.refresh),
-            label: const Text('Thử lại'),
+            options: FFButtonOptions(
+              height: 45,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              color: theme.primaryColor,
+              textStyle: theme.subtitle2.override(color: Colors.white),
+              elevation: 2,
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         ],
       ),
@@ -228,26 +279,50 @@ class _NotificationsListScreenState
   }
 
   void _showMarkAllAsReadDialog() {
+    final theme = FlutterFlowTheme.of(context);
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Đánh dấu tất cả đã đọc'),
-        content: const Text(
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: theme.secondaryBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Đánh dấu tất cả đã đọc',
+          style: theme.title3,
+        ),
+        content: Text(
           'Bạn có chắc chắn muốn đánh dấu tất cả thông báo là đã đọc?',
+          style: theme.bodyText1,
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Hủy'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              'Hủy',
+              style: theme.bodyText2.override(color: theme.secondaryText),
+            ),
           ),
-          ElevatedButton(
+          FFButton(
+            text: 'Đồng ý',
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               ref
                   .read(notificationListControllerProvider.notifier)
                   .markAllAsRead();
             },
-            child: const Text('Đồng ý'),
+            options: FFButtonOptions(
+              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              color: theme.primaryColor,
+              textStyle: theme.bodyText2.override(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              elevation: 0,
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         ],
       ),
@@ -266,6 +341,7 @@ class _NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
     final timeAgo = _getTimeAgo(notification.createdAt);
 
     IconData icon;
@@ -274,50 +350,59 @@ class _NotificationCard extends StatelessWidget {
     switch (notification.notificationType) {
       case NotificationType.leaveApproval:
         icon = Icons.check_circle_outline;
-        iconColor = Colors.green;
+        iconColor = theme.success;
         break;
       case NotificationType.leaveRejection:
         icon = Icons.cancel_outlined;
-        iconColor = Colors.red;
+        iconColor = theme.error;
         break;
       case NotificationType.attendanceReminder:
       case NotificationType.checkInReminder:
       case NotificationType.checkOutReminder:
         icon = Icons.access_time;
-        iconColor = Colors.orange;
+        iconColor = theme.warning;
         break;
       case NotificationType.leaveRequest:
         icon = Icons.event_note;
-        iconColor = Colors.blue;
+        iconColor = theme.primaryColor;
         break;
       case NotificationType.systemAnnouncement:
         icon = Icons.campaign;
-        iconColor = Colors.purple;
+        iconColor = theme.tertiaryColor;
         break;
       default:
         icon = Icons.info_outline;
-        iconColor = Colors.grey;
+        iconColor = theme.secondaryText;
     }
 
     // Priority badge
     Color? priorityColor;
     if (notification.priority == NotificationPriority.urgent) {
-      priorityColor = Colors.red;
+      priorityColor = theme.error;
     } else if (notification.priority == NotificationPriority.high) {
-      priorityColor = Colors.orange;
+      priorityColor = theme.warning;
     }
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: notification.isRead ? 0 : 2,
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
+        border: Border.all(
           color: notification.isRead
-              ? Colors.grey.shade200
-              : Theme.of(context).primaryColor.withOpacity(0.2),
+              ? theme.alternate
+              : theme.primaryColor.withValues(alpha: 0.3),
           width: notification.isRead ? 1 : 2,
         ),
+        boxShadow: notification.isRead
+            ? []
+            : [
+                BoxShadow(
+                  color: theme.primaryColor.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: InkWell(
         onTap: onTap,
@@ -331,7 +416,7 @@ class _NotificationCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
+                  color: iconColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: iconColor, size: 24),
@@ -348,11 +433,10 @@ class _NotificationCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             notification.title,
-                            style: TextStyle(
+                            style: theme.bodyText1.override(
                               fontWeight: notification.isRead
                                   ? FontWeight.w600
                                   : FontWeight.bold,
-                              fontSize: 15,
                             ),
                           ),
                         ),
@@ -363,12 +447,12 @@ class _NotificationCard extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: priorityColor.withOpacity(0.1),
+                              color: priorityColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               notification.priority.value,
-                              style: TextStyle(
+                              style: theme.bodyText2.override(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                                 color: priorityColor,
@@ -380,8 +464,8 @@ class _NotificationCard extends StatelessWidget {
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.blue,
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -390,9 +474,8 @@ class _NotificationCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       notification.message,
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 14,
+                      style: theme.bodyText2.override(
+                        color: theme.secondaryText,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -401,14 +484,14 @@ class _NotificationCard extends StatelessWidget {
                         Icon(
                           Icons.access_time,
                           size: 14,
-                          color: Colors.grey[500],
+                          color: theme.secondaryText,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           timeAgo,
-                          style: TextStyle(
+                          style: theme.bodyText2.override(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: theme.secondaryText,
                           ),
                         ),
                         if (notification.relatedEntityType != null) ...[
@@ -416,7 +499,7 @@ class _NotificationCard extends StatelessWidget {
                           Icon(
                             Icons.chevron_right,
                             size: 20,
-                            color: Colors.grey[400],
+                            color: theme.secondaryText,
                           ),
                         ],
                       ],

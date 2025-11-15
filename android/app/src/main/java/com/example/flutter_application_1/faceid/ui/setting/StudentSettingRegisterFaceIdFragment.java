@@ -1753,10 +1753,7 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
 
             float averageScore = sum / scores.size();
             float variance = calculateVariance(scores, averageScore);
-
-            Log.d(TAG, "Analysis complete: " + frameScores.size() + " frames analyzed");
-            Log.d(TAG, "Scores - Avg: " + averageScore + ", Min: " + min + ", Max: " + max + ", Variance: " + variance);
-
+            
             // Quality assessment
             // Relax variance threshold after liveness due to natural gaze recovery
             boolean isConsistent = variance < (livenessVerified ? 0.06f : 0.03f);
@@ -1903,13 +1900,11 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
             if (getActivity() != null && getActivity().getIntent() != null) {
                 userId = getActivity().getIntent().getStringExtra("userId");
                 if (userId != null && !userId.isEmpty()) {
-                    Log.d(TAG, "✅ Got userId from Intent: " + userId);
                     // Save it for future use
                     authManager.setUserId(userId);
                 }
             }
         } else {
-            Log.d(TAG, "✅ Got userId from AuthManager: " + userId);
         }
         
         // Final check - If still no userId, show error
@@ -2012,8 +2007,8 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
                                         "Đăng ký thất bại: " + faceIdResponse.getMessage());
                             }
                         } else {
-                            Log.e(TAG, "❌ API request failed with code: " + response.code());
-                            String errorMsg = "Lỗi kết nối API (Code: " + response.code() + ")";
+                            Log.e(TAG, "❌========================================================================================================================================= API request failed with code: " + response);
+                            String errorMsg = "Lỗi kết nối API (Code: " + response + ")";
                             stateManager.transitionTo(FaceRegistrationState.FAILED_NETWORK, errorMsg);
                         }
 

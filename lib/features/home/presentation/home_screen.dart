@@ -10,6 +10,7 @@ import '../domain/models/shift_model.dart';
 import '../domain/models/location_status_model.dart';
 import '../../notifications/domain/models/notification_model.dart';
 import '../../../core/widgets/bottom_navigation.dart';
+import '../../../flutter_flow/flutter_flow.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -18,10 +19,31 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with TickerProviderStateMixin, AnimationControllerMixin<HomeScreen> {
+  
   @override
   void initState() {
     super.initState();
+    
+    // Setup animations
+    setupAnimations({
+      'headerOnPageLoad': AnimationInfo(
+        trigger: AnimationTrigger.onPageLoad,
+        effects: FFAnimations.fadeInSlideUp(
+          delay: const Duration(milliseconds: 0),
+          duration: const Duration(milliseconds: 600),
+        ),
+      ),
+      'cardOnPageLoad': AnimationInfo(
+        trigger: AnimationTrigger.onPageLoad,
+        effects: FFAnimations.fadeInSlideUp(
+          delay: const Duration(milliseconds: 100),
+          duration: const Duration(milliseconds: 600),
+        ),
+      ),
+    });
+    
     // Load notifications when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(notificationListControllerProvider.notifier).loadNotifications();
@@ -30,24 +52,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
     final notificationState = ref.watch(notificationListControllerProvider);
     final currentShift = ref.watch(currentShiftProvider);
     final locationStatus = ref.watch(locationStatusProvider);
     final user = ref.watch(loginControllerProvider).user;
 
     return Scaffold(
+      backgroundColor: theme.primaryBackground,
       appBar: AppBar(
-        title: const Text('Home'),
+        title: Text(
+          'Home',
+          style: theme.title2.override(color: Colors.white),
+        ),
+        backgroundColor: theme.primaryColor,
+        elevation: 2,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
+          FFIconButton(
+            icon: Icon(Icons.notifications_outlined, color: Colors.white),
             onPressed: () => context.push(AppRoutePath.notifications),
+            buttonSize: 48,
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
+          FFIconButton(
+            icon: Icon(Icons.settings_outlined, color: Colors.white),
+            onPressed: () => context.push(AppRoutePath.settings),
+            buttonSize: 48,
+          ),
+          FFIconButton(
+            icon: Icon(Icons.logout, color: Colors.white),
             onPressed: () {
               ref.read(authControllerProvider.notifier).signOut();
             },
+            buttonSize: 48,
           ),
         ],
       ),
@@ -57,6 +93,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               .read(notificationListControllerProvider.notifier)
               .loadNotifications();
         },
+        color: theme.primaryColor,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
@@ -64,22 +101,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Welcome Header
-              _WelcomeHeader(userName: user?.fullName ?? 'User'),
+              _WelcomeHeader(userName: user?.fullName ?? 'User')
+                  .animateOnPageLoad(animationsMap['headerOnPageLoad']!),
               const SizedBox(height: 24),
 
               // Latest Notifications
               _LatestNotificationsSection(
                 notifications: notificationState.notifications.take(3).toList(),
-              ),
+              ).animateOnPageLoad(animationsMap['cardOnPageLoad']!),
               const SizedBox(height: 24),
 
 
               // Location Status
-              _LocationStatusCard(locationStatus: locationStatus),
+              _LocationStatusCard(locationStatus: locationStatus)
+                  .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
               const SizedBox(height: 16),
 
               // Current Shift
-              _CurrentShiftCard(shift: currentShift),
+              _CurrentShiftCard(shift: currentShift)
+                  .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
               const SizedBox(height: 24),
 
 
@@ -94,40 +134,75 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class _WelcomeHeader extends StatelessWidget {
+class _WelcomeHeader extends ConsumerWidget {
   final String userName;
 
   const _WelcomeHeader({required this.userName});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = FlutterFlowTheme.of(context);
     final hour = DateTime.now().hour;
     String greeting;
+    Icon greetingIcon;
+    
     if (hour < 12) {
       greeting = 'Good Morning';
+      greetingIcon = Icon(Icons.wb_sunny, color: theme.warning);
     } else if (hour < 17) {
       greeting = 'Good Afternoon';
+      greetingIcon = Icon(Icons.light_mode, color: theme.warning);
     } else {
       greeting = 'Good Evening';
+      greetingIcon = Icon(Icons.nights_stay, color: theme.primaryColor);
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          greeting,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          userName,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: greetingIcon,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greeting,
+                  style: theme.bodyText2,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  userName,
+                  style: theme.title3.override(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -139,23 +214,25 @@ class _LocationStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final statusColor =
+        locationStatus.isInsideWorkZone ? theme.success : theme.warning;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: locationStatus.isInsideWorkZone
-              ? [Colors.green.shade400, Colors.green.shade600]
-              : [Colors.orange.shade400, Colors.orange.shade600],
+          colors: [
+            statusColor,
+            Color.lerp(statusColor, Colors.black, 0.2)!,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: (locationStatus.isInsideWorkZone
-                    ? Colors.green
-                    : Colors.orange)
-                .withValues(alpha: 0.3),
+            color: statusColor.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -182,9 +259,9 @@ class _LocationStatusCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Location Status',
-                  style: TextStyle(
+                  style: theme.bodyText2.override(
                     color: Colors.white70,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -193,9 +270,8 @@ class _LocationStatusCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   locationStatus.statusText,
-                  style: const TextStyle(
+                  style: theme.subtitle1.override(
                     color: Colors.white,
-                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -203,7 +279,7 @@ class _LocationStatusCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     locationStatus.locationName,
-                    style: const TextStyle(
+                    style: theme.bodyText2.override(
                       color: Colors.white70,
                       fontSize: 12,
                     ),
@@ -225,82 +301,87 @@ class _CurrentShiftCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
     final statusColor = shift.status == ShiftStatus.inProgress
-        ? Colors.blue
+        ? theme.info
         : shift.status == ShiftStatus.upcoming
-            ? Colors.orange
-            : Colors.grey;
+            ? theme.warning
+            : theme.secondaryText;
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.access_time, color: statusColor, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Current Shift',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: theme.primaryText.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.access_time, color: statusColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Current Shift',
+                style: theme.subtitle1.override(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  shift.status == ShiftStatus.inProgress
+                      ? 'In Progress'
+                      : shift.status == ShiftStatus.upcoming
+                          ? 'Upcoming'
+                          : 'Completed',
+                  style: theme.bodyText2.override(
+                    color: statusColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      shift.name,
+                      style: theme.title3.override(
                         fontWeight: FontWeight.bold,
                       ),
-                ),
-                const Spacer(),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    shift.status == ShiftStatus.inProgress
-                        ? 'In Progress'
-                        : shift.status == ShiftStatus.upcoming
-                            ? 'Upcoming'
-                            : 'Completed',
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
                     ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        shift.name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${shift.dayOfWeek} • ${shift.timeRange}',
+                      style: theme.bodyText2.override(
+                        color: theme.secondaryText,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${shift.dayOfWeek} • ${shift.timeRange}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -329,6 +410,7 @@ class _LatestNotificationsSectionState
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
     final notifications = widget.notifications;
     final notificationState = ref.watch(notificationListControllerProvider);
     final unreadCount = notificationState.unreadCount;
@@ -347,9 +429,9 @@ class _LatestNotificationsSectionState
               children: [
                 Text(
                   'Latest Notifications',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: theme.subtitle1.override(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 if (unreadCount > 0) ...[
                   const SizedBox(width: 8),
@@ -357,12 +439,12 @@ class _LatestNotificationsSectionState
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      color: theme.error,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       '$unreadCount',
-                      style: const TextStyle(
+                      style: theme.bodyText2.override(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -374,7 +456,12 @@ class _LatestNotificationsSectionState
             ),
             TextButton(
               onPressed: () => context.push(AppRoutePath.notifications),
-              child: const Text('View All'),
+              child: Text(
+                'View All',
+                style: theme.bodyText2.override(
+                  color: theme.primaryColor,
+                ),
+              ),
             ),
           ],
         ),
@@ -410,8 +497,8 @@ class _LatestNotificationsSectionState
                   height: 8,
                   decoration: BoxDecoration(
                     color: _currentPage == index
-                        ? Theme.of(context).primaryColor
-                        : Colors.grey[300],
+                        ? theme.primaryColor
+                        : theme.alternate,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -431,6 +518,7 @@ class _NotificationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
     final timeAgo = _getTimeAgo(notification.createdAt);
 
     IconData icon;
@@ -439,25 +527,25 @@ class _NotificationItem extends StatelessWidget {
     switch (notification.notificationType) {
       case NotificationType.leaveApproval:
         icon = Icons.check_circle_outline;
-        iconColor = Colors.green;
+        iconColor = theme.success;
         break;
       case NotificationType.leaveRejection:
         icon = Icons.cancel_outlined;
-        iconColor = Colors.red;
+        iconColor = theme.error;
         break;
       case NotificationType.attendanceReminder:
       case NotificationType.checkInReminder:
       case NotificationType.checkOutReminder:
         icon = Icons.access_time;
-        iconColor = Colors.orange;
+        iconColor = theme.warning;
         break;
       case NotificationType.systemAnnouncement:
         icon = Icons.campaign_outlined;
-        iconColor = Colors.purple;
+        iconColor = theme.tertiaryColor;
         break;
       default:
         icon = Icons.info_outline;
-        iconColor = Colors.blue;
+        iconColor = theme.primaryColor;
     }
 
     return Container(
@@ -502,10 +590,9 @@ class _NotificationItem extends StatelessWidget {
               Expanded(
                 child: Text(
                   notification.title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
+                  style: theme.bodyText1.override(
                     color: iconColor,
+                    fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -518,11 +605,9 @@ class _NotificationItem extends StatelessWidget {
             notification.message,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Colors.black87,
-              height: 1.4,
-            ),
+            style: theme.bodyText2.override(
+              color: theme.primaryText.withValues(alpha: 0.8),
+            ).copyWith(height: 1.4),
           ),
           const SizedBox(height: 12),
           Row(
@@ -530,14 +615,14 @@ class _NotificationItem extends StatelessWidget {
               Icon(
                 Icons.access_time,
                 size: 14,
-                color: Colors.grey[600],
+                color: theme.secondaryText,
               ),
               const SizedBox(width: 4),
               Text(
                 timeAgo,
-                style: TextStyle(
+                style: theme.bodyText2.override(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: theme.secondaryText,
                 ),
               ),
               if (!notification.isRead) ...[
@@ -546,7 +631,7 @@ class _NotificationItem extends StatelessWidget {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: Colors.red,
+                    color: theme.error,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -580,29 +665,37 @@ class _QuickActionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    
     final actions = [
       {
         'icon': Icons.check_circle_outline,
         'label': 'Check In/Out',
-        'color': Colors.blue,
+        'color': theme.primaryColor,
         'path': AppRoutePath.attendanceCheck,
       },
       {
         'icon': Icons.calendar_today_outlined,
         'label': 'Leave Request',
-        'color': Colors.purple,
+        'color': theme.tertiaryColor,
         'path': AppRoutePath.leavesCreate,
+      },
+      {
+        'icon': Icons.event_note,
+        'label': 'My Leaves',
+        'color': theme.success,
+        'path': AppRoutePath.leaves,
       },
       {
         'icon': Icons.access_time,
         'label': 'Overtime',
-        'color': Colors.orange,
+        'color': theme.warning,
         'path': AppRoutePath.overtimesCreate,
       },
       {
         'icon': Icons.schedule_outlined,
         'label': 'Schedule',
-        'color': Colors.green,
+        'color': theme.secondaryColor,
         'path': AppRoutePath.schedule,
       },
     ];
@@ -612,9 +705,9 @@ class _QuickActionsSection extends StatelessWidget {
       children: [
         Text(
           'Quick Actions',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: theme.subtitle1.override(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 12),
         GridView.builder(
@@ -629,32 +722,43 @@ class _QuickActionsSection extends StatelessWidget {
           itemCount: actions.length,
           itemBuilder: (context, index) {
             final action = actions[index];
+            final actionColor = action['color'] as Color;
+            
             return InkWell(
               onTap: () => context.push(action['path'] as String),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 decoration: BoxDecoration(
-                  color: (action['color'] as Color).withValues(alpha: 0.1),
+                  color: actionColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: (action['color'] as Color).withValues(alpha: 0.3),
+                    color: actionColor.withValues(alpha: 0.3),
+                    width: 1.5,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: actionColor.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       action['icon'] as IconData,
-                      color: action['color'] as Color,
+                      color: actionColor,
                       size: 32,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       action['label'] as String,
-                      style: TextStyle(
-                        color: action['color'] as Color,
+                      style: theme.bodyText2.override(
+                        color: actionColor,
                         fontWeight: FontWeight.w600,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),

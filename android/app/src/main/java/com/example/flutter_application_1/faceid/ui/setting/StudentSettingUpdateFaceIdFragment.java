@@ -1825,10 +1825,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
 
             float averageScore = sum / scores.size();
             float variance = calculateVariance(scores, averageScore);
-
-            Log.d(TAG, "Analysis complete: " + frameScores.size() + " frames analyzed");
-            Log.d(TAG, "Scores - Avg: " + averageScore + ", Min: " + min + ", Max: " + max + ", Variance: " + variance);
-
+            
             // Quality assessment
             // Relax variance threshold after liveness due to natural gaze recovery
             boolean isConsistent = variance < (livenessVerified ? 0.06f : 0.03f);

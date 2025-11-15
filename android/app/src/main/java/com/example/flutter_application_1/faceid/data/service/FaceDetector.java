@@ -144,11 +144,8 @@ public class FaceDetector {
                 try {
                     detectBitmap = Bitmap.createScaledBitmap(bitmap, newW, newH, true);
                     if (BuildConfig.DEBUG) {
-                        Log.d("DEBUG_FACE_DETECTOR", "Downscaled for detection to: " + newW + "x" + newH +
-                                " (scale=" + scaleForDetection + ")");
                     }
                 } catch (Exception e) {
-                    Log.w(TAG, "Fail    ed to create downscaled bitmap for detection, using original", e);
                     detectBitmap = bitmap;
                     scaleForDetection = 1.0f;
                 }
@@ -173,10 +170,6 @@ public class FaceDetector {
                     try {
                         retryBitmap = Bitmap.createScaledBitmap(detectBitmap, retryW, retryH, true);
                         retryScale = scaleForDetection * factor;
-                        if (BuildConfig.DEBUG) {
-                            Log.d("DEBUG_FACE_DETECTOR", "Retry downscale for detection: " + retryW + "x" + retryH +
-                                    " (retryScale=" + retryScale + ")");
-                        }
                         detections = runDetection(retryBitmap);
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, "Phát hiện " + detections.size() + " khuôn mặt (attempt#2)");
@@ -201,15 +194,12 @@ public class FaceDetector {
                         (int) Math.round(rectF.bottom * inverseScale)
                 );
 
-                Log.d(TAG, "Bounding box converted: " + boundingBox.toString());
 
                 // Ensure bounding box is within image bounds
                 boundingBox.left = Math.max(0, boundingBox.left);
                 boundingBox.top = Math.max(0, boundingBox.top);
                 boundingBox.right = Math.min(bitmap.getWidth(), boundingBox.right);
                 boundingBox.bottom = Math.min(bitmap.getHeight(), boundingBox.bottom);
-
-                Log.d(TAG, "Bounding box adjusted: " + boundingBox.toString());
 
                 // Skip invalid bounding boxes
                 if (boundingBox.width() <= 0 || boundingBox.height() <= 0) {

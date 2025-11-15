@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/routing/routes.dart';
 import '../providers/auth_providers.dart';
+import '../../../flutter_flow/flutter_flow.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
@@ -11,11 +12,35 @@ class SignInScreen extends ConsumerStatefulWidget {
   ConsumerState<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends ConsumerState<SignInScreen> {
+class _SignInScreenState extends ConsumerState<SignInScreen>
+    with TickerProviderStateMixin, AnimationControllerMixin<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Setup animations
+    setupAnimations({
+      'logoOnPageLoad': AnimationInfo(
+        trigger: AnimationTrigger.onPageLoad,
+        effects: FFAnimations.scaleIn(
+          delay: const Duration(milliseconds: 100),
+          duration: const Duration(milliseconds: 600),
+        ),
+      ),
+      'formOnPageLoad': AnimationInfo(
+        trigger: AnimationTrigger.onPageLoad,
+        effects: FFAnimations.fadeInSlideUp(
+          delay: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 600),
+        ),
+      ),
+    });
+  }
 
   @override
   void dispose() {
@@ -45,24 +70,20 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         context.go(AppRoutePath.home);
       } else if (next.isTemporaryPassword) {
         // Navigate to change password screen
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.errorMessage ?? 'Bạn cần đổi mật khẩu tạm'),
-            backgroundColor: Colors.orange,
-          ),
+        showSnackbar(
+          context,
+          next.errorMessage ?? 'Bạn cần đổi mật khẩu tạm',
         );
         // context.go('/change-password');
       } else if (next.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.errorMessage!),
-            backgroundColor: Colors.red,
-          ),
-        );
+        showSnackbar(context, next.errorMessage!);
       }
     });
 
+    final theme = FlutterFlowTheme.of(context);
+
     return Scaffold(
+      backgroundColor: theme.primaryBackground,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -74,17 +95,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo or App Name
-                  const Icon(
+                  Icon(
                     Icons.lock_outline,
                     size: 80,
-                    color: Color(0xFF3E63F4),
-                  ),
+                    color: theme.primaryColor,
+                  ).animateOnPageLoad(animationsMap['logoOnPageLoad']!),
                   const SizedBox(height: 24),
                   Text(
                     'Đăng nhập',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: theme.title1,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),
@@ -93,10 +112,24 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
+                    style: theme.bodyText1,
+                    decoration: InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(),
+                      labelStyle: theme.bodyText2,
+                      prefixIcon: Icon(Icons.email_outlined, color: theme.secondaryText),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: theme.alternate),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: theme.primaryColor, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: theme.secondaryBackground,
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -115,15 +148,30 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    style: theme.bodyText1,
                     decoration: InputDecoration(
                       labelText: 'Mật khẩu',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      border: const OutlineInputBorder(),
+                      labelStyle: theme.bodyText2,
+                      prefixIcon: Icon(Icons.lock_outline, color: theme.secondaryText),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: theme.alternate),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: theme.primaryColor, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: theme.secondaryBackground,
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
                               ? Icons.visibility_outlined
                               : Icons.visibility_off_outlined,
+                          color: theme.secondaryText,
                         ),
                         onPressed: () {
                           setState(() {
@@ -139,36 +187,36 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
                   // Login Button
-                  ElevatedButton(
+                  FFButton(
                     onPressed: loginState.isLoading ? null : _handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: const Color(0xFF3E63F4),
-                      foregroundColor: Colors.white,
+                    text: 'Đăng nhập',
+                    options: FFButtonOptions(
+                      width: double.infinity,
+                      height: 56,
+                      color: theme.primaryColor,
+                      disabledColor: theme.secondaryText,
+                      textStyle: theme.subtitle1.override(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      elevation: 2,
                     ),
-                    child: loginState.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : const Text(
-                            'Đăng nhập',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
                   ),
+                  
+                  if (loginState.isLoading)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: FFLoadingIndicator(
+                        size: 40,
+                        color: theme.primaryColor,
+                      ),
+                    ),
                 ],
-              ),
+              ).animateOnPageLoad(animationsMap['formOnPageLoad']!),
             ),
           ),
         ),
