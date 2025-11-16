@@ -42,8 +42,7 @@ public class FaceRegistrationStateManager {
      * Thread-safe state transition with confirmation logic
      */
     public void transitionTo(FaceRegistrationState newState, String customMessage) {
-        // Ghi log cho tất cả các lần chuyển trạng thái để debug
-        Log.d(TAG, "Đang yêu cầu chuyển trạng thái từ " + currentState.get() + " sang " + newState);
+        Log.d(TAG, "State transition request: " + currentState.get() + " → " + newState);
         
         // For critical states, transition immediately
         if (newState.isErrorState() || newState == FaceRegistrationState.SUCCESS || 
@@ -57,16 +56,10 @@ public class FaceRegistrationStateManager {
         // If the new state is the same as the pending state, increment counter
         if (newState == pendingState) {
             confirmationCounter++;
-            
-            // Thông báo quá trình đang chờ xác nhận
-            Log.d(TAG, "Đang xác nhận trạng thái " + newState + ": " + confirmationCounter + "/" + CONFIRMATION_THRESHOLD);
         } else {
             // Otherwise, reset the counter and set the new pending state
             pendingState = newState;
             confirmationCounter = 1;
-            
-            // Thông báo bắt đầu quá trình xác nhận mới
-            Log.d(TAG, "Bắt đầu xác nhận trạng thái mới: " + newState);
         }
 
         // If the confirmation threshold is met, perform the transition
@@ -87,13 +80,13 @@ public class FaceRegistrationStateManager {
 
         // Validate transition
         if (!isValidTransition(oldState, newState)) {
-            Log.w(TAG, "Invalid transition from " + oldState + " to " + newState);
+            Log.w(TAG, "Invalid state transition: " + oldState + " → " + newState);
             return false;
         }
 
         // Perform atomic state change
         if (currentState.compareAndSet(oldState, newState)) {
-            Log.d(TAG, "State transition: " + oldState + " → " + newState);
+            Log.d(TAG, "State changed: " + oldState + " → " + newState);
 
             // Cancel previous timeouts
             cancelTimeouts();
@@ -134,14 +127,19 @@ public class FaceRegistrationStateManager {
         // Một số transition logic cụ thể
         switch (from) {
             case INITIALIZING:
-                // Cho phép thêm một số trạng thái khác từ INITIALIZING để tránh UI bị kẹt
+                // Cho phép FACE_REAL từ INITIALIZING (có thể xảy ra nếu liveness callback bị chậm)
                 return to == FaceRegistrationState.READY || to.isErrorState() || 
                        to == FaceRegistrationState.NO_FACE || to == FaceRegistrationState.FACE_DETECTED ||
-                       to == FaceRegistrationState.MULTIPLE_FACES || to == FaceRegistrationState.FACE_OUT_OF_BOUNDS;
+                       to == FaceRegistrationState.MULTIPLE_FACES || to == FaceRegistrationState.FACE_OUT_OF_BOUNDS ||
+                       to == FaceRegistrationState.FACE_REAL || to == FaceRegistrationState.LIVENESS_CHALLENGE;
                 
             case READY:
                 // Cho phép chuyển sang LIVENESS_CHALLENGE từ READY
                 return true; // Cho phép tất cả các chuyển đổi từ READY
+            
+            case LIVENESS_CHALLENGE:
+                // From liveness challenge, can go to FACE_REAL or error states
+                return to == FaceRegistrationState.FACE_REAL || to.isErrorState();
                 
             case PROCESSING:
                 return to == FaceRegistrationState.SUCCESS || to.isErrorState();
@@ -207,7 +205,7 @@ public class FaceRegistrationStateManager {
     public void reset() {
         cancelTimeouts();
         currentState.set(FaceRegistrationState.INITIALIZING);
-        Log.d(TAG, "State manager reset");
+        Log.d(TAG, "State reset to INITIALIZING");
     }
     
     /**
@@ -216,6 +214,5 @@ public class FaceRegistrationStateManager {
     public void cleanup() {
         cancelTimeouts();
         listener = null;
-        Log.d(TAG, "State manager cleaned up");
     }
 }

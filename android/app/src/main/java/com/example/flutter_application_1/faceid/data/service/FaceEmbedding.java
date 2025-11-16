@@ -333,23 +333,16 @@ public class FaceEmbedding {
         if (interpreter != null) {
             try {
                 int inputTensorCount = interpreter.getInputTensorCount();
-                Log.d(TAG, "Input tensor count: " + inputTensorCount);
-
                 for (int i = 0; i < inputTensorCount; i++) {
                     int[] shape = interpreter.getInputTensor(i).shape();
                     String shapeStr = Arrays.toString(shape);
-                    Log.d(TAG, "Input tensor " + i + " shape: " + shapeStr);
-                    Log.d(TAG, "Input tensor " + i + " dataType: " + interpreter.getInputTensor(i).dataType());
                 }
 
                 int outputTensorCount = interpreter.getOutputTensorCount();
-                Log.d(TAG, "Output tensor count: " + outputTensorCount);
 
                 for (int i = 0; i < outputTensorCount; i++) {
                     int[] shape = interpreter.getOutputTensor(i).shape();
                     String shapeStr = Arrays.toString(shape);
-                    Log.d(TAG, "Output tensor " + i + " shape: " + shapeStr);
-                    Log.d(TAG, "Output tensor " + i + " dataType: " + interpreter.getOutputTensor(i).dataType());
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Error inspecting model: " + e.getMessage(), e);

@@ -101,12 +101,7 @@ public class FaceSpoofDetector {
         // Initialize model asynchronously
         executor.execute(() -> {
             try {
-                // Log asset information for debugging
-                logAssetsContent(context);
-
                 try {
-                    Log.d(TAG, "Loading model files...");
-
                     // Initialize TFLiteInterpreter with OnDevice-like options (CPU, 4 threads)
                     Interpreter.Options interpreterOptions = new Interpreter.Options();
                     try { interpreterOptions.setNumThreads(4); } catch (Throwable ignore) {}
@@ -115,9 +110,6 @@ public class FaceSpoofDetector {
                     // Load models from assets
                     MappedByteBuffer model1Buffer = FileUtil.loadMappedFile(context, MODEL_FILE_1);
                     MappedByteBuffer model2Buffer = FileUtil.loadMappedFile(context, MODEL_FILE_2);
-
-                    Log.d(TAG, "Model 1 loaded, size: " + model1Buffer.capacity() + " bytes");
-                    Log.d(TAG, "Model 2 loaded, size: " + model2Buffer.capacity() + " bytes");
 
                     // Create interpreters
                     firstModelInterpreter = new Interpreter(model1Buffer, interpreterOptions);
@@ -148,7 +140,6 @@ public class FaceSpoofDetector {
                             .add(new CastOp(DataType.FLOAT32))
                             .build();
 
-                    Log.d(TAG, "Models loaded successfully");
                     isInitialized = true;
                 } catch (Exception e) {
                     Log.e(TAG, "Error initializing TensorFlow Lite model: " + e.getMessage(), e);
@@ -177,27 +168,6 @@ public class FaceSpoofDetector {
         initLatch.await(timeoutMs, TimeUnit.MILLISECONDS);
     }
 
-    private void logAssetsContent(Context context) {
-        try {
-            String[] files = context.getAssets().list("");
-            Log.d(TAG, "Assets directory content: " + Arrays.toString(files));
-
-            // Check details about model files
-            for (String file : Objects.requireNonNull(files)) {
-                if (file.endsWith(".tflite")) {
-                    try {
-                        MappedByteBuffer buffer = FileUtil.loadMappedFile(context, file);
-                        Log.d(TAG, "Model file: " + file + ", size: " + buffer.capacity() + " bytes");
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error checking model file " + file + ": " + e.getMessage(), e);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Error listing assets directory: " + e.getMessage(), e);
-        }
-    }
-
     /**
      * Detect if a face is spoofed asynchronously with oval boundary validation
      *
@@ -212,7 +182,6 @@ public class FaceSpoofDetector {
                 // Ensure model is initialized
                 if (!isInitialized()) {
                     try {
-                        Log.d(TAG, "Waiting for model initialization...");
                         awaitInitialization(5000);
                     } catch (InterruptedException e) {
                         Log.e(TAG, "Model initialization interrupted", e);
@@ -244,13 +213,10 @@ public class FaceSpoofDetector {
 
         // If using mock detection or interpreter not initialized, always return not spoof
         if (useMockDetection || firstModelInterpreter == null || secondModelInterpreter == null || imageTensorProcessor == null) {
-            Log.d(TAG, "Using mock spoof detection (always return real face)");
             return new SpoofResult(false, 0.95f, System.currentTimeMillis() - startTime);
         }
 
         try {
-            Log.d(TAG, "Starting spoof detection with bounding box: " + faceRect.toString());
-
             // Validate face rect
             if (faceRect.width() <= 0 || faceRect.height() <= 0) {
                 Log.e(TAG, "Invalid face rect size: " + faceRect);
@@ -324,8 +290,6 @@ public class FaceSpoofDetector {
             boolean isSpoof = label != 1;
             float score = combined[label] / 2.0f;
 
-            Log.d(TAG, "Decision: label=" + label + " isSpoof=" + isSpoof + " score=" + score);
-
             long timeMillis = System.currentTimeMillis() - startTime;
             return new SpoofResult(isSpoof, score, timeMillis);
 
@@ -375,52 +339,6 @@ public class FaceSpoofDetector {
         }
 
         return exp;
-    }
-
-    private void logBitmapStats(Bitmap bmp, String tagSuffix) {
-        if (!DEBUG_SPOOF) return;
-        int w = bmp.getWidth();
-        int h = bmp.getHeight();
-        long sumR = 0, sumG = 0, sumB = 0;
-        for (int i = 0; i < w; i++) {
-            for (int j = 0; j < h; j++) {
-                int p = bmp.getPixel(i, j);
-                sumR += Color.red(p);
-                sumG += Color.green(p);
-                sumB += Color.blue(p);
-            }
-        }
-        float n = (float) (w * h);
-        Log.d(TAG, "CropStats(" + tagSuffix + ") meanRGB=" +
-                (sumR / n) + "," + (sumG / n) + "," + (sumB / n));
-    }
-
-    private float sumFloatBuffer(ByteBuffer buf) {
-        if (!DEBUG_SPOOF) return 0f;
-        ByteBuffer dup = buf.duplicate();
-        dup.rewind();
-        dup.order(java.nio.ByteOrder.nativeOrder());
-        int count = dup.remaining() / 4;
-        float sum = 0f;
-        for (int i = 0; i < count; i++) {
-            sum += dup.getFloat();
-        }
-        return sum;
-    }
-
-    private void saveBitmapToCache(Bitmap bmp, String name) {
-        if (!DEBUG_SPOOF) return;
-        try {
-            File cacheDir = new File(android.os.Environment.getExternalStorageDirectory(), "zentry_spoof_debug");
-            if (!cacheDir.exists()) cacheDir.mkdirs();
-            File out = new File(cacheDir, name);
-            try (FileOutputStream fos = new FileOutputStream(out)) {
-                bmp.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            }
-            Log.d(TAG, "Saved debug crop: " + out.getAbsolutePath());
-        } catch (Throwable t) {
-            Log.w(TAG, "Failed to save debug crop: " + t.getMessage());
-        }
     }
 
     /**

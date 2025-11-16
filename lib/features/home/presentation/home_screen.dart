@@ -675,14 +675,8 @@ class _QuickActionsSection extends StatelessWidget {
         'path': AppRoutePath.attendanceCheck,
       },
       {
-        'icon': Icons.calendar_today_outlined,
-        'label': 'Leave Request',
-        'color': theme.tertiaryColor,
-        'path': AppRoutePath.leavesCreate,
-      },
-      {
         'icon': Icons.event_note,
-        'label': 'My Leaves',
+        'label': 'Leaves',
         'color': theme.success,
         'path': AppRoutePath.leaves,
       },

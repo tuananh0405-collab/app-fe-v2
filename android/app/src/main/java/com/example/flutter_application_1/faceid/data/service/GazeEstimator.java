@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.util.Log;
 
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.gpu.CompatibilityList;
@@ -119,15 +118,11 @@ public class GazeEstimator {
     public GazeEstimator(Context context, GazeCallback callback) {
         this.callback = callback;
 
-        Log.d(TAG, "Starting GazeEstimator initialization...");
-
         // Initialize asynchronously
         executor.execute(() -> {
             try {
                 // Initialize output buffer
                 outputBuffer = new float[1][2]; // x,y gaze direction
-
-                Log.d(TAG, "Buffers initialized, loading TensorFlow Lite model...");
 
                 // Initialize TensorFlow Lite with the iTracker model
                 initializeTFLite(context);
@@ -135,16 +130,9 @@ public class GazeEstimator {
                 // Only set as initialized if interpreter is not null
                 isInitialized = (interpreter != null);
 
-                if (isInitialized) {
-                    Log.d(TAG, "Gaze estimator initialized successfully with model: " + MODEL_FILE);
-                } else {
-                    Log.w(TAG, "Gaze estimator initialization incomplete - interpreter is null");
-                }
             } catch (Exception e) {
-                Log.e(TAG, "Error initializing gaze estimator: " + e.getMessage(), e);
                 // Fallback to simulate mode if model loading fails
                 outputBuffer = new float[1][2];
-                Log.w(TAG, "Falling back to simulated mode due to initialization error");
             } finally {
                 initLatch.countDown();
             }
@@ -192,14 +180,11 @@ public class GazeEstimator {
      */
     private void inspectModel() {
         if (interpreter == null) {
-            Log.e(TAG, "Cannot inspect model: interpreter is null");
             return;
         }
 
         try {
             int inputTensorCount = interpreter.getInputTensorCount();
-            Log.d(TAG, "Input tensor count: " + inputTensorCount);
-
             for (int i = 0; i < inputTensorCount; i++) {
                 int[] shape = interpreter.getInputTensor(i).shape();
                 String shapeStr = Arrays.toString(shape);
@@ -212,64 +197,35 @@ public class GazeEstimator {
                 // Primary names from instruction.md specification
                 if (tensorName.equals("eye_left")) {
                     eyeLeftInputIndex = i;
-                    Log.d(TAG, "Found eye_left tensor at index " + i);
                 } else if (tensorName.equals("eye_right")) {
                     eyeRightInputIndex = i;
-                    Log.d(TAG, "Found eye_right tensor at index " + i);
                 } else if (tensorName.equals("face")) {
                     faceInputIndex = i;
-                    Log.d(TAG, "Found face tensor at index " + i);
                 } else if (tensorName.equals("face_mask")) {
                     faceMaskInputIndex = i;
-                    Log.d(TAG, "Found face_mask tensor at index " + i);
                 } 
                 // Fallback names (in case model uses different naming)
                 else if (tensorName.toLowerCase().contains("eye") && tensorName.toLowerCase().contains("left")) {
                     eyeLeftInputIndex = i;
-                    Log.d(TAG, "Found eye_left tensor (fallback) at index " + i + " with name: " + tensorName);
                 } else if (tensorName.toLowerCase().contains("eye") && tensorName.toLowerCase().contains("right")) {
                     eyeRightInputIndex = i;
-                    Log.d(TAG, "Found eye_right tensor (fallback) at index " + i + " with name: " + tensorName);
                 } else if (tensorName.toLowerCase().contains("face") && !tensorName.toLowerCase().contains("mask")) {
                     faceInputIndex = i;
-                    Log.d(TAG, "Found face tensor (fallback) at index " + i + " with name: " + tensorName);
                 } else if (tensorName.toLowerCase().contains("mask") || tensorName.toLowerCase().contains("grid")) {
                     faceMaskInputIndex = i;
-                    Log.d(TAG, "Found face_mask tensor (fallback) at index " + i + " with name: " + tensorName);
-                } else {
-                    Log.d(TAG, "Unknown tensor name: " + tensorName + " at index " + i);
                 }
-
-                Log.d(TAG, "Input tensor " + i + " name: " + tensorName + ", shape: " + shapeStr);
-                Log.d(TAG, "Input tensor " + i + " dataType: " + interpreter.getInputTensor(i).dataType());
             }
 
-            int outputTensorCount = interpreter.getOutputTensorCount();
-            Log.d(TAG, "Output tensor count: " + outputTensorCount);
-
-            for (int i = 0; i < outputTensorCount; i++) {
-                int[] shape = interpreter.getOutputTensor(i).shape();
-                String shapeStr = Arrays.toString(shape);
-                String tensorName = interpreter.getOutputTensor(i).name();
-                Log.d(TAG, "Output tensor " + i + " name: " + tensorName + ", shape: " + shapeStr);
-                Log.d(TAG, "Output tensor " + i + " dataType: " + interpreter.getOutputTensor(i).dataType());
-            }
-            
             // Validate that all required tensors were found
             boolean allTensorsFound = (eyeLeftInputIndex >= 0 && eyeRightInputIndex >= 0 && 
                                      faceInputIndex >= 0 && faceMaskInputIndex >= 0);
             
             if (!allTensorsFound) {
-                Log.e(TAG, String.format("Missing required input tensors! eyeLeft=%d, eyeRight=%d, face=%d, faceMask=%d",
-                    eyeLeftInputIndex, eyeRightInputIndex, faceInputIndex, faceMaskInputIndex));
-                Log.e(TAG, "Available tensor names: " + inputTensorIndices.keySet());
                 // Don't set initialized if tensors are missing
                 return;
             }
             
-            Log.d(TAG, "All required iTracker input tensors found successfully!");
         } catch (Exception e) {
-            Log.e(TAG, "Error inspecting model: " + e.getMessage(), e);
         }
     }
 
@@ -277,12 +233,8 @@ public class GazeEstimator {
      * Initialize TensorFlow Lite interpreter with the gaze model
      */
     private void initializeTFLite(Context context) throws IOException {
-        Log.d(TAG, "Loading model file from assets...");
-
         // Load model from assets
         ByteBuffer modelBuffer = loadModelFile(context);
-
-        Log.d(TAG, "Setting up interpreter options with TFLiteGpuDelegateManager...");
 
         // Set up interpreter options
         Interpreter.Options options = new Interpreter.Options();
@@ -290,9 +242,7 @@ public class GazeEstimator {
         try {
             // Try to use GPU delegate manager
             options = TFLiteGpuDelegateManager.getInstance().getInterpreterOptions();
-            Log.d(TAG, "Using GPU delegate manager for acceleration");
         } catch (Exception e) {
-            Log.w(TAG, "Could not use GPU delegate manager: " + e.getMessage());
             // If GPU delegate manager fails, try direct GPU delegate
             try {
                 CompatibilityList compatList = new CompatibilityList();
@@ -300,24 +250,16 @@ public class GazeEstimator {
                     GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
                     GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
                     options.addDelegate(gpuDelegate);
-                    Log.d(TAG, "Using direct GPU delegate for acceleration");
                 } else {
                     options.setNumThreads(4); // Use 4 threads on CPU
-                    Log.d(TAG, "Using CPU for model inference with 4 threads");
                 }
             } catch (Exception ex) {
-                Log.w(TAG, "Could not use GPU directly: " + ex.getMessage());
                 options.setNumThreads(4); // Use 4 threads on CPU
-                Log.d(TAG, "Falling back to CPU with 4 threads");
             }
         }
 
-        Log.d(TAG, "Creating TensorFlow Lite interpreter...");
-
         // Create the interpreter
         interpreter = new Interpreter(modelBuffer, options);
-
-        Log.d(TAG, "TensorFlow Lite interpreter initialized successfully");
 
         // Inspect model structure
         inspectModel();
@@ -327,14 +269,10 @@ public class GazeEstimator {
      * Load the TensorFlow Lite model file from assets
      */
     private ByteBuffer loadModelFile(Context context) throws IOException {
-        Log.d(TAG, "Attempting to load model: " + MODEL_FILE + " from assets");
-
         // Get file descriptor for the model file in assets
         try (java.io.InputStream is = context.getAssets().open(MODEL_FILE)) {
             // Get size of the model file
             int modelSize = is.available();
-            Log.d(TAG, "Model file size: " + modelSize + " bytes");
-
             ByteBuffer modelBuffer = ByteBuffer.allocateDirect(modelSize);
             modelBuffer.order(ByteOrder.nativeOrder());
 
@@ -347,11 +285,8 @@ public class GazeEstimator {
                 totalRead += bytesRead;
             }
             modelBuffer.rewind();
-
-            Log.d(TAG, "Model file loaded successfully: " + MODEL_FILE + " (" + totalRead + "/" + modelSize + " bytes read)");
             return modelBuffer;
         } catch (IOException e) {
-            Log.e(TAG, "Error loading model file from assets: " + MODEL_FILE, e);
             throw e;
         }
     }
@@ -367,19 +302,16 @@ public class GazeEstimator {
     public boolean estimateGaze(Bitmap faceImage, List<PointF> landmarks, float[] headPose) {
         try {
             if (!isInitialized) {
-                Log.w(TAG, "TensorFlow Lite interpreter not initialized, falling back to simulation");
                 return simulateGazeEstimation(headPose);
             }
 
             // Check if input image and landmarks are valid
             if (faceImage == null || landmarks == null || landmarks.size() < 468) {
-                Log.w(TAG, "Face image or landmarks are invalid, falling back to simulation");
                 return simulateGazeEstimation(headPose);
             }
 
             // Check if interpreter is null
             if (interpreter == null) {
-                Log.w(TAG, "TensorFlow Lite interpreter is null, falling back to simulation");
                 return simulateGazeEstimation(headPose);
             }
 
@@ -411,57 +343,25 @@ public class GazeEstimator {
                 gazeX = gazeResult[0];
                 gazeY = gazeResult[1];
 
-                // Calculate delta for debugging
-                float deltaX = gazeX - prevGazeX;
-                float deltaY = gazeY - prevGazeY;
-                float deltaMagnitude = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                
-                // Log inference results and delta
-                Log.d(TAG, String.format("iTracker inference SUCCESS: gaze(%.3f, %.3f), Δ(%.3f, %.3f), |Δ|:%.3f", 
-                      gazeX, gazeY, deltaX, deltaY, deltaMagnitude));
-
-                Log.d(TAG, String.format("PRE-PROCESSING: raw_model_output=(%.4f, %.4f)", gazeX, gazeY));
-
                 // Apply bias correction BEFORE any other processing
                 float rawGazeX = gazeX;
                 float rawGazeY = gazeY;
                 gazeX = gazeX - gazeXBias;  // Center around 0
                 gazeY = gazeY - gazeYBias;
                 
-                Log.d(TAG, String.format("BIAS CORRECTION: raw=(%.4f,%.4f) → corrected=(%.4f,%.4f), bias=(%.4f,%.4f)", 
-                      rawGazeX, rawGazeY, gazeX, gazeY, gazeXBias, gazeYBias));
-
                 // Apply front camera mirroring if needed
                 if (frontCameraMirrored) {
                     gazeX = -gazeX;
-                    Log.d(TAG, "Applied front camera mirroring: gazeX = " + gazeX);
                 }
 
                 // Adjust gaze based on head pose
                 if (headPose != null && headPose.length >= 3) {
-                    float preAdjustX = gazeX, preAdjustY = gazeY;
                     adjustGazeWithHeadPose(headPose);
-                    Log.d(TAG, String.format("Head pose adjustment: (%.3f,%.3f) → (%.3f,%.3f)", 
-                          preAdjustX, preAdjustY, gazeX, gazeY));
                 }
 
                 // Smooth gaze with EMA to stabilize thresholds
-                float preEmaX = emaGazeX, preEmaY = emaGazeY;
                 emaGazeX = emaAlpha * gazeX + (1 - emaAlpha) * emaGazeX;
                 emaGazeY = emaAlpha * gazeY + (1 - emaAlpha) * emaGazeY;
-                
-                // *** GAZE DIRECTION CLASSIFICATION DEBUG ***
-                String gazeDirection = getGazeDirection(0.08f);
-                String emaGazeDirection = getGazeDirectionFromValues(emaGazeX, emaGazeY, 0.08f);
-                
-                Log.i(TAG, "=== GAZE DIRECTION DEBUG ===");
-                Log.i(TAG, String.format("Raw gaze: (%.4f, %.4f) → Direction: %s", gazeX, gazeY, gazeDirection));
-                Log.i(TAG, String.format("EMA smoothed: (%.4f, %.4f) → Direction: %s", emaGazeX, emaGazeY, emaGazeDirection));
-                Log.i(TAG, String.format("EMA change: (%.4f,%.4f) → (%.4f,%.4f)", preEmaX, preEmaY, emaGazeX, emaGazeY));
-                Log.i(TAG, String.format("Threshold τ=0.08: LEFT≤%.3f, CENTER<%.3f, RIGHT≥%.3f", -0.08f, 0.08f, 0.08f));
-                Log.i(TAG, String.format("Classification logic: gazeX=%.4f → %s", gazeX, 
-                      (gazeX >= 0.08f) ? "RIGHT" : (gazeX <= -0.08f) ? "LEFT" : "CENTER"));
-                Log.i(TAG, "============================");
 
                 // Update gaze history
                 updateGazeHistory();
@@ -469,15 +369,8 @@ public class GazeEstimator {
                 // Check if looking away from the screen
                 checkLookingAway();
 
-                // Log the result with direction classification
-                String currentDirection = getGazeDirectionFromValues(emaGazeX, emaGazeY, 0.08f);
-                Log.i(TAG, String.format("FINAL RESULT: Direction=%s, EMA=(%.3f,%.3f), LookingAtScreen=%b", 
-                      currentDirection, emaGazeX, emaGazeY, isLookingAtScreen));
-
                 // Notify callback if available (use smoothed values)
                 if (callback != null) {
-                    Log.d(TAG, String.format("Sending to callback: gaze=(%.3f,%.3f), direction=%s, lookingAtScreen=%b", 
-                          emaGazeX, emaGazeY, currentDirection, isLookingAtScreen));
                     callback.onGazeUpdate(emaGazeX, emaGazeY, isLookingAtScreen);
                     callback.onLookingAway(isLookingAway);
                 }
@@ -489,13 +382,10 @@ public class GazeEstimator {
 
                 return true;
             } else {
-                Log.w(TAG, "iTracker model inference FAILED - runGaze() returned null or invalid result");
-                Log.w(TAG, "Falling back to head pose simulation...");
                 return simulateGazeEstimation(headPose);
             }
 
         } catch (Exception e) {
-            Log.e(TAG, "Error during model inference", e);
             // Fall back to simulation if model inference fails
             return simulateGazeEstimation(headPose);
         }
@@ -506,8 +396,6 @@ public class GazeEstimator {
      * HEAD DIRECTION (LEFT/RIGHT) should be handled by HeadPoseEstimation class
      */
     public boolean estimateGaze(Bitmap leftEyeImage, Bitmap rightEyeImage, float[] headPose) {
-        Log.d(TAG, "GazeEstimator: Detecting if user is looking AT CAMERA (not direction)");
-        
         if (headPose != null && headPose.length >= 3) {
             float pitch = headPose[0];
             float roll = headPose[1]; 
@@ -533,15 +421,8 @@ public class GazeEstimator {
             emaGazeX = emaAlpha * gazeX + (1 - emaAlpha) * emaGazeX;
             emaGazeY = emaAlpha * gazeY + (1 - emaAlpha) * emaGazeY;
             
-            Log.i(TAG, "=== GAZE CAMERA DETECTION ===");
-            Log.i(TAG, String.format("Head pose: pitch=%.1f°, yaw=%.1f°, roll=%.1f°", pitch, yaw, roll));
-            Log.i(TAG, String.format("Looking at camera: %b", lookingAtCamera));
-            Log.i(TAG, String.format("Looking at screen: %b", isLookingAtScreen));
-            Log.i(TAG, "==============================");
-            
             // Notify callback
             if (callback != null) {
-                Log.d(TAG, String.format("Sending camera detection result: lookingAtCamera=%b", lookingAtCamera));
                 callback.onGazeUpdate(emaGazeX, emaGazeY, isLookingAtScreen);
                 callback.onLookingAway(isLookingAway);
             }
@@ -549,7 +430,6 @@ public class GazeEstimator {
             return true;
         }
         
-        Log.w(TAG, "No head pose data for camera detection");
         return false;
     }
     
@@ -568,15 +448,7 @@ public class GazeEstimator {
         // Eyes should be open and visible
         boolean eyesOpen = (leftEye != null && rightEye != null);
         
-        // Additional checks could include:
-        // - Eye aspect ratio analysis
-        // - Pupil detection
-        // - Iris center analysis
-        
         boolean lookingAtCamera = headFacingForward && eyesOpen;
-        
-        Log.d(TAG, String.format("Camera detection: headForward=%b (yaw=%.1f, pitch=%.1f), eyesOpen=%b → result=%b", 
-              headFacingForward, yaw, pitch, eyesOpen, lookingAtCamera));
               
         return lookingAtCamera;
     }
@@ -714,13 +586,6 @@ public class GazeEstimator {
      */
     private float[] runGaze(Bitmap eyeLeft64, Bitmap eyeRight64, Bitmap face64, float[] faceGrid625) {
         try {
-            // Log input validation
-            Log.d(TAG, String.format("runGaze inputs: eyeLeft=%dx%d, eyeRight=%dx%d, face=%dx%d, faceGrid.length=%d",
-                eyeLeft64.getWidth(), eyeLeft64.getHeight(),
-                eyeRight64.getWidth(), eyeRight64.getHeight(), 
-                face64.getWidth(), face64.getHeight(),
-                faceGrid625.length));
-                
             // Convert bitmaps to input tensors (RGB [0..1], NHWC format)
             ByteBuffer inLeft = toNHWCFloat32(eyeLeft64);
             ByteBuffer inRight = toNHWCFloat32(eyeRight64);
@@ -736,8 +601,6 @@ public class GazeEstimator {
             // Validate tensor indices are found
             if (eyeLeftInputIndex < 0 || eyeRightInputIndex < 0 || 
                 faceInputIndex < 0 || faceMaskInputIndex < 0) {
-                Log.e(TAG, String.format("Missing tensor indices: eyeLeft=%d, eyeRight=%d, face=%d, faceMask=%d",
-                    eyeLeftInputIndex, eyeRightInputIndex, faceInputIndex, faceMaskInputIndex));
                 return null;
             }
 
@@ -750,9 +613,6 @@ public class GazeEstimator {
             inputs[faceInputIndex] = inFace;       // face: [1,64,64,3]
             inputs[faceMaskInputIndex] = inGrid;   // face_mask: [1,625]
             
-            Log.d(TAG, String.format("Mapped inputs: eyeLeft→%d, eyeRight→%d, face→%d, faceMask→%d",
-                eyeLeftInputIndex, eyeRightInputIndex, faceInputIndex, faceMaskInputIndex));
-
             // Prepare outputs
             Map<Integer, Object> outputs = new HashMap<>();
             outputs.put(0, outputBuffer);
@@ -762,15 +622,14 @@ public class GazeEstimator {
             
             // Log output for debugging
             float[] result = outputBuffer[0];
-            Log.d(TAG, String.format("Model output: gaze_x=%.4f, gaze_y=%.4f", result[0], result[1]));
             
             return result; // [gaze_x, gaze_y]
             
         } catch (Exception e) {
-            Log.e(TAG, "Error running gaze inference: " + e.getMessage(), e);
             return null;
         }
     }
+
     /**
      * Simulate gaze estimation when model inference is not possible
      */
@@ -801,25 +660,14 @@ public class GazeEstimator {
             // Check if looking away from the screen
             checkLookingAway();
 
-            // Log the simulation result with direction
-            String simDirection = getGazeDirectionFromValues(gazeX, gazeY, 0.08f);
-            Log.w(TAG, "=== SIMULATION MODE DEBUG ===");
-            Log.w(TAG, String.format("Simulated gaze: (%.3f, %.3f) → Direction: %s", gazeX, gazeY, simDirection));
-            Log.w(TAG, String.format("Head pose: %s", headPose != null ? 
-                  String.format("[%.1f, %.1f, %.1f]", headPose[0], headPose[1], headPose[2]) : "null"));
-            Log.w(TAG, String.format("Looking at screen: %b", isLookingAtScreen));
-            Log.w(TAG, "==============================");
-
             // Notify callback if available
             if (callback != null) {
-                Log.d(TAG, String.format("Sending simulated data to callback: direction=%s", simDirection));
                 callback.onGazeUpdate(gazeX, gazeY, isLookingAtScreen);
                 callback.onLookingAway(isLookingAway);
             }
 
             return true;
         } catch (Exception e) {
-            Log.e(TAG, "Error during gaze simulation", e);
             return false;
         }
     }
@@ -894,7 +742,6 @@ public class GazeEstimator {
                 if (callback != null) {
                     callback.onLookingAway(true);
                 }
-                Log.d(TAG, "User is now looking away from screen");
             }
         } else {
             lookingAwayFrames = 0;
@@ -906,7 +753,6 @@ public class GazeEstimator {
                 if (callback != null) {
                     callback.onLookingAway(false);
                 }
-                Log.d(TAG, "User is now looking at screen");
             }
         }
 
@@ -980,31 +826,13 @@ public class GazeEstimator {
                faceInputIndex >= 0 && faceMaskInputIndex >= 0;
     }
     
-    /**
-     * Get information about the loaded model
-     * @return String containing model info
-     */
-    public String getModelInfo() {
-        if (!isInitialized || interpreter == null) {
-            return "Model not initialized";
-        }
-        
-        return String.format("Model: %s, Input tensors: %d, Output tensors: %d, " +
-                           "Tensor indices - eyeLeft:%d, eyeRight:%d, face:%d, faceMask:%d",
-                           MODEL_FILE, 
-                           interpreter.getInputTensorCount(),
-                           interpreter.getOutputTensorCount(),
-                           eyeLeftInputIndex, eyeRightInputIndex, 
-                           faceInputIndex, faceMaskInputIndex);
-    }
-    
+   
     /**
      * Test model inference with dummy data (for debugging)
      * @return true if model can run inference successfully
      */
     public boolean testModelInference() {
         if (!isModelReady()) {
-            Log.w(TAG, "Model not ready for testing");
             return false;
         }
         
@@ -1020,7 +848,6 @@ public class GazeEstimator {
                 dummyFaceGrid[i] = (i < 300) ? 1.0f : 0.0f; // Half filled
             }
             
-            Log.d(TAG, "Testing iTracker model with dummy data...");
             float[] result = runGaze(dummyEyeLeft, dummyEyeRight, dummyFace, dummyFaceGrid);
             
             // Cleanup
@@ -1029,186 +856,16 @@ public class GazeEstimator {
             dummyFace.recycle();
             
             if (result != null && result.length == 2) {
-                Log.d(TAG, String.format("Model test PASSED: output=(%.3f, %.3f)", result[0], result[1]));
                 return true;
             } else {
-                Log.e(TAG, "Model test FAILED: invalid output");
                 return false;
             }
             
         } catch (Exception e) {
-            Log.e(TAG, "Model test FAILED with exception: " + e.getMessage(), e);
             return false;
         }
     }
     
-    /**
-     * Log current gaze state for debugging (call this manually when needed)
-     */
-    public void logCurrentState() {
-        Log.i(TAG, "=== CURRENT GAZE STATE ===");
-        Log.i(TAG, "Model ready: " + isModelReady());
-        Log.i(TAG, "Initialized: " + isInitialized);
-        Log.i(TAG, "Current raw gaze: (" + gazeX + ", " + gazeY + ")");
-        Log.i(TAG, "Current EMA gaze: (" + emaGazeX + ", " + emaGazeY + ")");
-        Log.i(TAG, "Current direction (raw): " + getGazeDirection());
-        Log.i(TAG, "Current direction (EMA): " + getGazeDirectionFromValues(emaGazeX, emaGazeY, 0.08f));
-        Log.i(TAG, "Looking at screen: " + isLookingAtScreen);
-        Log.i(TAG, "Looking away: " + isLookingAway);
-        Log.i(TAG, "Front camera mirrored: " + frontCameraMirrored);
-        Log.i(TAG, "EMA alpha: " + emaAlpha);
-        Log.i(TAG, "Head pose weight: " + headPoseWeight);
-        if (isModelReady()) {
-            Log.i(TAG, getModelInfo());
-        }
-        Log.i(TAG, "==========================");
-    }
-
-    /**
-     * Check if the user is looking away from the screen
-     */
-    public boolean isLookingAway() {
-        return isLookingAway;
-    }
-
-    /**
-     * Check if the user is looking at the screen
-     */
-    public boolean isLookingAtScreen() {
-        return isLookingAtScreen;
-    }
-
-    /**
-     * Check if the gaze position is stable (not moving much)
-     */
-    public boolean isGazeStable() {
-        // Calculate standard deviation of gaze history
-        float mean = 0;
-        for (float value : gazeHistory) {
-            mean += value;
-        }
-        mean /= gazeHistory.length;
-
-        float variance = 0;
-        for (float value : gazeHistory) {
-            variance += (value - mean) * (value - mean);
-        }
-        variance /= gazeHistory.length;
-
-        float stdDev = (float) Math.sqrt(variance);
-
-        // Gaze is stable if standard deviation is low
-        return stdDev < 0.1f;
-    }
-
-    /**
-     * Create a synthetic face image by combining eye regions
-     * This is a workaround for legacy method when full face image is not available
-     */
-    private Bitmap createSyntheticFaceFromEyes(Bitmap leftEye, Bitmap rightEye) {
-        if (leftEye == null || rightEye == null) {
-            return null;
-        }
-        
-        try {
-            // Create a 64x64 face image (model input size)
-            Bitmap syntheticFace = Bitmap.createBitmap(INPUT_SIZE, INPUT_SIZE, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(syntheticFace);
-            
-            // Fill with a neutral gray background
-            canvas.drawColor(0xFF808080); // Gray background
-            
-            // Scale eye regions to fit in face image
-            int eyeSize = INPUT_SIZE / 4; // Each eye takes 1/4 of face width
-            
-            // Position eyes in typical face locations (CORRECTED: swap left/right for camera coordinate)
-            int leftEyeX = 3 * INPUT_SIZE / 4 - eyeSize / 2;  // Left eye at 3/4 position (was 1/4)
-            int rightEyeX = INPUT_SIZE / 4 - eyeSize / 2; // Right eye at 1/4 position (was 3/4)
-            int eyeY = INPUT_SIZE / 3 - eyeSize / 2; // Eyes at 1/3 height
-            
-            // Draw scaled eye regions (SWAPPED to correct coordinate system)
-            Bitmap scaledLeftEye = Bitmap.createScaledBitmap(rightEye, eyeSize, eyeSize, true);  // Use rightEye for leftEye position
-            Bitmap scaledRightEye = Bitmap.createScaledBitmap(leftEye, eyeSize, eyeSize, true);  // Use leftEye for rightEye position
-            
-            canvas.drawBitmap(scaledLeftEye, leftEyeX, eyeY, null);
-            canvas.drawBitmap(scaledRightEye, rightEyeX, eyeY, null);
-            
-            // Clean up scaled bitmaps
-            scaledLeftEye.recycle();
-            scaledRightEye.recycle();
-            
-            Log.d(TAG, String.format("Synthetic face created: leftEyeX=%d, rightEyeX=%d, eyeY=%d (SWAPPED coordinates)", 
-                  leftEyeX, rightEyeX, eyeY));
-            Log.d(TAG, "Created synthetic face image from eye regions: " + INPUT_SIZE + "x" + INPUT_SIZE);
-            return syntheticFace;
-            
-        } catch (Exception e) {
-            Log.e(TAG, "Error creating synthetic face image: " + e.getMessage());
-            return null;
-        }
-    }
-    
-    /**
-     * Create dummy landmarks for synthetic face image
-     * Provides basic MediaPipe-compatible landmark positions
-     */
-    private List<PointF> createDummyLandmarksForEyes(int faceWidth, int faceHeight) {
-        List<PointF> landmarks = new ArrayList<>();
-        
-        // Create minimal set of 468 landmarks required by MediaPipe
-        // Most will be dummy values, but eye landmarks should be reasonably positioned
-        
-        float centerX = faceWidth / 2.0f;
-        float centerY = faceHeight / 2.0f;
-        float eyeY = faceHeight / 3.0f;
-        float leftEyeX = faceWidth / 4.0f;
-        float rightEyeX = 3 * faceWidth / 4.0f;
-        
-        for (int i = 0; i < 468; i++) {
-            PointF point;
-            
-            // Eye landmarks - use reasonable positions
-            if (isLeftEyeLandmark(i)) {
-                point = new PointF(leftEyeX + (float)(Math.random() * 20 - 10), eyeY + (float)(Math.random() * 10 - 5));
-            } else if (isRightEyeLandmark(i)) {
-                point = new PointF(rightEyeX + (float)(Math.random() * 20 - 10), eyeY + (float)(Math.random() * 10 - 5));
-            } else {
-                // Other landmarks - place around face perimeter
-                double angle = 2 * Math.PI * i / 468.0;
-                float radius = Math.min(faceWidth, faceHeight) * 0.4f;
-                point = new PointF(
-                    centerX + radius * (float)Math.cos(angle),
-                    centerY + radius * (float)Math.sin(angle)
-                );
-            }
-            
-            landmarks.add(point);
-        }
-        
-        Log.d(TAG, "Created " + landmarks.size() + " dummy landmarks for synthetic face");
-        return landmarks;
-    }
-    
-    /**
-     * Check if landmark index corresponds to left eye region
-     */
-    private boolean isLeftEyeLandmark(int index) {
-        // MediaPipe left eye landmarks (approximate range)
-        return (index >= 33 && index <= 41) || 
-               (index >= 130 && index <= 145) ||
-               (index >= 157 && index <= 163);
-    }
-    
-    /**
-     * Check if landmark index corresponds to right eye region  
-     */
-    private boolean isRightEyeLandmark(int index) {
-        // MediaPipe right eye landmarks (approximate range)
-        return (index >= 362 && index <= 374) ||
-               (index >= 385 && index <= 398) ||
-               (index >= 263 && index <= 269);
-    }
-
     /**
      * Calibrate the gaze estimator by having user look straight ahead
      * Call this when user is looking straight at camera
@@ -1218,16 +875,11 @@ public class GazeEstimator {
             calibrationGazeX += emaGazeX;
             calibrationSamples++;
             
-            Log.d(TAG, String.format("Calibration sample %d/%d: gazeX=%.4f", 
-                  calibrationSamples, REQUIRED_CALIBRATION_SAMPLES, emaGazeX));
-            
             if (calibrationSamples >= REQUIRED_CALIBRATION_SAMPLES) {
                 // Calculate average as new bias
                 float avgGazeX = calibrationGazeX / REQUIRED_CALIBRATION_SAMPLES;
                 gazeXBias = avgGazeX;
                 isCalibrated = true;
-                
-                Log.i(TAG, String.format("CALIBRATION COMPLETE: New gazeX bias = %.4f", gazeXBias));
                 
                 // Reset for next calibration
                 calibrationGazeX = 0.0f;
@@ -1244,9 +896,8 @@ public class GazeEstimator {
         calibrationGazeX = 0.0f;
         calibrationSamples = 0;
         gazeXBias = 0.25f; // Reset to default
-        Log.i(TAG, "Calibration reset to defaults");
     }
-    
+
     /**
      * Check if calibrated
      */
@@ -1262,23 +913,14 @@ public class GazeEstimator {
             if (interpreter != null) {
                 interpreter.close();
                 interpreter = null;
-                Log.d(TAG, "TensorFlow Lite interpreter closed");
-            } else {
-                Log.d(TAG, "No TensorFlow Lite interpreter to close (was null)");
             }
 
-            // Note: We don't close the GPU delegate here because it's managed by TFLiteGpuDelegateManager
-            // The delegate will be closed when the application exits or when the manager is explicitly closed
-
-            Log.d(TAG, "GazeEstimator resources released");
         } catch (Exception e) {
-            Log.e(TAG, "Error closing GazeEstimator resources: " + e.getMessage(), e);
         }
     }
 
-
 }
 
-    
+
 
 

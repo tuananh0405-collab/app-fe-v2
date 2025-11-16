@@ -49,7 +49,6 @@ public class ModelRetryManager {
         
         for (int attempt = 0; attempt <= customMaxRetries; attempt++) {
             try {
-                Log.d(TAG, "Executing operation, attempt " + (attempt + 1) + "/" + (customMaxRetries + 1));
                 return operation.get();
                 
             } catch (Exception e) {

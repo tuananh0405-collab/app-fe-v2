@@ -116,7 +116,6 @@ public class FaceDetector {
 
             try {
                 int pixel = bitmap.getPixel(0, 0);
-                Log.d("DEBUG_FACE_DETECTOR", "First pixel sample: " + pixel);
             } catch (Exception e) {
                 Log.e("DEBUG_FACE_DETECTOR", "Bitmap corrupted or invalid", e);
             }

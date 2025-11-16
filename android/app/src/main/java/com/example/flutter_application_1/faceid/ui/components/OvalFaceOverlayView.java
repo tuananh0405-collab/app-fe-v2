@@ -300,12 +300,7 @@ public class OvalFaceOverlayView extends View {
         );
         boolean isWithinEllipse = ellipseValue <= ELLIPSE_TOLERANCE;
         
-        // Debug logging
-        Log.d(TAG, "updateFacePosition: ellipseValue=" + String.format("%.4f", ellipseValue) + 
-              ", widthRatio=" + String.format("%.4f", widthRatio) + ", heightRatio=" + String.format("%.4f", heightRatio) + 
-              ", xOffset=" + String.format("%.4f", xOffset) + ", yOffset=" + String.format("%.4f", yOffset) +
-              ", isWithinEllipse=" + isWithinEllipse + ", isGoodSize=" + isGoodSize + ", isCentered=" + isCentered);
-        
+     
         // Determine guidance message - Simplified logic
         if (!isWithinEllipse) {
             if (faceCenterX < ovalCenterX - a * GUIDANCE_TOLERANCE) {
@@ -334,9 +329,7 @@ public class OvalFaceOverlayView extends View {
         
         // Simplified good position check - if face is within ellipse and good size, it's good
         isGoodPosition = isWithinEllipse && isGoodSize;
-        
-        Log.d(TAG, "updateFacePosition: final result=" + isGoodPosition + ", guidance=" + positionGuidance);
-        
+                
         invalidate();
         return isGoodPosition;
     }

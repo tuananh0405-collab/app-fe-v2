@@ -57,11 +57,7 @@ public final class CoordinateMapper {
                                         boolean isPreviewMirrored, boolean isBitmapMirrored) {
         boolean effectiveMirrorX = isPreviewMirrored ^ isBitmapMirrored;
         updateMapping(viewWidth, viewHeight, bitmapWidth, bitmapHeight, effectiveMirrorX);
-
-            Log.d(TAG, "updateMappingWithPolicy: previewMirrored=" + isPreviewMirrored +
-                    ", bitmapMirrored=" + isBitmapMirrored + ", effectiveMirrorX=" + effectiveMirrorX);
-
-    }
+ }
 
     public Mapping getMapping() { return current.get(); }
 

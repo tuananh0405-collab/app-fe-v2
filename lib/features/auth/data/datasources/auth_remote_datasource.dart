@@ -85,7 +85,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String confirmPassword,
   }) async {
     try {
-      final response = await dio.post(
+      final response = await dio.put(
         '/auth/me/change-temporary-password',
         data: {
           'current_password': currentPassword,

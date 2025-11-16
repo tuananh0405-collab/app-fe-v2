@@ -159,11 +159,8 @@ public class FaceIdSuccessActivity extends AppCompatActivity {
         if (userId != null) {
             flutterIntent.putExtra("user_id", userId);
         }
-        if (userName != null) {
-            flutterIntent.putExtra("user_name", userName);
-        }
-        
-        Log.d(TAG, "📤 Sending success data to Flutter - Action: " + action + ", User: " + userName);
+
+        Log.d(TAG, "📤 Sending success data to Flutter - Action: " + action + ", User: " + userId);
         startActivity(flutterIntent);
     }
     

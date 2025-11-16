@@ -1,13 +1,10 @@
 package com.example.flutter_application_1.faceid.data.service;
 
-import static androidx.core.content.ContentProviderCompat.requireContext;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -113,9 +110,7 @@ public class FaceIdService {
             try {
                 this.faceDetector = retryManager.executeWithRetry(() -> new FaceDetector(context));
                 modelLoadLatch.countDown();
-                Log.d(TAG, "FaceDetector initialized");
             } catch (ModelRetryManager.ModelRetryException e) {
-                Log.e(TAG, "Error initializing FaceDetector", e);
                 errorHandler.handleModelInitializationError(e, "FaceDetector");
                 modelLoadLatch.countDown();
             }
@@ -126,9 +121,7 @@ public class FaceIdService {
             try {
                 this.faceEmbedding = retryManager.executeWithRetry(() -> new FaceEmbedding(context));
                 modelLoadLatch.countDown();
-                Log.d(TAG, "FaceEmbedding initialized");
             } catch (ModelRetryManager.ModelRetryException e) {
-                Log.e(TAG, "Error initializing FaceEmbedding", e);
                 errorHandler.handleModelInitializationError(e, "FaceEmbedding");
                 modelLoadLatch.countDown();
             }
@@ -139,9 +132,7 @@ public class FaceIdService {
             try {
                 this.faceSpoofDetector = retryManager.executeWithRetry(() -> new FaceSpoofDetector(context));
                 modelLoadLatch.countDown();
-                Log.d(TAG, "FaceSpoofDetector initialized");
             } catch (ModelRetryManager.ModelRetryException e) {
-                Log.e(TAG, "Error initializing FaceSpoofDetector", e);
                 errorHandler.handleModelInitializationError(e, "FaceSpoofDetector");
                 modelLoadLatch.countDown();
             }
@@ -155,9 +146,7 @@ public class FaceIdService {
                 this.gazeEstimator.setFrontCameraMirrored(true);
                 this.gazeEstimator.setHeadPoseWeight(0.2f);
                 modelLoadLatch.countDown();
-                Log.d(TAG, "GazeEstimator initialized");
             } catch (ModelRetryManager.ModelRetryException e) {
-                Log.e(TAG, "Error initializing GazeEstimator", e);
                 errorHandler.handleModelInitializationError(e, "GazeEstimator");
                 modelLoadLatch.countDown();
             }
@@ -168,9 +157,7 @@ public class FaceIdService {
             try {
                 this.mediaPipeFaceLandmarkExtractor = retryManager.executeWithRetry(() -> new MediaPipeFaceLandmarkExtractor(context));
                 modelLoadLatch.countDown();
-                Log.d(TAG, "MediaPipeFaceLandmarkExtractor initialized with face_landmarker.task");
             } catch (ModelRetryManager.ModelRetryException e) {
-                Log.e(TAG, "Error initializing MediaPipeFaceLandmarkExtractor", e);
                 errorHandler.handleModelInitializationError(e, "MediaPipeFaceLandmarkExtractor");
                 modelLoadLatch.countDown();
             }
@@ -259,16 +246,12 @@ public class FaceIdService {
                 if (faceRect == null) {
                     List<FaceDetector.FaceDetectionResult> faces = faceDetector.detectFaces(bitmap);
                     
-                    Log.d(TAG, "processFaceImage: detected " + faces.size() + " faces");
-                    
                     if (faces.isEmpty()) {
-                        Log.d(TAG, "processFaceImage: No faces detected");
                         runOnMainThread(() -> callback.onNoFaceDetected());
                         return;
                     }
                     
                     if (faces.size() > 1) {
-                        Log.d(TAG, "processFaceImage: Multiple faces detected: " + faces.size());
                         runOnMainThread(() -> callback.onMultipleFacesDetected());
                         return;
                     }
@@ -282,8 +265,6 @@ public class FaceIdService {
                     processFaceWithOvalBoundary(bitmap, boundingBox, ovalRect, faceBitmap, callback);
                 } else {
                     // Use the provided face rectangle
-                    Log.d(TAG, "processFaceImage: Using provided face rectangle: " + faceRect.toString());
-                    
                     // Crop the face bitmap
                     Bitmap faceBitmap = Bitmap.createBitmap(
                             bitmap, 
@@ -297,7 +278,6 @@ public class FaceIdService {
                     processFaceWithOvalBoundary(bitmap, faceRect, ovalRect, faceBitmap, callback);
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Error processing face image", e);
                 runOnMainThread(() -> callback.onError("Error processing face: " + e.getMessage()));
             }
         });
@@ -318,12 +298,9 @@ public class FaceIdService {
         
         // 🔧 NEW: Use FaceDecisionEngine for oval validation
         FaceDecisionEngine.OvalValidationResult ovalValidation = validateOvalBoundary(pooledBoundingBox, ovalRect);
-                
+                        
         // Step 2: Check for spoofing using async method with oval validation
         faceSpoofDetector.detectSpoofAsync(cachedResult.bitmap, pooledBoundingBox, ovalRect, spoofResult -> {
-            Log.d(TAG, "processFaceWithOvalBoundary: Spoof detection result - isSpoof: " + 
-                    spoofResult.isSpoof() + ", score: " + spoofResult.getScore() + ", confidence: " + spoofResult.getConfidence());
-
             // 🔧 NEW: Use FaceDecisionEngine for decision making
             FaceDecisionEngine.FaceDetectionResult detectionResult = new FaceDecisionEngine.FaceDetectionResult(
                 true, pooledBoundingBox, spoofResult.getConfidence()
@@ -337,8 +314,6 @@ public class FaceIdService {
                 detectionResult, spoofDetectionResult, ovalValidation
             );
             
-            Log.d(TAG, "================================================================================================ DECISION " + decision.getMessage());
-
             // 🔧 NEW: Handle decision result
             if (decision.isAccepted()) {
                 runOnMainThread(() -> callback.onFaceDetected(faceBitmap, boundingBox));
@@ -383,7 +358,6 @@ public class FaceIdService {
             // Try with more lenient thresholds for registration
             boolean fallbackCheck = checkFaceWithinOvalFallback(boundingBox, ovalRect);
             if (fallbackCheck) {
-                Log.d(TAG, "Oval validation failed with strict thresholds, but passed with fallback for registration");
                 return new FaceDecisionEngine.OvalValidationResult(true, "Face positioned within oval (fallback validation)");
             }
         }
@@ -496,9 +470,6 @@ public class FaceIdService {
      * @return true if processing was started, false if already processing
      */
     public boolean processContinuousFrame(Bitmap bitmap, android.graphics.RectF ovalRect, ContinuousProcessingCallback callback) {
-
-            Log.d("DEBUG_SERVICE", "=== STARTING FACE PROCESSING ===");
-
         // Skip if already processing a frame or models not initialized
         if (!isInitialized()) {
             return false;
@@ -516,12 +487,7 @@ public class FaceIdService {
             try {
                 // Step 1: Detect face with retry
                 List<FaceDetector.FaceDetectionResult> faces = faceDetector.detectFaces(bitmap);
-
-                    Log.d("DEBUG_SERVICE", "======== STEP 1: Face detection completed: " + faces.size() + " faces found");
-                    if (faces.isEmpty()) {
-                        Log.e("DEBUG_SERVICE", "❌ NO FACE DETECTED - This is the main problem!");
-                    }
-
+    
                 if (faces.isEmpty()) {
                     runOnMainThread(() -> {
                         callback.onNoFaceDetected();
@@ -555,9 +521,6 @@ public class FaceIdService {
                 
                 // Step 2: Check for spoofing with oval validation
                 faceSpoofDetector.detectSpoofAsync(bitmap, boundingBox, ovalRect, spoofResult -> {
-                    Log.d(TAG, "======== STEP 2: Spoof detection completed - isSpoof: " +
-                          spoofResult.isSpoof() + ", score: " + spoofResult.getScore());
-                    
                     // 🔧 NEW: Use FaceDecisionEngine for decision making
                     FaceDecisionEngine.FaceDetectionResult detectionResult = new FaceDecisionEngine.FaceDetectionResult(
                         true, boundingBox, spoofResult.getConfidence()
@@ -571,7 +534,6 @@ public class FaceIdService {
                         detectionResult, spoofDetectionResult, ovalValidation
                     );
                     
-                    
                     runOnMainThread(() -> {
                          callback.onFaceDetected(boundingBox, spoofResult.isSpoof(), spoofResult.getScore());
                         isProcessing.set(false);
@@ -581,7 +543,6 @@ public class FaceIdService {
                 return null;
                 
             } catch (Exception e) {
-                Log.e(TAG, "Error in continuous frame processing", e);
                 errorHandler.handleFaceDetectionError(e);
                 runOnMainThread(() -> {
                     callback.onError("Error processing frame: " + e.getMessage());
@@ -597,7 +558,6 @@ public class FaceIdService {
             
             @Override
             public void onFailure(ModelRetryManager.ModelRetryException exception) {
-                Log.e(TAG, "Retry failed for continuous frame processing", exception);
                 errorHandler.handleGeneralError(exception, "continuous frame processing");
                 runOnMainThread(() -> {
                     callback.onError("Processing failed after retries");
@@ -649,7 +609,6 @@ public class FaceIdService {
                 Bitmap finalFaceBitmap = faceBitmap;
                 faceSpoofDetector.detectSpoofAsync(bitmap, boundingBox, ovalRect, spoofResult -> {
                     if (spoofResult.isSpoof()) {
-                        Log.d(TAG, "captureAndRegisterFace: Spoof detected during registration");
                         runOnMainThread(() -> callback.onFailure("Spoof detected! Please use a real face for registration."));
                         return;
                     }
@@ -659,7 +618,6 @@ public class FaceIdService {
                 });
                 
             } catch (Exception e) {
-                Log.e(TAG, "Error capturing face for registration", e);
                 runOnMainThread(() -> callback.onFailure("Error capturing face: " + e.getMessage()));
             }
         });
@@ -699,7 +657,6 @@ public class FaceIdService {
                     updateFaceId(finalFaceBitmap, userId, callback);
                 });
             } catch (Exception e) {
-                Log.e(TAG, "Error capturing face for update", e);
                 runOnMainThread(() -> callback.onFailure("Error capturing face: " + e.getMessage()));
             }
         });
@@ -739,7 +696,6 @@ public class FaceIdService {
                     verifyFaceId(finalFaceBitmap, userId, callback);
                 });
             } catch (Exception e) {
-                Log.e(TAG, "Error capturing face for verify", e);
                 runOnMainThread(() -> callback.onFailure("Error capturing face: " + e.getMessage()));
             }
         });
@@ -800,18 +756,10 @@ public class FaceIdService {
                         }
                     });
                 } catch (Exception e) {
-                    Log.e(TAG, "Error in verifyFaceIdForRequest", e);
                     runOnMainThread(() -> callback.onFailure("Error: " + e.getMessage()));
                 }
             });
         });
-    }
-    
-    /**
-     * Legacy method for backward compatibility
-     */
-    public void captureAndRegisterFace(Bitmap bitmap, Rect boundingBox, String userId, FaceIdCallback callback) {
-        captureAndRegisterFace(bitmap, boundingBox, null, userId, callback);
     }
     
     /**
@@ -824,7 +772,6 @@ public class FaceIdService {
             awaitInitialization(5000,
                 () -> registerFaceId(faceBitmap, userId, callback),
                 () -> runOnMainThread(() -> {
-                    Log.e(TAG, "registerFaceId: FAILED - Face embedding model initialization timeout");
                     callback.onFailure("Face embedding model not initialized yet");
                 })
             );
@@ -848,9 +795,6 @@ public class FaceIdService {
                 logEmbeddingDebug(embedding, buffer.array(), "register");
                 // Save a debug copy of the exact embedding being sent
                 saveEmbeddingDebug(buffer.array(), "register");
-                
-                Log.d(TAG, "registerFaceId: Creating multipart request - buffer size: " + buffer.array().length);
-                Log.d(TAG, "registerFaceId: userId = " + userId);
                 
                 // Create userId as form field (text/plain)
                 RequestBody userIdPart = RequestBody.create(
@@ -876,24 +820,17 @@ public class FaceIdService {
                         if (response.errorBody() != null) {
                             try {
                                 errorBodyString = response.errorBody().string();
-                                Log.e(TAG, "--- Error Body ---");
-                                Log.e(TAG, errorBodyString);
                             } catch (Exception e) {
-                                Log.e(TAG, "Failed to read error body: " + e.getMessage());
                             }
                         }
-                        Log.d(TAG, "========================================");
-                        // ===== END: DETAILED RESPONSE LOGGING =====
                         
                         if (response.isSuccessful() && response.body() != null) {
                             FaceIdResponse responseBody = response.body();
                             if (responseBody.isSuccess()) {
-                                Log.d(TAG, "registerFaceId: SUCCESS - Face ID registered successfully");
                                 authManager.setFaceIdRegistered(true);
                                 runOnMainThread(() -> callback.onSuccess("Face ID registered successfully"));
                             } else {
                                 String errorMsg = "Server error: " + responseBody.getMessage();
-                                Log.e(TAG, "registerFaceId: SERVER FAILURE - " + errorMsg);
                                 runOnMainThread(() -> callback.onFailure(errorMsg));
                             }
                         } else {
@@ -902,8 +839,8 @@ public class FaceIdService {
                             
                             // 🔧 FIX: Use the already-read errorBodyString instead of reading again
                             if (errorBodyString != null && !errorBodyString.isEmpty()) {
+                                Log.d(TAG, "API Call - registerFaceId - Error body: " + errorBodyString);
                                 try {
-                                    Log.d(TAG, "Parsing error body: " + errorBodyString);
                                     
                                     // Try to extract message field (case-insensitive)
                                     String rawLower = errorBodyString.toLowerCase();
@@ -918,13 +855,13 @@ public class FaceIdService {
                                                 int valueEnd = errorBodyString.indexOf("\"", valueStart + 1);
                                                 if (valueEnd > valueStart) {
                                                     serverMessage = errorBodyString.substring(valueStart + 1, valueEnd).trim();
-                                                    Log.d(TAG, "✅ Extracted server message: " + serverMessage);
+                                                    Log.d(TAG, "API Call - registerFaceId - Parsed serverMessage: " + serverMessage);
                                                 }
                                             }
                                         }
                                     }
                                 } catch (Exception e) {
-                                    Log.e(TAG, "Error parsing error body", e);
+                                    Log.e(TAG, "API Call - registerFaceId - Error parsing message", e);
                                 }
                             }
                             
@@ -943,27 +880,28 @@ public class FaceIdService {
                                         : ("Bad Request");
                                 
                                 // Check if user already has a registered Face ID
-                                // 🔧 FIX: Check both parsed serverMessage and raw errorBodyString for keywords
+                                // 🔧 FIX: Check both parsed serverMessage and raw errorBodyString for keywords (case-insensitive)
                                 boolean isAlreadyRegistered = (errorMsg != null && (
-                                    errorMsg.toLowerCase().contains("User already has a registered Face ID") || 
-                                    errorMsg.toLowerCase().contains("Use update instead"))) ||
+                                    errorMsg.toLowerCase().contains("user already has a registered face id") || 
+                                    errorMsg.toLowerCase().contains("use update instead") ||
+                                    errorMsg.toLowerCase().contains("already registered"))) ||
                                     (errorBodyString != null && (
-                                    errorBodyString.toLowerCase().contains("User already has a registered Face ID") || 
-                                    errorBodyString.toLowerCase().contains("Use update instead")));
+                                    errorBodyString.toLowerCase().contains("user already has a registered face id") || 
+                                    errorBodyString.toLowerCase().contains("use update instead") ||
+                                    errorBodyString.toLowerCase().contains("already registered")));
+                                
+                                Log.d(TAG, "API Call - registerFaceId - 400 error check: errorMsg=" + errorMsg + 
+                                          ", isAlreadyRegistered=" + isAlreadyRegistered);
                                 
                                 if (isAlreadyRegistered) {
-                                    Log.w(TAG, "✅ Detected 'already registered' error - calling onAlreadyRegistered callback");
-                                    
                                     // Call the callback with embedding data so UI can decide what to do
                                     runOnMainThread(() -> callback.onAlreadyRegistered(embeddingFilePart, userIdPart));
                                     return; // IMPORTANT: Stop here, don't call onFailure
                                 } else {
-                                    Log.w(TAG, "⚠️ 400 error but NOT 'already registered' - will call onFailure");
                                 }
                             } else {
                                 errorMsg = "Failed to register Face ID: " + (serverMessage != null ? serverMessage : response.message());
                             }
-                            Log.e(TAG, "registerFaceId: HTTP FAILURE - " + errorMsg + " (code: " + response.code() + ")");
                             runOnMainThread(() -> callback.onFailure(errorMsg));
                         }
                     }
@@ -980,7 +918,6 @@ public class FaceIdService {
                         } else {
                             errorMsg = "Network error: " + t.getMessage();
                         }
-                        Log.e(TAG, "registerFaceId: NETWORK FAILURE - " + errorMsg, t);
                         runOnMainThread(() -> callback.onFailure(errorMsg));
                     }
                 });
@@ -988,7 +925,6 @@ public class FaceIdService {
                 return null;
                 
             } catch (Exception e) {
-                Log.e(TAG, "registerFaceId: EXCEPTION during API call preparation", e);
                 errorHandler.handleGeneralError(e, "face registration");
                 runOnMainThread(() -> callback.onFailure("Error: " + e.getMessage()));
                 return null;
@@ -1001,7 +937,6 @@ public class FaceIdService {
             
             @Override
             public void onFailure(ModelRetryManager.ModelRetryException exception) {
-                Log.e(TAG, "Retry failed for face registration", exception);
                 errorHandler.handleGeneralError(exception, "face registration");
                 runOnMainThread(() -> callback.onFailure("Registration failed after retries"));
             }
@@ -1071,7 +1006,6 @@ public class FaceIdService {
                     });
                     
                 } catch (Exception e) {
-                    Log.e(TAG, "Error updating face ID", e);
                     runOnMainThread(() -> callback.onFailure("Error: " + e.getMessage()));
                 }
             });
@@ -1134,13 +1068,11 @@ public class FaceIdService {
                     
                     RequestBody userIdPart = RequestBody.create(
                             MediaType.parse("text/plain"), userId);
-                    Log.d(TAG, "verifyFace: sending userId=" + userId);
                     
                     // Legacy ad-hoc verification removed
                     runOnMainThread(() -> callback.onError("Ad-hoc verification is no longer supported. Use request-based verification."));
                     
                 } catch (Exception e) {
-                    Log.e(TAG, "Error verifying face ID", e);
                     runOnMainThread(() -> callback.onError("Error: " + e.getMessage()));
                 }
             });
@@ -1184,13 +1116,11 @@ public class FaceIdService {
                     
                     RequestBody userIdPart = RequestBody.create(
                             MediaType.parse("text/plain"), userId);
-                    Log.d(TAG, "verifyFaceId: sending userId=" + userId);
                     
                     // Legacy ad-hoc verification removed
                     runOnMainThread(() -> callback.onFailure("Ad-hoc verification is no longer supported. Use request-based verification."));
                     
                 } catch (Exception e) {
-                    Log.e(TAG, "Error verifying face ID", e);
                     runOnMainThread(() -> callback.onFailure("Error: " + e.getMessage()));
                 }
             });
@@ -1261,9 +1191,7 @@ public class FaceIdService {
              try (FileOutputStream fos = new FileOutputStream(out)) {
                  fos.write(bytes);
              }
-             Log.d(TAG, "Saved embedding debug file: " + out.getAbsolutePath());
          } catch (Exception e) {
-             Log.w(TAG, "Failed to save embedding debug file", e);
          }
      }
 
@@ -1281,9 +1209,7 @@ public class FaceIdService {
                 if (i > 0) sb.append(", ");
                 sb.append(String.format(java.util.Locale.US, "%.6f", embedding[i]));
             }
-            Log.d(TAG, "embedding(" + action + ") len=" + n + ", bytes=" + bytes + ", head=[" + sb + "]");
         } catch (Exception e) {
-            Log.w(TAG, "Failed to log embedding debug", e);
         }
     }
 
@@ -1373,8 +1299,6 @@ public class FaceIdService {
      */
     public void close() {
         try {
-            Log.d(TAG, "Closing FaceIdService and releasing resources");
-            
             // Close MediaPipeFaceLandmarkExtractor
             if (mediaPipeFaceLandmarkExtractor != null) {
                 mediaPipeFaceLandmarkExtractor.close();
@@ -1386,7 +1310,6 @@ public class FaceIdService {
                 try {
                     ((AutoCloseable) faceDetector).close();
                 } catch (Exception e) {
-                    Log.w(TAG, "Error closing faceDetector", e);
                 }
             }
             
@@ -1394,7 +1317,6 @@ public class FaceIdService {
                 try {
                     ((AutoCloseable) faceEmbedding).close();
                 } catch (Exception e) {
-                    Log.w(TAG, "Error closing faceEmbedding", e);
                 }
             }
             
@@ -1402,7 +1324,6 @@ public class FaceIdService {
                 try {
                     ((AutoCloseable) faceSpoofDetector).close();
                 } catch (Exception e) {
-                    Log.w(TAG, "Error closing faceSpoofDetector", e);
                 }
             }
             
@@ -1410,13 +1331,10 @@ public class FaceIdService {
                 try {
                     ((AutoCloseable) gazeEstimator).close();
                 } catch (Exception e) {
-                    Log.w(TAG, "Error closing gazeEstimator", e);
                 }
             }
             
-            Log.d(TAG, "FaceIdService closed successfully");
         } catch (Exception e) {
-            Log.e(TAG, "Error closing FaceIdService", e);
         }
     }
 
@@ -1428,12 +1346,10 @@ public class FaceIdService {
      */
     public float[] extractFaceEmbedding(Bitmap bitmap, Rect faceRect) {
         if (!isInitialized()) {
-            Log.e(TAG, "FaceIdService not initialized, cannot extract embedding");
             return null;
         }
 
         if (faceEmbedding == null) {
-            Log.e(TAG, "FaceEmbedding model not available");
             return null;
         }
 
@@ -1452,31 +1368,25 @@ public class FaceIdService {
                 
                 if (width > 0 && height > 0) {
                     faceBitmap = Bitmap.createBitmap(bitmap, left, top, width, height);
-                    Log.d(TAG, "Cropped face bitmap: " + width + "x" + height);
                 } else {
-                    Log.e(TAG, "Invalid face rect dimensions");
                     return null;
                 }
             } else {
                 // Use full bitmap if no rect provided
                 faceBitmap = bitmap;
-                Log.d(TAG, "Using full bitmap for embedding: " + bitmap.getWidth() + "x" + bitmap.getHeight());
             }
 
             // Generate embedding
             float[] embedding = faceEmbedding.getFaceEmbedding(faceBitmap);
             
             if (embedding != null && embedding.length > 0) {
-                Log.d(TAG, "Face embedding extracted successfully: " + embedding.length + " dimensions");
                 return embedding;
             } else {
-                Log.e(TAG, "Failed to generate face embedding");
                 return null;
             }
             
         } catch (Exception e) {
-            Log.e(TAG, "Error extracting face embedding", e);
             return null;
         }
     }
-} 
+}
