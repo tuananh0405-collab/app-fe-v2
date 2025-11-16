@@ -17,6 +17,11 @@ abstract class AuthRemoteDataSource {
     required String newPassword,
     required String confirmPassword,
   });
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -33,10 +38,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // Login doesn't need token in header
       final response = await dio.post(
         '/auth/login',
-        data: {
-          'email': email,
-          'password': password,
-        },
+        data: {'email': email, 'password': password},
       );
 
       final apiResponse = ApiResponseModel.fromJson(
@@ -82,7 +84,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<LoginResponseModel> loginWithDeviceInfo(LoginRequest loginRequest) async {
+  Future<LoginResponseModel> loginWithDeviceInfo(
+    LoginRequest loginRequest,
+  ) async {
     try {
       // Login doesn't need token in header
       final response = await dio.post(
@@ -145,6 +149,49 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'current_password': currentPassword,
           'new_password': newPassword,
           'confirm_password': confirmPassword,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        final apiResponse = ApiResponseModel.fromJson(
+          response.data,
+          (data) => data,
+        );
+        throw ServerException(apiResponse.message);
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
+        );
+      } else {
+        throw const ServerException('Failed to connect to server');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await dio.put(
+        '/auth/me/password',
+        data: {
+          'current_password': currentPassword,
+          'new_password': newPassword,
         },
       );
 

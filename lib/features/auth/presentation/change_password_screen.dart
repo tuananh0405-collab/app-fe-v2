@@ -6,7 +6,9 @@ import '../providers/auth_providers.dart';
 import '../../../flutter_flow/flutter_flow.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
-  const ChangePasswordScreen({super.key});
+  final bool isTemporary;
+
+  const ChangePasswordScreen({super.key, this.isTemporary = false});
 
   @override
   ConsumerState<ChangePasswordScreen> createState() =>
@@ -14,12 +16,14 @@ class ChangePasswordScreen extends ConsumerStatefulWidget {
 }
 
 class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
-    with TickerProviderStateMixin, AnimationControllerMixin<ChangePasswordScreen> {
+    with
+        TickerProviderStateMixin,
+        AnimationControllerMixin<ChangePasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  
+
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
@@ -27,7 +31,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Setup animations
     setupAnimations({
       'headerOnPageLoad': AnimationInfo(
@@ -57,11 +61,24 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
 
   void _handleChangePassword() {
     if (_formKey.currentState!.validate()) {
-      ref.read(changePasswordControllerProvider.notifier).changePassword(
-            currentPassword: _currentPasswordController.text,
-            newPassword: _newPasswordController.text,
-            confirmPassword: _confirmPasswordController.text,
-          );
+      if (widget.isTemporary) {
+        // Use temporary password change endpoint
+        ref
+            .read(changePasswordControllerProvider.notifier)
+            .changeTemporaryPassword(
+              currentPassword: _currentPasswordController.text,
+              newPassword: _newPasswordController.text,
+              confirmPassword: _confirmPasswordController.text,
+            );
+      } else {
+        // Use regular password change endpoint
+        ref
+            .read(changePasswordControllerProvider.notifier)
+            .changePassword(
+              currentPassword: _currentPasswordController.text,
+              newPassword: _newPasswordController.text,
+            );
+      }
     }
   }
 
@@ -98,15 +115,22 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
     // Listen for password change success
     ref.listen(changePasswordControllerProvider, (previous, next) {
       if (previous == null || next == previous) return;
-      
+
       if (next.isSuccess) {
-        showSnackbar(
-          context,
-          'Đổi mật khẩu thành công! Vui lòng đăng nhập lại.',
-        );
-        // Clear login state and navigate to login
-        ref.read(loginControllerProvider.notifier).reset();
-        context.go(AppRoutePath.signIn);
+        final message = widget.isTemporary
+            ? 'Đổi mật khẩu thành công! Vui lòng đăng nhập lại.'
+            : 'Đổi mật khẩu thành công!';
+
+        showSnackbar(context, message);
+
+        if (widget.isTemporary) {
+          // Clear login state and navigate to login
+          ref.read(loginControllerProvider.notifier).reset();
+          context.go(AppRoutePath.signIn);
+        } else {
+          // Just go back to profile
+          context.pop();
+        }
       } else if (next.errorMessage != null) {
         showSnackbar(context, next.errorMessage!);
       }
@@ -119,14 +143,18 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
       appBar: AppBar(
         backgroundColor: theme.primaryColor,
         title: Text(
-          'Đổi mật khẩu tạm thời',
-          style: theme.title2.override(
-            color: Colors.white,
-          ),
+          widget.isTemporary ? 'Đổi mật khẩu tạm thời' : 'Đổi mật khẩu',
+          style: theme.title2.override(color: Colors.white),
         ),
         centerTitle: true,
         elevation: 2,
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: !widget.isTemporary,
+        leading: widget.isTemporary
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => context.pop(),
+              ),
       ),
       body: SafeArea(
         child: Center(
@@ -147,17 +175,31 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                         color: theme.primaryColor,
                       ),
                       const SizedBox(height: 16),
-                      Text(
-                        'Bạn đang sử dụng mật khẩu tạm thời',
-                        style: theme.title3,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Vui lòng đổi sang mật khẩu mới để tiếp tục',
-                        style: theme.bodyText2,
-                        textAlign: TextAlign.center,
-                      ),
+                      if (widget.isTemporary) ...[
+                        Text(
+                          'Bạn đang sử dụng mật khẩu tạm thời',
+                          style: theme.title3,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Vui lòng đổi sang mật khẩu mới để tiếp tục',
+                          style: theme.bodyText2,
+                          textAlign: TextAlign.center,
+                        ),
+                      ] else ...[
+                        Text(
+                          'Đổi mật khẩu',
+                          style: theme.title3,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Nhập mật khẩu hiện tại và mật khẩu mới',
+                          style: theme.bodyText2,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ],
                   ).animateOnPageLoad(animationsMap['headerOnPageLoad']!),
                   const SizedBox(height: 40),
@@ -173,7 +215,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                         decoration: InputDecoration(
                           labelText: 'Mật khẩu hiện tại',
                           labelStyle: theme.bodyText2,
-                          prefixIcon: Icon(Icons.lock_outline, color: theme.secondaryText),
+                          prefixIcon: Icon(
+                            Icons.lock_outline,
+                            color: theme.secondaryText,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -183,7 +228,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: theme.primaryColor, width: 2),
+                            borderSide: BorderSide(
+                              color: theme.primaryColor,
+                              width: 2,
+                            ),
                           ),
                           filled: true,
                           fillColor: theme.secondaryBackground,
@@ -196,7 +244,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                             ),
                             onPressed: () {
                               setState(() {
-                                _obscureCurrentPassword = !_obscureCurrentPassword;
+                                _obscureCurrentPassword =
+                                    !_obscureCurrentPassword;
                               });
                             },
                           ),
@@ -218,7 +267,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                         decoration: InputDecoration(
                           labelText: 'Mật khẩu mới',
                           labelStyle: theme.bodyText2,
-                          prefixIcon: Icon(Icons.lock, color: theme.secondaryText),
+                          prefixIcon: Icon(
+                            Icons.lock,
+                            color: theme.secondaryText,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -228,7 +280,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: theme.primaryColor, width: 2),
+                            borderSide: BorderSide(
+                              color: theme.primaryColor,
+                              width: 2,
+                            ),
                           ),
                           filled: true,
                           fillColor: theme.secondaryBackground,
@@ -250,53 +305,62 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                       ),
                       const SizedBox(height: 16),
 
-                      // Confirm Password Field
-                      TextFormField(
-                        controller: _confirmPasswordController,
-                        obscureText: _obscureConfirmPassword,
-                        style: theme.bodyText1,
-                        decoration: InputDecoration(
-                          labelText: 'Xác nhận mật khẩu mới',
-                          labelStyle: theme.bodyText2,
-                          prefixIcon: Icon(Icons.lock, color: theme.secondaryText),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: theme.alternate),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: theme.primaryColor, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: theme.secondaryBackground,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureConfirmPassword
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
+                      // Confirm Password Field (only for temporary password)
+                      if (widget.isTemporary) ...[
+                        TextFormField(
+                          controller: _confirmPasswordController,
+                          obscureText: _obscureConfirmPassword,
+                          style: theme.bodyText1,
+                          decoration: InputDecoration(
+                            labelText: 'Xác nhận mật khẩu mới',
+                            labelStyle: theme.bodyText2,
+                            prefixIcon: Icon(
+                              Icons.lock,
                               color: theme.secondaryText,
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _obscureConfirmPassword = !_obscureConfirmPassword;
-                              });
-                            },
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: theme.alternate),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: theme.primaryColor,
+                                width: 2,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: theme.secondaryBackground,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: theme.secondaryText,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscureConfirmPassword =
+                                      !_obscureConfirmPassword;
+                                });
+                              },
+                            ),
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Vui lòng xác nhận mật khẩu';
+                            }
+                            if (value != _newPasswordController.text) {
+                              return 'Mật khẩu xác nhận không khớp';
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng xác nhận mật khẩu';
-                          }
-                          if (value != _newPasswordController.text) {
-                            return 'Mật khẩu xác nhận không khớp';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 8),
+                        const SizedBox(height: 8),
+                      ],
 
                       // Password Requirements
                       Container(
@@ -319,7 +383,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                             _buildRequirement(theme, 'Có ít nhất 1 chữ hoa'),
                             _buildRequirement(theme, 'Có ít nhất 1 chữ thường'),
                             _buildRequirement(theme, 'Có ít nhất 1 số'),
-                            _buildRequirement(theme, 'Có ít nhất 1 ký tự đặc biệt (!@#\$%^&*...)'),
+                            _buildRequirement(
+                              theme,
+                              'Có ít nhất 1 ký tự đặc biệt (!@#\$%^&*...)',
+                            ),
                           ],
                         ),
                       ),
@@ -366,10 +433,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              text,
-              style: theme.bodyText2.override(fontSize: 13),
-            ),
+            child: Text(text, style: theme.bodyText2.override(fontSize: 13)),
           ),
         ],
       ),

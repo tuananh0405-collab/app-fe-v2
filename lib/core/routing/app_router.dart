@@ -27,26 +27,26 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AppRoutePath.signIn,
     redirect: (context, state) {
-      final currentPath = state.uri.path;      
+      final currentPath = state.uri.path;
       final loggingIn = currentPath == AppRoutePath.signIn;
       final changingPassword = currentPath == AppRoutePath.changePassword;
-      
+
       if (changingPassword) {
         return null;
       }
-      
+
       if (loginState.mustChangePassword && !changingPassword) {
-        return AppRoutePath.changePassword;
+        return '${AppRoutePath.changePassword}?temporary=true';
       }
-      
+
       if (!auth.isAuthenticated) {
         return loggingIn ? null : AppRoutePath.signIn;
       }
-      
+
       if (loggingIn) {
         return AppRoutePath.home;
       }
-      
+
       return null;
     },
     routes: [
@@ -59,7 +59,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutePath.changePassword,
         name: AppRouteName.changePassword,
-        builder: (context, state) => const ChangePasswordScreen(),
+        builder: (context, state) {
+          final isTemporary = state.uri.queryParameters['temporary'] == 'true';
+          return ChangePasswordScreen(isTemporary: isTemporary);
+        },
       ),
 
       GoRoute(
@@ -92,7 +95,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: AppRouteName.leavesCreate,
         builder: (c, s) => const CreateLeaveScreen(),
       ),
-      
+
       GoRoute(
         path: '/leaves/:id',
         name: AppRouteName.leaveDetail,

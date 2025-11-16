@@ -15,11 +15,10 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen>
     with TickerProviderStateMixin, AnimationControllerMixin<ProfileScreen> {
-  
   @override
   void initState() {
     super.initState();
-    
+
     // Setup animations
     setupAnimations({
       'listOnPageLoad': AnimationInfo(
@@ -35,7 +34,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -81,7 +80,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               subtitle: 'Employment contract details',
               onTap: () => context.push(AppRoutePath.profileContract),
             ),
-            
+
             const SizedBox(height: 24),
 
             // Devices Section
@@ -114,10 +113,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               icon: Icons.lock_outline,
               title: 'Change Password',
               subtitle: 'Update your password',
-              onTap: () {
-                // TODO: Navigate to change password
-                showSnackbar(context, 'Coming soon');
-              },
+              onTap: () => context.push(AppRoutePath.changePassword),
             ),
             const SizedBox(height: 8),
             _buildMenuItem(
@@ -150,7 +146,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, FlutterFlowTheme theme, String title) {
+  Widget _buildSectionHeader(
+    BuildContext context,
+    FlutterFlowTheme theme,
+    String title,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8, top: 8),
       child: Text(
@@ -174,13 +174,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     Color? titleColor,
   }) {
     final effectiveIconColor = iconColor ?? theme.primaryColor;
-    
+
     return Card(
       elevation: 1,
       color: theme.secondaryBackground,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         onTap: onTap,
         leading: Container(
@@ -189,11 +187,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             color: effectiveIconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(
-            icon,
-            color: effectiveIconColor,
-            size: 24,
-          ),
+          child: Icon(icon, color: effectiveIconColor, size: 24),
         ),
         title: Text(
           title,
@@ -202,21 +196,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             color: titleColor,
           ),
         ),
-        subtitle: Text(
-          subtitle,
-          style: theme.bodyText2,
-        ),
-        trailing: Icon(
-          Icons.chevron_right,
-          color: theme.secondaryText,
-        ),
+        subtitle: Text(subtitle, style: theme.bodyText2),
+        trailing: Icon(Icons.chevron_right, color: theme.secondaryText),
       ),
     );
   }
 
   void _showLogoutDialog(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -231,9 +219,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
               'Cancel',
-              style: theme.bodyText1.override(
-                color: theme.secondaryText,
-              ),
+              style: theme.bodyText1.override(color: theme.secondaryText),
             ),
           ),
           FFButton(
