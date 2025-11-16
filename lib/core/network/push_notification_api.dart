@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import '../error/failures.dart';
 import '../models/push_token_model.dart';
 
@@ -26,6 +27,7 @@ class PushNotificationApi {
         ));
       }
     } on DioException catch (e) {
+      debugPrint('-----------------------------------------------------------------------------------DioException in registerPushToken: ${e.type}, ${e.message}, ${e.error}');
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         return Left(ServerFailure('Connection timeout'));
@@ -34,9 +36,10 @@ class PushNotificationApi {
           e.response?.data['message'] ?? 'Server error',
         ));
       } else {
-        return Left(ServerFailure('Network error'));
+        return Left(ServerFailure('----------------------------------------------------------------------Network error: ${e.message ?? e.type}'));
       }
     } catch (e) {
+      debugPrint('Exception in registerPushToken: $e');
       return Left(ServerFailure(e.toString()));
     }
   }

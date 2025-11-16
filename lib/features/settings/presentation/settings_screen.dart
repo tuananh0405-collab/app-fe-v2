@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/services/push_notification_providers.dart';
 import '../../../flutter_flow/flutter_flow.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -64,6 +65,42 @@ class SettingsScreen extends ConsumerWidget {
                   languageName: 'Tiếng Việt',
                   locale: const Locale('vi'),
                   isSelected: currentLocale.languageCode == 'vi',
+                ),
+              ],
+            ),
+          ),
+          
+          // Notifications Section
+          const SizedBox(height: 8),
+          Container(
+            color: theme.secondaryBackground,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text(
+                    'Notifications / Thông báo',
+                    style: theme.subtitle2.override(
+                      color: theme.secondaryText,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                SwitchListTile(
+                  title: Text(
+                    'Push Notifications / Thông báo đẩy',
+                    style: theme.bodyText1,
+                  ),
+                  subtitle: Text(
+                    'Receive push notifications for updates / Nhận thông báo đẩy cho các cập nhật',
+                    style: theme.bodyText2.override(color: theme.secondaryText),
+                  ),
+                  value: ref.watch(pushNotificationEnabledProvider),
+                  onChanged: (value) {
+                    ref.read(pushNotificationEnabledProvider.notifier).setEnabled(value);
+                  },
+                  activeColor: theme.primaryColor,
                 ),
               ],
             ),

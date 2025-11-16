@@ -1,12 +1,23 @@
 import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:device_info_plus/device_info_plus.dart';
+import '../../firebase_options.dart';
 
 /// Background message handler - MUST be a top-level function
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    if (!e.toString().contains('already exists')) {
+      rethrow;
+    }
+  }
   debugPrint('Handling a background message: ${message.messageId}');
   debugPrint('Message data: ${message.data}');
   debugPrint('Message notification: ${message.notification?.title}');

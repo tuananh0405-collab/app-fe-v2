@@ -1,20 +1,26 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import '../../features/auth/providers/auth_providers.dart';
 import '../models/push_token_model.dart' as models;
 import '../network/push_notification_api.dart';
 import 'push_notification_service.dart';
+import 'push_notification_providers.dart';
 
 /// Manager class to handle push notification logic and API calls
 class PushNotificationManager {
   final PushNotificationService _notificationService;
   final PushNotificationApi _api;
+  final Ref _ref;
 
   PushNotificationManager({
     required PushNotificationService notificationService,
     required PushNotificationApi api,
+    required Ref ref,
   })  : _notificationService = notificationService,
-        _api = api;
+        _api = api,
+        _ref = ref;
 
   /// Initialize push notifications
   Future<void> initialize({
@@ -32,8 +38,27 @@ class PushNotificationManager {
     await _notificationService.initialize();
   }
 
+  /// Register current FCM token with backend if conditions are met
+  Future<void> registerCurrentToken() async {
+    final token = _notificationService.fcmToken;
+    final deviceId = _notificationService.deviceId;
+    
+    if (token != null && deviceId != null) {
+      await _registerTokenWithBackend(token, deviceId);
+    }
+  }
+
   /// Register token with backend
   Future<void> _registerTokenWithBackend(String token, String deviceId) async {
+    // Check if push notifications are enabled and user is logged in
+    final isEnabled = _ref.read(pushNotificationEnabledProvider);
+    final accessToken = _ref.read(loginControllerProvider).accessToken;
+    
+    if (!isEnabled || accessToken == null || accessToken.isEmpty) {
+      debugPrint('Push notifications not enabled or user not logged in, skipping registration');
+      return;
+    }
+    
     try {
       final platform = _getPlatform();
       

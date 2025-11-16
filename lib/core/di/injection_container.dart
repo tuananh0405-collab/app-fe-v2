@@ -1,15 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import '../constants/api_constants.dart';
 import '../../features/auth/data/datasources/auth_remote_datasource.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/change_temporary_password_usecase.dart';
 import '../network/network_info.dart';
-import '../network/push_notification_api.dart';
-import '../services/push_notification_service.dart';
-import '../services/push_notification_manager.dart';
 
 final sl = GetIt.instance;
 
@@ -33,21 +31,20 @@ Future<void> init() async {
     () => AuthRemoteDataSourceImpl(dio: sl()),
   );
 
-  // ========== Core - Push Notifications ==========
-  sl.registerLazySingleton(() => PushNotificationService());
-  sl.registerLazySingleton(() => PushNotificationApi(sl()));
-  sl.registerLazySingleton(
-    () => PushNotificationManager(
-      notificationService: sl(),
-      api: sl(),
-    ),
-  );
-
   // ========== Core ==========
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
 
   // ========== External ==========
-  sl.registerLazySingleton(() => Dio());
+  sl.registerLazySingleton(() => Dio(
+    BaseOptions(
+      baseUrl: ApiConstants.baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
+      headers: ApiConstants.defaultHeaders,
+      validateStatus: (status) => status != null && status < 500,
+    ),
+  ));
   sl.registerLazySingleton(() => InternetConnectionChecker());
 }
 
