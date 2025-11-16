@@ -5,16 +5,17 @@ enum Platform { ios, android, web }
 
 extension PlatformX on Platform {
   String toShortString() {
-    return toString().split('.').last;
+    final s = toString().split('.').last;
+    return s.toUpperCase();
   }
 
   static Platform fromString(String? s) {
     if (s == null) return Platform.android;
-    final v = s.toLowerCase();
+    final v = s.toUpperCase();
     switch (v) {
-      case 'ios':
+      case 'IOS':
         return Platform.ios;
-      case 'web':
+      case 'WEB':
         return Platform.web;
       default:
         return Platform.android;

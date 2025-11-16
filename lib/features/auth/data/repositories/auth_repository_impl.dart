@@ -5,6 +5,7 @@ import '../../../../core/network/network_info.dart';
 import '../../domain/entities/login_response_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
+import '../models/login_request_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -26,6 +27,30 @@ class AuthRepositoryImpl implements AuthRepository {
           email: email,
           password: password,
         );
+        return Right(result);
+      } on UnauthorizedException catch (e) {
+        return Left(AuthFailure(e.message));
+      } on TemporaryPasswordException catch (e) {
+        return Left(TemporaryPasswordFailure(e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(e.message));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } catch (e) {
+        return Left(ServerFailure('Unexpected error: ${e.toString()}'));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, LoginResponseEntity>> loginWithDeviceInfo(
+    LoginRequest loginRequest,
+  ) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final result = await remoteDataSource.loginWithDeviceInfo(loginRequest);
         return Right(result);
       } on UnauthorizedException catch (e) {
         return Left(AuthFailure(e.message));
