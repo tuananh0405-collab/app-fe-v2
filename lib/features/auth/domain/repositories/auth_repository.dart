@@ -7,4 +7,10 @@ abstract class AuthRepository {
     required String email,
     required String password,
   });
+
+  Future<Either<Failure, void>> changeTemporaryPassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  });
 }

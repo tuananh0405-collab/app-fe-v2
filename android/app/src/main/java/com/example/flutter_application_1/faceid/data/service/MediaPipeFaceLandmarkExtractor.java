@@ -283,8 +283,6 @@ public class MediaPipeFaceLandmarkExtractor {
         // Calculate eye open probabilities from real landmarks
         calculateEyeOpenProbabilities();
         
-        Log.d(TAG, "Real face landmarks processed. Left eye points: " + leftEyePoints.size() + 
-              ", Right eye points: " + rightEyePoints.size());
     }
     
     /**
@@ -436,9 +434,7 @@ public class MediaPipeFaceLandmarkExtractor {
                         rightEyeRect.height()
                 );
             }
-            
-            Log.d(TAG, "Eye regions extracted. Left eye: " + leftEyeRect + ", Right eye: " + rightEyeRect);
-            
+                        
         } catch (Exception e) {
             Log.e(TAG, "Error extracting eye regions", e);
         }

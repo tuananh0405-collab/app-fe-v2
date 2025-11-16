@@ -5,6 +5,7 @@ import '../../features/auth/data/datasources/auth_remote_datasource.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
+import '../../features/auth/domain/usecases/change_temporary_password_usecase.dart';
 import '../network/network_info.dart';
 
 final sl = GetIt.instance;
@@ -14,6 +15,7 @@ Future<void> init() async {
   
   // UseCases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
+  sl.registerLazySingleton(() => ChangeTemporaryPasswordUseCase(sl()));
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(

@@ -132,12 +132,6 @@ public class FaceRegistrationUIController {
             binding.tvStatusMessage.setMaxHeight(Integer.MAX_VALUE);
         }
         
-        // Log status messages for debugging
-        if (state.isErrorState()) {
-            Log.e("FaceRegUIController", "Error state: " + state + " - " + message);
-        } else {
-            Log.d("FaceRegUIController", "State: " + state + " - " + message);
-        }
     }
 
     /**

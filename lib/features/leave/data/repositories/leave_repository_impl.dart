@@ -151,14 +151,10 @@ class LeaveRepositoryImpl implements LeaveRepository {
   }
 
   @override
-  Future<Either<Failure, List<LeaveBalanceEntity>>> getLeaveBalance({
-    required int employeeId,
-  }) async {
+  Future<Either<Failure, List<LeaveBalanceEntity>>> getLeaveBalance() async {
     if (await networkInfo.isConnected) {
       try {
-        final result = await remoteDataSource.getLeaveBalance(
-          employeeId: employeeId,
-        );
+        final result = await remoteDataSource.getLeaveBalance();
         return Right(result);
       } on UnauthorizedException catch (e) {
         return Left(AuthFailure(e.message));

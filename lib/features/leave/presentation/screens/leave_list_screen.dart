@@ -41,8 +41,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
     // Load leave records when screen opens
     Future.microtask(() {
       ref.read(leaveControllerProvider.notifier).getLeaveRecords();
-      // Mock employeeId = 7 as per requirement
-      ref.read(leaveControllerProvider.notifier).getLeaveBalance(employeeId: 7);
+      ref.read(leaveControllerProvider.notifier).getLeaveBalance();
     });
   }
 
@@ -78,7 +77,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
               ref.read(leaveControllerProvider.notifier).getLeaveRecords();
               ref
                   .read(leaveControllerProvider.notifier)
-                  .getLeaveBalance(employeeId: 7);
+                  .getLeaveBalance();
             },
             buttonSize: 48,
           ),
@@ -91,7 +90,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                 ref.read(leaveControllerProvider.notifier).getLeaveRecords();
                 await ref
                     .read(leaveControllerProvider.notifier)
-                    .getLeaveBalance(employeeId: 7);
+                    .getLeaveBalance();
               },
               color: theme.primaryColor,
               child: SingleChildScrollView(

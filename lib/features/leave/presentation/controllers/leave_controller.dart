@@ -98,11 +98,11 @@ class LeaveController extends Notifier<LeaveState> {
     );
   }
 
-  Future<void> getLeaveBalance({required int employeeId}) async {
+  Future<void> getLeaveBalance() async {
     state = state.copyWith(isLoading: true, clearError: true);
 
     final result = await _getLeaveBalanceUseCase(
-      GetLeaveBalanceParams(employeeId: employeeId),
+      const NoParams(),
     );
 
     result.fold(

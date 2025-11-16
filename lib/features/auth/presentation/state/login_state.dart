@@ -5,6 +5,7 @@ class LoginState {
   final bool isAuthenticated;
   final String? errorMessage;
   final bool isTemporaryPassword;
+  final bool mustChangePassword;
   final String? accessToken;
   final String? refreshToken;
   final UserEntity? user;
@@ -14,6 +15,7 @@ class LoginState {
     this.isAuthenticated = false,
     this.errorMessage,
     this.isTemporaryPassword = false,
+    this.mustChangePassword = false,
     this.accessToken,
     this.refreshToken,
     this.user,
@@ -24,6 +26,7 @@ class LoginState {
     bool? isAuthenticated,
     String? errorMessage,
     bool? isTemporaryPassword,
+    bool? mustChangePassword,
     String? accessToken,
     String? refreshToken,
     UserEntity? user,
@@ -34,6 +37,7 @@ class LoginState {
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       isTemporaryPassword: isTemporaryPassword ?? this.isTemporaryPassword,
+      mustChangePassword: mustChangePassword ?? this.mustChangePassword,
       accessToken: accessToken ?? this.accessToken,
       refreshToken: refreshToken ?? this.refreshToken,
       user: user ?? this.user,

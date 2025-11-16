@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -42,6 +43,7 @@ import com.example.flutter_application_1.faceid.data.service.FaceIdService;
 import com.example.flutter_application_1.faceid.data.service.FaceIdServiceManager;
 import com.example.flutter_application_1.faceid.data.service.FaceProcessingState;
 import com.example.flutter_application_1.faceid.data.service.FaceTracker;
+import com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse;
 import com.example.flutter_application_1.faceid.ui.components.CameraView;
 import com.example.flutter_application_1.faceid.ui.components.OvalFaceOverlayView;
 import com.example.flutter_application_1.faceid.ui.setting.detection.SpoofDetectionManager;
@@ -75,7 +77,6 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
     private boolean faceIdEnhancerInitialized = false;
 
 
-    // 🔍 ERROR TRACKING
     private String lastDetailedErrorMessage = ""; // Store detailed error information
     private boolean hasDetailedError = false;
     private AlertDialog currentErrorDialog; // Track current error dialog to dismiss when needed
@@ -192,8 +193,6 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
             return;
         }
 
-        Log.d(TAG, "🔄 State: " + state + " - " + message);
-
         // Update UI
         uiController.updateForState(state, message);
 
@@ -285,6 +284,10 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
         switch (state) {
             case SUCCESS:
                 handleSuccessState();
+                break;
+
+            case ALREADY_REGISTERED:
+                stopCamera();
                 break;
 
             case FAILED_SPOOF:
@@ -1893,157 +1896,191 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
 
         // Get user ID from AuthManager (which should have been set in initializeComponents)
         AuthManager authManager = AuthManager.getInstance(requireContext());
-        String userId = authManager.getUserId();
+        String tempUserId = authManager.getUserId();
         
         // Fallback to Intent if not in AuthManager
-        if (userId == null || userId.isEmpty()) {
+        if (tempUserId == null || tempUserId.isEmpty()) {
             if (getActivity() != null && getActivity().getIntent() != null) {
-                userId = getActivity().getIntent().getStringExtra("userId");
-                if (userId != null && !userId.isEmpty()) {
+                tempUserId = getActivity().getIntent().getStringExtra("userId");
+                if (tempUserId != null && !tempUserId.isEmpty()) {
                     // Save it for future use
-                    authManager.setUserId(userId);
+                    authManager.setUserId(tempUserId);
                 }
             }
         } else {
         }
         
         // Final check - If still no userId, show error
-        if (userId == null || userId.isEmpty()) {
+        if (tempUserId == null || tempUserId.isEmpty()) {
             Log.e(TAG, "❌ No userId available for registration");
             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
                     "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
             return;
         }
+        
+        final String userId = tempUserId;
 
-        // Now userId is guaranteed to have a value
-        Log.d(TAG, "✅ Final userId for registration: " + userId);
-
-        // Create final reference for use in lambda
-        final String finalUserId = userId;
-
-        // Process face embedding in background
-        new Thread(() -> {
-            try {
-                // Extract face embedding using FaceIdService
-                if (faceIdService == null || !faceIdService.isInitialized()) {
-                    mainHandler.post(() -> {
-                        Log.e(TAG, "❌ FaceIdService not initialized");
-                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
-                                "Dịch vụ nhận diện khuôn mặt chưa sẵn sàng.");
-                    });
-                    return;
-                }
-
-                // Get face embedding (512-dimensional vector)
-                float[] embedding = faceIdService.extractFaceEmbedding(currentFrameBitmap, currentFaceRect);
+        // Use FaceIdService.registerFaceId() which handles "already registered" case
+        faceIdService.registerFaceId(currentFrameBitmap, userId, new FaceIdService.FaceIdCallback() {
+            @Override
+            public void onSuccess(String message) {
+                if (!isAdded()) return;
                 
-                if (embedding == null || embedding.length == 0) {
-                    mainHandler.post(() -> {
-                        Log.e(TAG, "❌ Failed to extract face embedding");
-                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
-                                "Không thể trích xuất đặc điểm khuôn mặt. Vui lòng thử lại.");
-                    });
-                    return;
-                }
-
-                Log.d(TAG, "✅ Face embedding extracted: " + embedding.length + " dimensions");
-
-                // Convert embedding to file for upload
-                File embeddingFile = createEmbeddingFile(embedding);
+                Log.d(TAG, "✅ Face ID registered successfully: " + message);
                 
-                // Prepare multipart request
-                RequestBody requestFile = RequestBody.create(
-                        MediaType.parse("application/octet-stream"), 
-                        embeddingFile);
-                MultipartBody.Part embeddingPart = MultipartBody.Part.createFormData(
-                        "embedding", 
-                        embeddingFile.getName(), 
-                        requestFile);
+                // Save registration status
+                AuthManager.getInstance(requireContext()).setFaceIdRegistered(true);
                 
-                RequestBody userIdBody = RequestBody.create(
-                        MediaType.parse("text/plain"), 
-                        finalUserId);
-
-                // Get API client
-                com.example.flutter_application_1.faceid.data.api.FaceIdApiController apiService = 
-                        ApiClient.getClient(requireContext())
-                                .create(com.example.flutter_application_1.faceid.data.api.FaceIdApiController.class);
-
-                // Call register API
-                Log.d(TAG, "🌐 Sending registration request to API...");
-                Call<com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse> call = 
-                        apiService.registerFaceId(embeddingPart, userIdBody);
-
-                call.enqueue(new Callback<com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse> call, 
-                                          @NonNull Response<com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse> response) {
-                        if (!isAdded()) return;
-
-                        if (response.isSuccessful() && response.body() != null) {
-                            com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse faceIdResponse = response.body();
-                            
-                            if (faceIdResponse.isSuccess()) {
-                                Log.d(TAG, "✅ Face ID registered successfully: " + faceIdResponse.getMessage());
-                                
-                                // Save registration status
-                                authManager.setFaceIdRegistered(true);
-                                
-                                // Show success
-                                stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
-                                        "Đăng ký Face ID thành công!");
-                                
-                                // Navigate to success screen
-                                mainHandler.postDelayed(() -> {
-                                    if (isAdded()) {
-                                        Intent successIntent = new Intent(requireContext(), 
-                                                com.example.flutter_application_1.faceid.ui.setting.success.FaceIdSuccessActivity.class);
-                                        startActivityForResult(successIntent, SUCCESS_ACTIVITY_REQUEST_CODE);
-                                    }
-                                }, 1000);
-                            } else {
-                                Log.e(TAG, "❌ API returned failure: " + faceIdResponse.getMessage());
-                                stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
-                                        "Đăng ký thất bại: " + faceIdResponse.getMessage());
-                            }
-                        } else {
-                            Log.e(TAG, "❌========================================================================================================================================= API request failed with code: " + response);
-                            String errorMsg = "Lỗi kết nối API (Code: " + response + ")";
-                            stateManager.transitionTo(FaceRegistrationState.FAILED_NETWORK, errorMsg);
-                        }
-
-                        // Cleanup temp file
-                        if (embeddingFile.exists()) {
-                            embeddingFile.delete();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse> call, 
-                                         @NonNull Throwable t) {
-                        if (!isAdded()) return;
-
-                        Log.e(TAG, "❌ API call failed", t);
-                        stateManager.transitionTo(FaceRegistrationState.FAILED_NETWORK, 
-                                "Không thể kết nối tới server: " + t.getMessage());
-
-                        // Cleanup temp file
-                        if (embeddingFile.exists()) {
-                            embeddingFile.delete();
-                        }
-                    }
-                });
-
-            } catch (Exception e) {
-                mainHandler.post(() -> {
+                // Show success
+                stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
+                        "Đăng ký Face ID thành công!");
+                
+                // Navigate to success screen
+                mainHandler.postDelayed(() -> {
                     if (isAdded()) {
-                        Log.e(TAG, "❌ Error during face registration", e);
-                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
-                                "Lỗi xử lý: " + e.getMessage());
+                        Intent successIntent = new Intent(requireContext(), 
+                                com.example.flutter_application_1.faceid.ui.setting.success.FaceIdSuccessActivity.class);
+                        startActivityForResult(successIntent, SUCCESS_ACTIVITY_REQUEST_CODE);
+                    }
+                }, 1000);
+            }
+            
+            @Override
+            public void onFailure(String errorMessage) {
+                if (!isAdded()) return;
+
+                Log.e(TAG, "❌ Face ID registration failed: " + errorMessage);
+                // Thay đổi: Không hiện lỗi network nữa, gửi thông báo thất bại về Flutter
+                Intent failIntent = new Intent(requireContext(),
+                        com.example.flutter_application_1.faceid.ui.setting.success.FaceIdSuccessActivity.class);
+                failIntent.putExtra("action", "register");
+                failIntent.putExtra("is_failure", true);
+                failIntent.putExtra("error_message", errorMessage);
+                startActivity(failIntent);
+                requireActivity().finish();
+            }
+            
+            @Override
+            public void onAlreadyRegistered(MultipartBody.Part embeddingPart, RequestBody userIdBody) {
+                if (!isAdded()) return;
+                
+                Log.w(TAG, "⚠️ Face ID already registered - showing update dialog");
+                
+                // Stop camera
+                stopCamera();
+                
+                // Transition to ALREADY_REGISTERED state
+                stateManager.transitionTo(FaceRegistrationState.ALREADY_REGISTERED, 
+                        "Bạn đã đăng ký Face ID rồi");
+                
+                // Show dialog asking if user wants to update
+                mainHandler.post(() -> {
+                    if (!isAdded() || getActivity() == null || getActivity().isFinishing()) {
+                        Log.e(TAG, "❌ Cannot show dialog - Fragment or Activity not valid");
+                        return;
+                    }
+                    
+                    try {
+                        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                            .setTitle("Face ID đã được đăng ký")
+                            .setMessage("Bạn đã đăng ký Face ID trước đó rồi.\n\nBạn có muốn cập nhật Face ID của mình không?")
+                            .setPositiveButton("Cập nhật", (d, which) -> {
+                                // Call update API with same embedding data
+                                if (isAdded() && getActivity() != null) {
+                                    Log.d(TAG, "📤 User confirmed - Calling Update Face ID API");
+                                    
+                                    // Show loading state
+                                    stateManager.transitionTo(FaceRegistrationState.PROCESSING,
+                                        "Đang cập nhật Face ID...");
+                                    
+                                    // Get API client
+                                    com.example.flutter_application_1.faceid.data.api.FaceIdApiController apiService = 
+                                            ApiClient.getClient(requireContext())
+                                                    .create(com.example.flutter_application_1.faceid.data.api.FaceIdApiController.class);
+                                    
+                                    // Call update API
+                                    Call<com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse> updateCall = 
+                                            apiService.updateFaceId(embeddingPart, userIdBody);
+                                    
+                                    updateCall.enqueue(new Callback<com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse>() {
+                                        @Override
+                                        public void onResponse(@NonNull Call<com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse> call, 
+                                                             @NonNull Response<com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse> response) {
+                                            mainHandler.post(() -> {
+                                                if (!isAdded()) return;
+                                                
+                                                if (response.isSuccessful() && response.body() != null) {
+                                                    com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse updateResponse = response.body();
+                                                    if (updateResponse.isSuccess()) {
+                                                        Log.d(TAG, "✅ Face ID updated successfully");
+                                                        
+                                                        // Save registration status
+                                                        AuthManager.getInstance(requireContext()).setFaceIdRegistered(true);
+                                                        
+                                                        // Navigate to success screen
+                                                        Intent successIntent = new Intent(requireContext(), 
+                                                            com.example.flutter_application_1.faceid.ui.setting.success.FaceIdSuccessActivity.class);
+                                                        startActivity(successIntent);
+                                                        requireActivity().finish();
+                                                    } else {
+                                                        Log.e(TAG, "❌ Update failed: " + updateResponse.getMessage());
+                                                        // Thay đổi: Không hiện lỗi network nữa, gửi thông báo thất bại về Flutter
+                                                        // Tạo intent để quay về Flutter với thông báo thất bại
+                                                        Intent failIntent = new Intent(requireContext(),
+                                                                com.example.flutter_application_1.faceid.ui.setting.success.FaceIdSuccessActivity.class);
+                                                        failIntent.putExtra("action", "update");
+                                                        failIntent.putExtra("is_failure", true);
+                                                        failIntent.putExtra("error_message", updateResponse.getMessage());
+                                                        startActivity(failIntent);
+                                                        requireActivity().finish();
+                                                    }
+                                                } else {
+                                                    Log.e(TAG, "❌ Update API failed: " + response.code());
+                                                    String errorMsg = "Không thể cập nhật Face ID (Code: " + response.code() + ")";
+                                                    stateManager.transitionTo(FaceRegistrationState.FAILED_NETWORK, errorMsg);
+                                                }
+                                            });
+                                        }
+                                        
+                                        @Override
+                                        public void onFailure(@NonNull Call<com.example.flutter_application_1.faceid.data.model.response.FaceIdResponse> call, 
+                                                            @NonNull Throwable t) {
+                                            mainHandler.post(() -> {
+                                                if (!isAdded()) return;
+                                                
+                                                Log.e(TAG, "❌ Update API network error", t);
+                                                stateManager.transitionTo(FaceRegistrationState.FAILED_NETWORK,
+                                                    "Lỗi kết nối: " + t.getMessage());
+                                            });
+                                        }
+                                    });
+                                }
+                            })
+                            .setNegativeButton("Hủy", (d, which) -> {
+                                // Just go back
+                                if (isAdded() && getActivity() != null) {
+                                    Log.d(TAG, "🔙 User cancelled - going back");
+                                    requireActivity().finish();
+                                }
+                            })
+                            .setCancelable(false)
+                            .create();
+                        
+                        dialog.show();
+                        Log.d(TAG, "✅ Dialog shown successfully");
+                    } catch (Exception e) {
+                        Log.e(TAG, "❌ Error showing dialog", e);
+                        // Fallback: just finish the activity
+                        if (isAdded() && getActivity() != null) {
+                            Toast.makeText(requireContext(), 
+                                "Bạn đã đăng ký Face ID rồi. Vui lòng sử dụng tính năng cập nhật.", 
+                                Toast.LENGTH_LONG).show();
+                            requireActivity().finish();
+                        }
                     }
                 });
             }
-        }).start();
+        });
     }
 
     /**

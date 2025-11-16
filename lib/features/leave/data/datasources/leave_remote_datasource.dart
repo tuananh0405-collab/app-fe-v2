@@ -40,9 +40,7 @@ abstract class LeaveRemoteDataSource {
     Map<String, dynamic>? metadata,
   });
 
-  Future<List<LeaveBalanceModel>> getLeaveBalance({
-    required int employeeId,
-  });
+  Future<List<LeaveBalanceModel>> getLeaveBalance();
 
   Future<LeaveModel> cancelLeaveRequest({
     required int leaveId,
@@ -316,12 +314,10 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
   }
 
   @override
-  Future<List<LeaveBalanceModel>> getLeaveBalance({
-    required int employeeId,
-  }) async {
+  Future<List<LeaveBalanceModel>> getLeaveBalance() async {
     try {
       final response =
-          await dio.get('/leave/leave-balances/employee/$employeeId');
+          await dio.get('/leave/leave-balances');
 
       final apiResponse = LeaveApiResponseModel.fromJson(
         response.data,

@@ -24,7 +24,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
 
     // Load leave balance
     Future.microtask(() {
-      ref.read(leaveControllerProvider.notifier).getLeaveBalance(employeeId: 7);
+      ref.read(leaveControllerProvider.notifier).getLeaveBalance();
     });
 
     // Setup animations
@@ -140,7 +140,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
               .selectLeave(int.parse(widget.leaveId));
           await ref
               .read(leaveControllerProvider.notifier)
-              .getLeaveBalance(employeeId: 7);
+              .getLeaveBalance();
         },
         color: theme.primaryColor,
         child: SingleChildScrollView(

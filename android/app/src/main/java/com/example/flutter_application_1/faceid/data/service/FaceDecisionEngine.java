@@ -23,8 +23,6 @@ public class FaceDecisionEngine {
     public FaceDecisionResult evaluate(FaceDetectionResult detection, 
                                      SpoofDetectionResult spoof, 
                                      OvalValidationResult oval) {
-        Log.d(TAG, "Evaluating face decision - Detection: " + detection + 
-              ", Spoof: " + spoof + ", Oval: " + oval);
         
         // Check if face is properly positioned
         if (oval != null && !oval.isValid()) {

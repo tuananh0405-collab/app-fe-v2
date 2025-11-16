@@ -82,7 +82,20 @@ class MainActivity : FlutterActivity() {
             // Notify Flutter about the result
             val channel = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
             if (resultCode == RESULT_OK) {
-                channel.invokeMethod("onFaceIdRegistered", mapOf("success" to true))
+                // Check if there's an error in the intent
+                val error = data?.getStringExtra("error")
+                val message = data?.getStringExtra("message")
+                
+                if (error != null) {
+                    // Error case (e.g., ALREADY_REGISTERED)
+                    channel.invokeMethod("onFaceIdError", mapOf(
+                        "error" to error,
+                        "message" to message
+                    ))
+                } else {
+                    // Success case
+                    channel.invokeMethod("onFaceIdRegistered", mapOf("success" to true))
+                }
             } else {
                 channel.invokeMethod("onFaceIdRegistered", mapOf("success" to false))
             }

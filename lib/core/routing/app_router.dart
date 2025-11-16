@@ -6,11 +6,14 @@ import 'package:flutter_application_1/features/leave/presentation/screens/create
 import 'package:flutter_application_1/features/leave/presentation/screens/leave_detail_screen.dart';
 import 'package:flutter_application_1/features/leave/presentation/screens/update_leave_screen.dart';
 import 'package:flutter_application_1/features/settings/presentation/settings_screen.dart';
+import 'package:flutter_application_1/features/face_id/face_id_success_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
+import '../../features/auth/presentation/change_password_screen.dart';
+import '../../features/auth/providers/auth_providers.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/common/presentation/stub_screen.dart';
 import '../../faceid_page.dart';
@@ -19,40 +22,58 @@ import 'routes.dart';
 // Tạo GoRouter trong Provider để lắng nghe auth state
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authControllerProvider);
+  final loginState = ref.watch(loginControllerProvider);
 
   return GoRouter(
     initialLocation: AppRoutePath.signIn,
     redirect: (context, state) {
-      final loggingIn = state.matchedLocation == AppRoutePath.signIn;
+      final currentPath = state.uri.path;      
+      final loggingIn = currentPath == AppRoutePath.signIn;
+      final changingPassword = currentPath == AppRoutePath.changePassword;
+      
+      if (changingPassword) {
+        return null;
+      }
+      
+      if (loginState.mustChangePassword && !changingPassword) {
+        return AppRoutePath.changePassword;
+      }
+      
       if (!auth.isAuthenticated) {
-        // Chưa login → luôn về /sign-in trừ khi đã ở đó
         return loggingIn ? null : AppRoutePath.signIn;
       }
-      // Đã login mà đang ở /sign-in → đẩy về /home
-      if (loggingIn) return AppRoutePath.home;
+      
+      if (loggingIn) {
+        return AppRoutePath.home;
+      }
+      
       return null;
     },
     routes: [
-      // Sign in (không cần guard)
       GoRoute(
         path: AppRoutePath.signIn,
         name: AppRouteName.signIn,
         builder: (context, state) => const SignInScreen(),
       ),
 
-      // Các route sau mặc định đã được guard bởi redirect ở trên
+      GoRoute(
+        path: AppRoutePath.changePassword,
+        name: AppRouteName.changePassword,
+        builder: (context, state) => const ChangePasswordScreen(),
+      ),
+
       GoRoute(
         path: AppRoutePath.home,
         name: AppRouteName.home,
         builder: (context, state) => const HomeScreen(),
       ),
 
-      // Attendance
       GoRoute(
         path: AppRoutePath.attendanceCheck,
         name: AppRouteName.attendanceCheck,
         builder: (c, s) => const StubScreen(title: 'Check Attendance'),
       ),
+
       GoRoute(
         path: AppRoutePath.attendanceReport,
         name: AppRouteName.attendanceReport,
@@ -60,17 +81,18 @@ final routerProvider = Provider<GoRouter>((ref) {
             const StubScreen(title: 'Personal Attendance Report'),
       ),
 
-      // Leaves
       GoRoute(
         path: '/leaves',
         name: 'leaves',
         builder: (c, s) => const LeaveListScreen(),
       ),
+
       GoRoute(
         path: AppRoutePath.leavesCreate,
         name: AppRouteName.leavesCreate,
         builder: (c, s) => const CreateLeaveScreen(),
       ),
+      
       GoRoute(
         path: '/leaves/:id',
         name: AppRouteName.leaveDetail,
@@ -170,6 +192,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutePath.faceIdRegister,
         name: AppRouteName.faceIdRegister,
         builder: (c, s) => const FaceIdPage(),
+      ),
+      GoRoute(
+        path: AppRoutePath.faceIdSuccess,
+        name: AppRouteName.faceIdSuccess,
+        builder: (c, s) {
+          final successMessage = s.uri.queryParameters['message'];
+          final userName = s.uri.queryParameters['userName'];
+          final action = s.uri.queryParameters['action'];
+          return FaceIdSuccessPage(
+            successMessage: successMessage,
+            userName: userName,
+            action: action,
+          );
+        },
       ),
 
       // Schedule

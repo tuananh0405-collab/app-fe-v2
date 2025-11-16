@@ -39,9 +39,7 @@ abstract class LeaveRepository {
     Map<String, dynamic>? metadata,
   });
 
-  Future<Either<Failure, List<LeaveBalanceEntity>>> getLeaveBalance({
-    required int employeeId,
-  });
+  Future<Either<Failure, List<LeaveBalanceEntity>>> getLeaveBalance();
 
   Future<Either<Failure, LeaveEntity>> cancelLeaveRequest({
     required int leaveId,

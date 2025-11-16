@@ -5,8 +5,11 @@ import '../data/datasources/auth_remote_datasource.dart';
 import '../data/repositories/auth_repository_impl.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/usecases/login_usecase.dart';
+import '../domain/usecases/change_temporary_password_usecase.dart';
 import '../presentation/controllers/login_controller.dart';
+import '../presentation/controllers/change_password_controller.dart';
 import '../presentation/state/login_state.dart';
+import '../presentation/state/change_password_state.dart';
 
 // Data Source Provider
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
@@ -27,7 +30,18 @@ final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
   return LoginUseCase(ref.read(authRepositoryProvider));
 });
 
+final changeTemporaryPasswordUseCaseProvider =
+    Provider<ChangeTemporaryPasswordUseCase>((ref) {
+  return ChangeTemporaryPasswordUseCase(ref.read(authRepositoryProvider));
+});
+
 // Login Controller Provider
 final loginControllerProvider = NotifierProvider<LoginController, LoginState>(
   () => LoginController(),
+);
+
+// Change Password Controller Provider
+final changePasswordControllerProvider =
+    NotifierProvider<ChangePasswordController, ChangePasswordState>(
+  () => ChangePasswordController(),
 );

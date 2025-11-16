@@ -1,5 +1,6 @@
 class AppRouteName {
   static const signIn = 'sign-in';
+  static const changePassword = 'change-password';
   static const home = 'home';
 
   // Attendance
@@ -31,6 +32,7 @@ class AppRouteName {
   static const deviceRegister = 'device-register';
   static const deviceEdit = 'device-edit';
   static const faceIdRegister = 'faceid-register';
+  static const faceIdSuccess = 'faceid-success';
 
   // Schedule
   static const schedule = 'schedule';
@@ -41,6 +43,7 @@ class AppRouteName {
 
 class AppRoutePath {
   static const signIn = '/sign-in';
+  static const changePassword = '/change-password';
   static const home = '/home';
 
   // Attendance
@@ -72,6 +75,7 @@ class AppRoutePath {
   static const deviceRegister = '/devices/register';
   static String deviceEdit(String id) => '/devices/$id/edit';
   static const faceIdRegister = '/faceid/register';
+  static const faceIdSuccess = '/faceid/success';
 
   // Schedule
   static const schedule = '/schedule';

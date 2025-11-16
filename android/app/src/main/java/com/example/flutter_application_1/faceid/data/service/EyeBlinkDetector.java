@@ -178,14 +178,7 @@ public class EyeBlinkDetector {
             }
         } else if (ear > 1.0f) {
             ear = 1.0f;
-            if (debugMode) {
-                Log.d(TAG, "EAR value too high (" + ear + "), setting to 1.0f");
-            }
-        }
         
-        if (debugMode) {
-            Log.d(TAG, String.format("REAL DATA EAR calculation - V1: %.3f, V2: %.3f, H: %.3f, EAR: %.3f", 
-                verticalDist1, verticalDist2, horizontalDist, ear));
         }
         
         return ear;
@@ -244,33 +237,19 @@ public class EyeBlinkDetector {
         // Current eye state
         boolean currentlyBlinking = strongEvidence;
         
-        if (debugMode) {
-            Log.d(TAG, String.format("Blink state - Currently: %s, IsBlinking: %s, FrameCount: %d", 
-                currentlyBlinking, isBlinking, blinkFrameCount));
-        }
-        
         if (!isBlinking && currentlyBlinking) {
             // Blink started
             isBlinking = true;
             blinkFrameCount = 1;
-            if (debugMode) {
-                Log.d(TAG, "Blink started");
-            }
         } else if (isBlinking && currentlyBlinking) {
             // Blink continuing
             blinkFrameCount++;
-            if (debugMode) {
-                Log.d(TAG, "Blink continuing. Frame count: " + blinkFrameCount);
-            }
         } else if (isBlinking && !currentlyBlinking) {
             // Blink ended - check if it was a valid blink
             if (blinkFrameCount >= BLINK_FRAME_THRESHOLD && blinkFrameCount <= MAX_BLINK_DURATION) {
                 totalBlinks++;
                 blinkDetected = true;
-                
-                if (debugMode) {
-                    Log.d(TAG, "Valid blink detected! Frame count: " + blinkFrameCount + ", Total blinks: " + totalBlinks);
-                }
+            
                 
                 // Check for intentional blink pattern
                 long now = System.currentTimeMillis();

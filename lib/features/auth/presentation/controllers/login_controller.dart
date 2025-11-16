@@ -14,6 +14,8 @@ class LoginController extends Notifier<LoginState> {
   }
 
   Future<void> login(String email, String password) async {
+    // Reset state trước khi login để đảm bảo listener hoạt động đúng
+    state = const LoginState();
     state = state.copyWith(isLoading: true, clearError: true);
 
     final result = await _loginUseCase(
@@ -29,16 +31,26 @@ class LoginController extends Notifier<LoginState> {
         );
       },
       (loginResponse) {
-        state = state.copyWith(
+        print('🔍 LoginResponse received: mustChangePassword=${loginResponse.mustChangePassword}');
+        print('🔍 Will set isAuthenticated to: ${!loginResponse.mustChangePassword}');
+        
+        final newState = LoginState(
           isLoading: false,
-          isAuthenticated: true,
+          isAuthenticated: !loginResponse.mustChangePassword,
+          mustChangePassword: loginResponse.mustChangePassword,
           accessToken: loginResponse.accessToken,
           refreshToken: loginResponse.refreshToken,
           user: loginResponse.user,
         );
         
-        // ✅ Lưu user info vào native SharedPreferences để Face ID sử dụng
-        _saveUserInfoToNative(loginResponse);
+        state = newState;
+        
+        print('🔍 State updated: mustChangePassword=${state.mustChangePassword}, isAuthenticated=${state.isAuthenticated}');
+        
+        //  Lưu user info vào native SharedPreferences để Face ID sử dụng
+        if (!loginResponse.mustChangePassword) {
+          _saveUserInfoToNative(loginResponse);
+        }
       },
     );
   }
@@ -51,7 +63,6 @@ class LoginController extends Notifier<LoginState> {
         userName: loginResponse.user.fullName,
         authToken: loginResponse.accessToken,
       );
-      print('✅ User info saved to native: ${loginResponse.user.id}');
     } catch (e) {
       print('⚠️ Failed to save user info to native: $e');
     }

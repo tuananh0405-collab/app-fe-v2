@@ -46,6 +46,7 @@ public enum FaceRegistrationState {
     FAILED_CAMERA("Camera error"),
     FAILED_PERMISSION("Camera permission denied"),
     FAILED_OTHER("Registration failed"),
+    ALREADY_REGISTERED("User already has a registered Face ID"),
     
     // Timeout states
     TIMEOUT_DETECTION("Face detection timeout"),

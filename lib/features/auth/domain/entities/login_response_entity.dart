@@ -4,11 +4,13 @@ class LoginResponseEntity {
   final String accessToken;
   final String refreshToken;
   final UserEntity user;
+  final bool mustChangePassword;
 
   const LoginResponseEntity({
     required this.accessToken,
     required this.refreshToken,
     required this.user,
+    this.mustChangePassword = false,
   });
 
   @override
@@ -18,9 +20,10 @@ class LoginResponseEntity {
           runtimeType == other.runtimeType &&
           accessToken == other.accessToken &&
           refreshToken == other.refreshToken &&
-          user == other.user;
+          user == other.user &&
+          mustChangePassword == other.mustChangePassword;
 
   @override
   int get hashCode =>
-      accessToken.hashCode ^ refreshToken.hashCode ^ user.hashCode;
+      accessToken.hashCode ^ refreshToken.hashCode ^ user.hashCode ^ mustChangePassword.hashCode;
 }

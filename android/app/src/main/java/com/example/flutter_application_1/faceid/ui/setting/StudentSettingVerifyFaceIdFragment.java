@@ -335,8 +335,6 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
             return;
         }
 
-        Log.d(TAG, "🔄 State: " + state + " - " + message);
-
         // Update UI
         uiController.updateForState(state, message);
 

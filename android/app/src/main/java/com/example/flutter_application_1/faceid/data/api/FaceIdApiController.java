@@ -39,7 +39,7 @@ public interface FaceIdApiController {
      * @return Response indicating success or failure
      */
     @Multipart
-    @POST("api/faceid/update")
+    @POST("api/v1/face/faceid/update")
     Call<FaceIdResponse> updateFaceId(
             @Part MultipartBody.Part embedding,
             @Part("userId") RequestBody userId

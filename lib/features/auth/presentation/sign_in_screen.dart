@@ -62,20 +62,24 @@ class _SignInScreenState extends ConsumerState<SignInScreen>
   Widget build(BuildContext context) {
     final loginState = ref.watch(loginControllerProvider);
 
-    // Listen for authentication success
-    ref.listen(loginControllerProvider, (previous, next) {
-      if (previous == null || next == previous) return;
+    // Listen for authentication state changes
+    ref.listen(loginControllerProvider, (previous, next) {      
+      // Skip if initial build
+      if (previous == null) {
+        return;
+      }
       
-      if (next.isAuthenticated) {
-        context.go(AppRoutePath.home);
-      } else if (next.isTemporaryPassword) {
-        // Navigate to change password screen
-        showSnackbar(
-          context,
-          next.errorMessage ?? 'Bạn cần đổi mật khẩu tạm',
-        );
-        // context.go('/change-password');
-      } else if (next.errorMessage != null) {
+      // Only handle when loading completes
+      if (previous.isLoading && !next.isLoading) {
+        if (next.mustChangePassword) {
+          context.pushReplacement(AppRoutePath.changePassword);
+        } else if (next.isAuthenticated) {
+          context.go(AppRoutePath.home);
+        }
+      }
+      
+      // Show error messages
+      if (next.errorMessage != null && previous.errorMessage != next.errorMessage) {
         showSnackbar(context, next.errorMessage!);
       }
     });

@@ -46,14 +46,11 @@ public class FaceIdService {
     private FaceEmbedding faceEmbedding;
     private AuthManager authManager;
 
-    @Getter
     private FaceSpoofDetector faceSpoofDetector;
 
-    @Getter
     private GazeEstimator gazeEstimator; // Add GazeEstimator field
 
     // 🔧 NEW: MediaPipe FaceLandmarkExtractor for real landmark detection
-    @Getter
     private MediaPipeFaceLandmarkExtractor mediaPipeFaceLandmarkExtractor;
 
     // Explicit getters to avoid relying on Lombok during Android/Gradle compile
@@ -214,6 +211,12 @@ public class FaceIdService {
     public interface FaceIdCallback {
         void onSuccess(String message);
         void onFailure(String errorMessage);
+        
+        // Optional: Handle "already registered" case with embedding data for potential update
+        default void onAlreadyRegistered(MultipartBody.Part embeddingPart, RequestBody userIdBody) {
+            // Default behavior: treat as failure
+            onFailure("Face ID already registered. Please use update feature.");
+        }
     }
     
     public interface FaceDetectionCallback {
@@ -543,7 +546,6 @@ public class FaceIdService {
                 FaceDecisionEngine.OvalValidationResult ovalValidation = validateOvalBoundary(boundingBox, ovalRect);
                 
                 if (!ovalValidation.isValid()) {
-                    Log.d(TAG, "processContinuousFrame: Face not within oval boundary");
                     runOnMainThread(() -> {
                         callback.onError(ovalValidation.getReason());
                         isProcessing.set(false);
@@ -569,12 +571,9 @@ public class FaceIdService {
                         detectionResult, spoofDetectionResult, ovalValidation
                     );
                     
-                    Log.d(TAG, "processContinuousFrame: Decision result: " + decision);
                     
                     runOnMainThread(() -> {
-                        Log.d(TAG, "processContinuousFrame: Calling callback with isSpoof: " + 
-                              spoofResult.isSpoof() + ", score: " + spoofResult.getScore());
-                        callback.onFaceDetected(boundingBox, spoofResult.isSpoof(), spoofResult.getScore());
+                         callback.onFaceDetected(boundingBox, spoofResult.isSpoof(), spoofResult.getScore());
                         isProcessing.set(false);
                     });
                 });
@@ -635,7 +634,6 @@ public class FaceIdService {
                 if (ovalRect != null) {
                     boolean isWithinOval = checkFaceWithinOval(boundingBox, ovalRect);
                     if (!isWithinOval) {
-                        Log.d(TAG, "captureAndRegisterFace: Face not within oval boundary");
                         runOnMainThread(() -> callback.onFailure("Please position your face within the oval guide"));
                         return;
                     }
@@ -820,14 +818,10 @@ public class FaceIdService {
      * Register a new face ID by sending the embedding to backend
      */
     public void registerFaceId(Bitmap faceBitmap, String userId, FaceIdCallback callback) {
-        Log.d(TAG, "registerFaceId: Starting face ID registration");
-        Log.d(TAG, "registerFaceId: faceBitmap=" + faceBitmap.getWidth() + "x" + faceBitmap.getHeight() + 
-              ", userId=" + userId);
-        
+
         // Check if models are initialized
         if (!isInitialized()) {
-            Log.w(TAG, "registerFaceId: Models not initialized - waiting for initialization");
-            awaitInitialization(5000, 
+            awaitInitialization(5000,
                 () -> registerFaceId(faceBitmap, userId, callback),
                 () -> runOnMainThread(() -> {
                     Log.e(TAG, "registerFaceId: FAILED - Face embedding model initialization timeout");
@@ -836,18 +830,14 @@ public class FaceIdService {
             );
             return;
         }
-        
-        Log.d(TAG, "registerFaceId: Models initialized - generating face embedding");
-        
+
         // 🔧 NEW: Use retry manager for embedding generation
         retryManager.executeWithRetryAsync(() -> {
             try {
-                Log.d(TAG, "registerFaceId: Starting face embedding generation...");
-                
+
                 // Generate face embedding with retry
                 float[] embedding = retryManager.executeWithRetry(() -> faceEmbedding.getFaceEmbedding(faceBitmap));
-                Log.d(TAG, "registerFaceId: Face embedding generated - length: " + embedding.length);
-                
+
                 // Convert embedding to byte array for API call (float32 little-endian)
                 ByteBuffer buffer = ByteBuffer.allocate(embedding.length * 4);
                 buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -860,45 +850,34 @@ public class FaceIdService {
                 saveEmbeddingDebug(buffer.array(), "register");
                 
                 Log.d(TAG, "registerFaceId: Creating multipart request - buffer size: " + buffer.array().length);
+                Log.d(TAG, "registerFaceId: userId = " + userId);
                 
-                // Create multipart request
+                // Create userId as form field (text/plain)
+                RequestBody userIdPart = RequestBody.create(
+                        MediaType.parse("text/plain"), 
+                        userId);
+                
+                // Create embedding as binary file
                 RequestBody embeddingPart = RequestBody.create(
                         MediaType.parse("application/octet-stream"), 
                         buffer.array());
                 
-                MultipartBody.Part filePart = MultipartBody.Part.createFormData(
+                MultipartBody.Part embeddingFilePart = MultipartBody.Part.createFormData(
                         "embedding", "embedding.bin", embeddingPart);
-                
-                RequestBody userIdPart = RequestBody.create(
-                        MediaType.parse("text/plain"), userId);
-                
-                Log.d(TAG, "registerFaceId: sending userId=" + userId);
-                Log.d(TAG, "registerFaceId: Making API call to register face ID");
-                
-                // 🔧 NEW: Enhanced API call with better error handling and timeout
-                Call<FaceIdResponse> call = faceIdApiController.registerFaceId(filePart, userIdPart);
+
+                // API call with userId (form field) and embedding (binary file)
+                Call<FaceIdResponse> call = faceIdApiController.registerFaceId(embeddingFilePart, userIdPart);
                 
                 // 🔧 NEW: Add timeout to the call
                 call.enqueue(new Callback<FaceIdResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<FaceIdResponse> call, @NonNull Response<FaceIdResponse> response) {
-                        // ===== START: DETAILED RESPONSE LOGGING =====
-                        Log.d(TAG, "========================================");
-                        Log.d(TAG, "registerFaceId: DETAILED API RESPONSE");
-                        Log.d(TAG, "========================================");
-                                                Log.d(TAG, "Response Code: " + response.toString());
-                        Log.d(TAG, "Response Code: " + response.code());
-                        Log.d(TAG, "Is Successful: " + response.isSuccessful());
-                        Log.d(TAG, "Response Message: " + response.message());
-                        Log.d(TAG, "Response Headers: " + response.headers().toString());
-                        
-                        
-                        // Log Error Body nếu có
+                                            String errorBodyString = null;
                         if (response.errorBody() != null) {
                             try {
-                                String errorBodyStr = response.errorBody().string();
+                                errorBodyString = response.errorBody().string();
                                 Log.e(TAG, "--- Error Body ---");
-                                Log.e(TAG, errorBodyStr);
+                                Log.e(TAG, errorBodyString);
                             } catch (Exception e) {
                                 Log.e(TAG, "Failed to read error body: " + e.getMessage());
                             }
@@ -920,25 +899,35 @@ public class FaceIdService {
                         } else {
                             String errorMsg;
                             String serverMessage = null;
-                            try {
-                                if (response.errorBody() != null) {
-                                    String raw = response.errorBody().string();
-                                    Log.e(TAG, "registerFaceId: errorBody= " + raw);
-                                    // Try to extract a simple message field if present
-                                    int idx = raw.indexOf("\"message\"");
+                            
+                            // 🔧 FIX: Use the already-read errorBodyString instead of reading again
+                            if (errorBodyString != null && !errorBodyString.isEmpty()) {
+                                try {
+                                    Log.d(TAG, "Parsing error body: " + errorBodyString);
+                                    
+                                    // Try to extract message field (case-insensitive)
+                                    String rawLower = errorBodyString.toLowerCase();
+                                    int idx = rawLower.indexOf("\"message\"");
                                     if (idx >= 0) {
-                                        int colon = raw.indexOf(":", idx);
+                                        // Find the colon after "message"
+                                        int colon = errorBodyString.indexOf(":", idx);
                                         if (colon > 0) {
-                                            String tmp = raw.substring(colon + 1);
-                                            tmp = tmp.replace("{", "");
-                                            tmp = tmp.replace("}", "");
-                                            tmp = tmp.replace("\"", "");
-                                            tmp = tmp.replace("\n", "");
-                                            serverMessage = tmp.trim();
+                                            // Find the value (between quotes)
+                                            int valueStart = errorBodyString.indexOf("\"", colon + 1);
+                                            if (valueStart > 0) {
+                                                int valueEnd = errorBodyString.indexOf("\"", valueStart + 1);
+                                                if (valueEnd > valueStart) {
+                                                    serverMessage = errorBodyString.substring(valueStart + 1, valueEnd).trim();
+                                                    Log.d(TAG, "✅ Extracted server message: " + serverMessage);
+                                                }
+                                            }
                                         }
                                     }
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Error parsing error body", e);
                                 }
-                            } catch (Exception ignored) {}
+                            }
+                            
                             if (response.code() == 401) {
                                 errorMsg = "Authentication failed. Please login again.";
                             } else if (response.code() == 403) {
@@ -952,12 +941,24 @@ public class FaceIdService {
                                 errorMsg = serverMessage != null && !serverMessage.isEmpty()
                                         ? serverMessage
                                         : ("Bad Request");
-                                // Auto-fallback: user may already have a registered Face ID
-                                if (errorMsg.toLowerCase().contains("already has") || errorMsg.toLowerCase().contains("already registered")) {
-                                    Log.w(TAG, "registerFaceId: 400 indicates already registered; falling back to updateFaceId");
-                                    // Retry via update API
-                                    updateFaceId(faceBitmap, userId, callback);
-                                    return;
+                                
+                                // Check if user already has a registered Face ID
+                                // 🔧 FIX: Check both parsed serverMessage and raw errorBodyString for keywords
+                                boolean isAlreadyRegistered = (errorMsg != null && (
+                                    errorMsg.toLowerCase().contains("User already has a registered Face ID") || 
+                                    errorMsg.toLowerCase().contains("Use update instead"))) ||
+                                    (errorBodyString != null && (
+                                    errorBodyString.toLowerCase().contains("User already has a registered Face ID") || 
+                                    errorBodyString.toLowerCase().contains("Use update instead")));
+                                
+                                if (isAlreadyRegistered) {
+                                    Log.w(TAG, "✅ Detected 'already registered' error - calling onAlreadyRegistered callback");
+                                    
+                                    // Call the callback with embedding data so UI can decide what to do
+                                    runOnMainThread(() -> callback.onAlreadyRegistered(embeddingFilePart, userIdPart));
+                                    return; // IMPORTANT: Stop here, don't call onFailure
+                                } else {
+                                    Log.w(TAG, "⚠️ 400 error but NOT 'already registered' - will call onFailure");
                                 }
                             } else {
                                 errorMsg = "Failed to register Face ID: " + (serverMessage != null ? serverMessage : response.message());
@@ -1045,12 +1046,13 @@ public class FaceIdService {
                     MultipartBody.Part filePart = MultipartBody.Part.createFormData(
                             "embedding", "embedding.bin", embeddingPart);
                     
-                    RequestBody userIdPart = RequestBody.create(
-                            MediaType.parse("text/plain"), userId);
-                    Log.d(TAG, "updateFaceId: sending userId=" + userId);
+                    // Create userId as RequestBody
+                    RequestBody userIdBody = RequestBody.create(
+                            MediaType.parse("text/plain"), 
+                            userId);
                     
                     // Make API call
-                    Call<FaceIdResponse> call = faceIdApiController.updateFaceId(filePart, userIdPart);
+                    Call<FaceIdResponse> call = faceIdApiController.updateFaceId(filePart, userIdBody);
                     call.enqueue(new Callback<FaceIdResponse>() {
                         @Override
                         public void onResponse(@NonNull Call<FaceIdResponse> call, @NonNull Response<FaceIdResponse> response) {
