@@ -30,6 +30,7 @@ class GetNotificationsUseCase
       limit: params.limit,
       offset: params.offset,
       unreadOnly: params.unreadOnly,
+      channelFilter: 'IN_APP',
     );
   }
 }

@@ -20,6 +20,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
     required int limit,
     required int offset,
     bool unreadOnly = false,
+    String channelFilter = 'IN_APP',
   }) async {
     if (await networkInfo.isConnected) {
       try {
@@ -27,6 +28,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
           limit: limit,
           offset: offset,
           unreadOnly: unreadOnly,
+          channelFilter: channelFilter,
         );
         return Right(result);
       } on UnauthorizedException catch (e) {

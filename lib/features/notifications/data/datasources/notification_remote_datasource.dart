@@ -8,6 +8,7 @@ abstract class NotificationRemoteDataSource {
     required int limit,
     required int offset,
     bool unreadOnly = false,
+    String channelFilter = 'IN_APP',
   });
   
   Future<void> markAsRead(int notificationId);
@@ -25,6 +26,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     required int limit,
     required int offset,
     bool unreadOnly = false,
+    String channelFilter = 'IN_APP',
   }) async {
     try {
       final response = await dio.get(
@@ -33,6 +35,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
           'limit': limit,
           'offset': offset,
           'unreadOnly': unreadOnly,
+          'channelFilter': channelFilter,
         },
         options: Options(
           headers: ApiConstants.defaultHeaders,

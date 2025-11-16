@@ -7,6 +7,7 @@ abstract class NotificationRepository {
     required int limit,
     required int offset,
     bool unreadOnly = false,
+    String channelFilter = 'IN_APP',
   });
   
   Future<Either<Failure, void>> markAsRead(int notificationId);
