@@ -1,19 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:go_router/go_router.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/localization/app_localizations.dart';
+import 'core/services/push_notification_manager.dart';
 import 'faceid_channel.dart';
 import 'flutter_flow/flutter_flow.dart';
 import 'features/face_id/face_id_success_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  // Initialize DI
   await di.init();
+  
   // Initialize native Face ID channel listener
   FaceIdChannel.init();
+  
+  // Initialize push notifications
+  final pushNotificationManager = di.sl<PushNotificationManager>();
+  await pushNotificationManager.initialize(
+    onNotificationTapped: (message) {
+      debugPrint('Notification tapped: ${message.data}');
+      // Handle notification tap - navigate to specific screen
+      // You can use GoRouter to navigate based on message.data
+    },
+    onForegroundMessage: (message) {
+      debugPrint('Foreground message received: ${message.notification?.title}');
+      // Handle foreground message - show snackbar, update UI, etc.
+    },
+  );
 
   runApp(const ProviderScope(child: MyApp()));
 }

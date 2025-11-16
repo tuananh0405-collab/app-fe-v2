@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 
 /// Lightweight wrapper around the native Face ID MethodChannel.
 /// 

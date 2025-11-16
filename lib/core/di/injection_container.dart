@@ -7,6 +7,9 @@ import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/change_temporary_password_usecase.dart';
 import '../network/network_info.dart';
+import '../network/push_notification_api.dart';
+import '../services/push_notification_service.dart';
+import '../services/push_notification_manager.dart';
 
 final sl = GetIt.instance;
 
@@ -28,6 +31,16 @@ Future<void> init() async {
   // DataSources
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(dio: sl()),
+  );
+
+  // ========== Core - Push Notifications ==========
+  sl.registerLazySingleton(() => PushNotificationService());
+  sl.registerLazySingleton(() => PushNotificationApi(sl()));
+  sl.registerLazySingleton(
+    () => PushNotificationManager(
+      notificationService: sl(),
+      api: sl(),
+    ),
   );
 
   // ========== Core ==========
