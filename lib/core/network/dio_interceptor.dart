@@ -44,7 +44,16 @@ class AuthInterceptor extends Interceptor {
           final options = err.requestOptions;
           options.headers['Authorization'] = 'Bearer ${newTokens['access_token']}';
           
-          final response = await Dio().fetch(options);
+          // Create a new Dio instance for retry to avoid interceptor loops
+          final retryDio = Dio(BaseOptions(
+            baseUrl: ApiConstants.baseUrl,
+            connectTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 30),
+            headers: ApiConstants.defaultHeaders,
+          ));
+          retryDio.options.headers['Authorization'] = 'Bearer ${newTokens['access_token']}';
+          
+          final response = await retryDio.fetch(options);
           return handler.resolve(response);
         } catch (e) {
           // Refresh token failed, logout user
@@ -61,16 +70,28 @@ class AuthInterceptor extends Interceptor {
   }
 
   Future<Map<String, dynamic>> _refreshToken(String refreshToken) async {
-    final dio = Dio();
+    final dio = Dio(BaseOptions(
+      baseUrl: ApiConstants.baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: ApiConstants.defaultHeaders,
+    ));
+    
     final response = await dio.post(
-      '${ApiConstants.baseUrl}/auth/refresh',
+      '${ApiConstants.authBaseUrl}/refresh',
       data: {'refresh_token': refreshToken},
     );
 
-    if (response.statusCode == 200 && response.data['success'] == true) {
-      return response.data['data'];
-    } else {
-      throw Exception('Failed to refresh token');
+    if (response.statusCode == 200) {
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['access_token'] != null) {
+        return {
+          'access_token': data['access_token'],
+          'refresh_token': data['refresh_token'] ?? refreshToken,
+        };
+      }
     }
+    
+    throw Exception('Failed to refresh token');
   }
 }

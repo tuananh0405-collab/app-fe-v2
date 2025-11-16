@@ -31,9 +31,6 @@ class LoginController extends Notifier<LoginState> {
         );
       },
       (loginResponse) {
-        print('🔍 LoginResponse received: mustChangePassword=${loginResponse.mustChangePassword}');
-        print('🔍 Will set isAuthenticated to: ${!loginResponse.mustChangePassword}');
-        
         final newState = LoginState(
           isLoading: false,
           isAuthenticated: !loginResponse.mustChangePassword,

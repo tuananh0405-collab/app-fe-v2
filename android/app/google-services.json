@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "352462451775",
+    "project_id": "zentry-hr-system",
+    "storage_bucket": "zentry-hr-system.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:352462451775:android:708236a73a35f51423f48a",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzqxdTvs62SXHpmy49dLabthxXfZXzi3A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

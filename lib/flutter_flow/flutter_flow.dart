@@ -8,7 +8,7 @@
 /// import 'package:flutter_application_1/flutter_flow/flutter_flow.dart';
 /// ```
 
-library;
+library ;
 
 // Core utilities
 export 'flutter_flow_theme.dart';
