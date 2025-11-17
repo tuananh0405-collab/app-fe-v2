@@ -82,9 +82,7 @@ public class FaceEmbedding {
                             .add(new ResizeOp(IMG_SIZE, IMG_SIZE, ResizeOp.ResizeMethod.BILINEAR))
                             .add(new StandardizeOp())
                             .build();
-                    
-                    Log.d(TAG, "Loaded FaceNet model successfully");
-                    
+                                        
                     // Kiểm tra model
                     inspectModel();
                     

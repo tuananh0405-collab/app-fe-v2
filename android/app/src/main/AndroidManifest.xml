@@ -59,6 +59,12 @@
             android:launchMode="singleTop"
             android:theme="@style/AppCompatTheme" />
         
+        <activity
+            android:name=".faceid.ui.setting.StudentSettingUpdateFaceIdActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:theme="@style/AppCompatTheme" />
+        
         <!-- Firebase Cloud Messaging -->
         <service
             android:name="com.google.firebase.messaging.FirebaseMessagingService"

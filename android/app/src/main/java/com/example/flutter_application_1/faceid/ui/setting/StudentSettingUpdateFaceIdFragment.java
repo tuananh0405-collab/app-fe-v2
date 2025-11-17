@@ -116,12 +116,37 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
 
         Log.d(TAG, "✅ Fragment initialized with clean architecture");
         // ✅ REMOVED: Không cần ẩn navbar vì đang chạy trong Activity riêng biệt
+
+        // If this fragment was opened from the "already registered" dialog, show a helpful message
+        try {
+            if (getActivity() != null && getActivity().getIntent() != null) {
+                boolean fromAlready = getActivity().getIntent().getBooleanExtra("from_already_registered", false);
+                if (fromAlready) {
+                    Log.d(TAG, "Opened from already-registered flow, prompting user to capture a new image");
+                    if (binding != null && binding.tvStatusMessage != null) {
+                        binding.tvStatusMessage.setText("Bạn đã có Face ID. Vui lòng chụp ảnh mới để cập nhật.");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Error while reading intent extras", e);
+        }
     }
 
     /**
      * 🏗️ Initialize all core components
      */
     private void initializeComponents() {
+        // 0. Try to get and save userId from Intent first (passed from Register screen)
+        if (getActivity() != null && getActivity().getIntent() != null) {
+            String userId = getActivity().getIntent().getStringExtra("userId");
+            if (userId != null && !userId.isEmpty()) {
+                // Save to AuthManager immediately
+                AuthManager.getInstance(requireContext()).setUserId(userId);
+                Log.d(TAG, "📝 Received userId from Intent: " + userId);
+            }
+        }
+        
         // 1. State Manager with callback
         stateManager = new FaceRegistrationStateManager();
         stateManager.setStateChangeListener(this::onStateChanged);
@@ -1066,14 +1091,19 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
                             return;
                         }
 
-                        Log.e(TAG, "❌ Registration failed: " + errorMessage);
+                        Log.e(TAG, "❌ Update failed: " + errorMessage);
 
                         // Store detailed error information for UI display
-                        lastDetailedErrorMessage = "Registration failure details:\n" + errorMessage;
+                        lastDetailedErrorMessage = "Update failure details:\n" + errorMessage;
                         hasDetailedError = true;
 
-                        // 🔧 NEW: Enhanced error categorization
-                        if (errorMessage.contains("timeout") || errorMessage.contains("Timeout")) {
+                        // 🔧 ENHANCED: Better error categorization for update failures
+                        if (errorMessage.contains("similarity") && errorMessage.contains("below threshold")) {
+                            // Face similarity too low - not the same person
+                            lastDetailedErrorMessage += "\n\nError type: Face Mismatch";
+                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
+                                    "Face verification failed. The captured face does not match your registered face. Please try again.");
+                        } else if (errorMessage.contains("timeout") || errorMessage.contains("Timeout")) {
                             lastDetailedErrorMessage += "\n\nError type: Network Timeout";
                             handleNetworkError("Request timeout. Please try again.");
                         } else if (errorMessage.contains("Network error") || errorMessage.contains("Cannot connect")) {
@@ -1090,11 +1120,11 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
                         } else if (errorMessage.contains("spoof") || errorMessage.contains("Spoof")) {
                             lastDetailedErrorMessage += "\n\nError type: Spoof Detection";
                             stateManager.transitionTo(FaceRegistrationState.FAILED_SPOOF,
-                                    "Registration failed: " + errorMessage);
+                                    "Update failed: " + errorMessage);
                         } else {
                             lastDetailedErrorMessage += "\n\nError type: Other/Unknown";
                             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-                                    "Registration failed: " + errorMessage);
+                                    "Update failed: " + errorMessage);
                         }
                     }
                 });
@@ -1209,10 +1239,8 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
             return;
         }
 
-        // Handle all errors in a unified way - no longer using separate handler for network errors
-
         // Prepare error message based on state
-        String title = "Registration Failed";
+        String title = "Update Failed";
         String message;
 
         // Set appropriate message based on error type
@@ -1220,7 +1248,17 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
             title = "Network Connection Issue";
             message = "Cannot connect to the server. Please check your internet connection and try again.";
         } else if (state == FaceRegistrationState.FAILED_SPOOF) {
+            title = "Spoof Detection";
             message = "Spoof detection triggered. Please ensure you're using a real face and not a photo or video.\n\nWould you like to try again?";
+        } else if (state == FaceRegistrationState.FAILED_OTHER) {
+            // Check if this is a face mismatch error
+            if (lastDetailedErrorMessage.contains("similarity") || lastDetailedErrorMessage.contains("Face Mismatch")) {
+                title = "Face Verification Failed";
+                message = "The captured face does not match your registered face.\n\nThis could be due to:\n• Poor lighting conditions\n• Different facial angle\n• Face partially covered\n• Wrong person\n\nPlease ensure you are the registered user and try again with better lighting.";
+            } else {
+                title = "Update Failed";
+                message = state.getDefaultMessage() + "\n\nWould you like to try again?";
+            }
         } else {
             message = state.getDefaultMessage() + "\n\nWould you like to try again?";
         }

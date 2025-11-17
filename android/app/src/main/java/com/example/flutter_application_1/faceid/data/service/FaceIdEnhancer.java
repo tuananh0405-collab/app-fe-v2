@@ -537,10 +537,7 @@ public class FaceIdEnhancer implements
                 HeadDirection detected = HeadDirection.valueOf(detectedDir);
                 detectedDirection = detected;
                 
-                Log.d(TAG, String.format("HEAD POSE: yaw=%.1f°, pitch=%.1f°, roll=%.1f° → %s (challenge: %s)",
-                      headPoseEstimation.getYaw(), headPoseEstimation.getPitch(), headPoseEstimation.getRoll(),
-                      detected, currentChallenge));
-                
+            
                 // Use 3-step challenge if active
                 if (threeStepChallengeActive) {
                     processThreeStepChallenge(detected);

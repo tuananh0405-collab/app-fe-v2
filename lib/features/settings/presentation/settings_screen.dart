@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/localization/settings_localizations.dart';
 import '../../../core/routing/routes.dart';
 import '../../../core/services/push_notification_providers.dart';
 import '../../../flutter_flow/flutter_flow.dart';
@@ -14,6 +15,7 @@ class SettingsScreen extends ConsumerWidget {
     final theme = FlutterFlowTheme.of(context);
     final l10n = AppLocalizations.of(context);
     final home = l10n.home;
+    final settings = l10n.settings;
     final currentLocale = ref.watch(localeProvider);
 
     return Scaffold(
@@ -42,7 +44,7 @@ class SettingsScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Text(
-                    'Language / Ngôn ngữ',
+                    settings.language,
                     style: theme.subtitle2.override(
                       color: theme.secondaryText,
                       fontWeight: FontWeight.w600,
@@ -53,25 +55,30 @@ class SettingsScreen extends ConsumerWidget {
                   context: context,
                   ref: ref,
                   theme: theme,
+                  settings: settings,
                   flag: '🇬🇧',
-                  languageName: 'English',
+                  languageName: settings.english,
                   locale: const Locale('en'),
                   isSelected: currentLocale.languageCode == 'en',
                 ),
-                Divider(height: 1, color: theme.secondaryText.withValues(alpha: 0.2)),
+                Divider(
+                  height: 1,
+                  color: theme.secondaryText.withValues(alpha: 0.2),
+                ),
                 _buildLanguageOption(
                   context: context,
                   ref: ref,
                   theme: theme,
+                  settings: settings,
                   flag: '🇻🇳',
-                  languageName: 'Tiếng Việt',
+                  languageName: settings.vietnamese,
                   locale: const Locale('vi'),
                   isSelected: currentLocale.languageCode == 'vi',
                 ),
               ],
             ),
           ),
-          
+
           // Notifications Section
           const SizedBox(height: 8),
           Container(
@@ -82,7 +89,7 @@ class SettingsScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Text(
-                    'Notifications / Thông báo',
+                    settings.notifications,
                     style: theme.subtitle2.override(
                       color: theme.secondaryText,
                       fontWeight: FontWeight.w600,
@@ -92,32 +99,37 @@ class SettingsScreen extends ConsumerWidget {
                 _buildSettingItem(
                   theme: theme,
                   icon: Icons.tune,
-                  title: 'Notification Preferences / Tùy chọn thông báo',
-                  subtitle: 'Manage notification settings / Quản lý cài đặt thông báo',
+                  title: settings.notificationPreferences,
+                  subtitle: settings.notificationPreferencesSubtitle,
                   onTap: () {
                     context.push(AppRoutePath.notificationPreferences);
                   },
                 ),
-                Divider(height: 1, color: theme.secondaryText.withValues(alpha: 0.2)),
+                Divider(
+                  height: 1,
+                  color: theme.secondaryText.withValues(alpha: 0.2),
+                ),
                 SwitchListTile(
                   title: Text(
-                    'Push Notifications / Thông báo đẩy',
+                    settings.pushNotifications,
                     style: theme.bodyText1,
                   ),
                   subtitle: Text(
-                    'Receive push notifications for updates / Nhận thông báo đẩy cho các cập nhật',
+                    settings.pushNotificationsSubtitle,
                     style: theme.bodyText2.override(color: theme.secondaryText),
                   ),
                   value: ref.watch(pushNotificationEnabledProvider),
                   onChanged: (value) {
-                    ref.read(pushNotificationEnabledProvider.notifier).setEnabled(value);
+                    ref
+                        .read(pushNotificationEnabledProvider.notifier)
+                        .setEnabled(value);
                   },
                   activeColor: theme.primaryColor,
                 ),
               ],
             ),
           ),
-          
+
           // Other Settings Sections
           const SizedBox(height: 8),
           Container(
@@ -128,7 +140,7 @@ class SettingsScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Text(
-                    'General / Chung',
+                    settings.general,
                     style: theme.subtitle2.override(
                       color: theme.secondaryText,
                       fontWeight: FontWeight.w600,
@@ -138,16 +150,19 @@ class SettingsScreen extends ConsumerWidget {
                 _buildSettingItem(
                   theme: theme,
                   icon: Icons.notifications_outlined,
-                  title: 'Notifications / Thông báo',
+                  title: settings.notifications,
                   onTap: () {
                     // TODO: Navigate to notifications settings
                   },
                 ),
-                Divider(height: 1, color: theme.secondaryText.withValues(alpha: 0.2)),
+                Divider(
+                  height: 1,
+                  color: theme.secondaryText.withValues(alpha: 0.2),
+                ),
                 _buildSettingItem(
                   theme: theme,
                   icon: Icons.security_outlined,
-                  title: 'Privacy / Quyền riêng tư',
+                  title: settings.privacy,
                   onTap: () {
                     // TODO: Navigate to privacy settings
                   },
@@ -155,7 +170,7 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 8),
           Container(
             color: theme.secondaryBackground,
@@ -165,7 +180,7 @@ class SettingsScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Text(
-                    'About / Thông tin',
+                    settings.about,
                     style: theme.subtitle2.override(
                       color: theme.secondaryText,
                       fontWeight: FontWeight.w600,
@@ -175,7 +190,7 @@ class SettingsScreen extends ConsumerWidget {
                 _buildSettingItem(
                   theme: theme,
                   icon: Icons.info_outline,
-                  title: 'App Version / Phiên bản',
+                  title: settings.appVersion,
                   trailing: Text(
                     '1.0.0',
                     style: theme.bodyText2.override(color: theme.secondaryText),
@@ -194,16 +209,14 @@ class SettingsScreen extends ConsumerWidget {
     required BuildContext context,
     required WidgetRef ref,
     required FlutterFlowTheme theme,
+    required SettingsLocalizations settings,
     required String flag,
     required String languageName,
     required Locale locale,
     required bool isSelected,
   }) {
     return ListTile(
-      leading: Text(
-        flag,
-        style: const TextStyle(fontSize: 28),
-      ),
+      leading: Text(flag, style: const TextStyle(fontSize: 28)),
       title: Text(
         languageName,
         style: theme.subtitle1.override(
@@ -218,7 +231,7 @@ class SettingsScreen extends ConsumerWidget {
         ref.read(localeProvider.notifier).state = locale;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Language changed to $languageName'),
+            content: Text('${settings.languageChanged} $languageName'),
             duration: const Duration(seconds: 2),
             backgroundColor: theme.success,
           ),

@@ -5,6 +5,7 @@ import 'leave_localizations.dart';
 import 'notification_localizations.dart';
 import 'notification_preference_localizations.dart';
 import 'home_localizations.dart';
+import 'settings_localizations.dart';
 
 // Locale Provider - Simple state management without persistence
 final localeProvider = StateProvider<Locale>((ref) => const Locale('en'));
@@ -12,12 +13,13 @@ final localeProvider = StateProvider<Locale>((ref) => const Locale('en'));
 // Main App Localizations - Aggregates all feature localizations
 class AppLocalizations {
   final Locale locale;
-  
+
   late final CommonLocalizations common;
   late final LeaveLocalizations leave;
   late final NotificationLocalizations notification;
   late final NotificationPreferenceLocalizations notificationPreference;
   late final HomeLocalizations home;
+  late final SettingsLocalizations settings;
 
   AppLocalizations(this.locale) {
     common = CommonLocalizations(locale);
@@ -25,6 +27,7 @@ class AppLocalizations {
     notification = NotificationLocalizations(locale);
     notificationPreference = NotificationPreferenceLocalizations(locale);
     home = HomeLocalizations(locale);
+    settings = SettingsLocalizations(locale);
   }
 
   static AppLocalizations of(BuildContext context) {

@@ -8,12 +8,14 @@ import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/localization/app_localizations.dart';
 import 'core/services/push_notification_providers.dart';
-import 'core/services/push_notification_providers.dart';
 import 'faceid_channel.dart';
 import 'flutter_flow/flutter_flow.dart';
 import 'features/face_id/face_id_success_handler.dart';
 
 import 'core/providers/common_providers.dart';
+
+// Global key for navigation
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,8 +44,76 @@ void main() async {
     overrides: [
       sharedPreferencesProvider.overrideWithValue(sharedPreferences),
     ],
-    child: const MyApp(),
+    child: const PushNotificationInitializer(
+      child: MyApp(),
+    ),
   ));
+}
+
+/// Widget to initialize push notifications
+class PushNotificationInitializer extends ConsumerStatefulWidget {
+  final Widget child;
+  
+  const PushNotificationInitializer({
+    super.key,
+    required this.child,
+  });
+
+  @override
+  ConsumerState<PushNotificationInitializer> createState() => _PushNotificationInitializerState();
+}
+
+class _PushNotificationInitializerState extends ConsumerState<PushNotificationInitializer> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize push notifications after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initPushNotifications();
+    });
+  }
+
+  Future<void> _initPushNotifications() async {
+    try {
+      final manager = ref.read(pushNotificationManagerProvider);
+      
+      // Initialize with callbacks
+      await manager.initialize(
+        onNotificationTapped: (message) {
+          debugPrint('📱 Notification tapped: ${message.messageId}');
+          debugPrint('📱 Title: ${message.notification?.title}');
+          debugPrint('📱 Body: ${message.notification?.body}');
+          debugPrint('📱 Data: ${message.data}');
+          
+          // TODO: Handle navigation based on notification data
+          // Example: 
+          // if (message.data['type'] == 'leave_request') {
+          //   navigatorKey.currentState?.pushNamed('/leave-detail', arguments: message.data['id']);
+          // }
+        },
+        onForegroundMessage: (message) {
+          debugPrint('📬 Foreground message received: ${message.messageId}');
+          debugPrint('📬 Title: ${message.notification?.title}');
+          debugPrint('📬 Body: ${message.notification?.body}');
+          debugPrint('📬 Data: ${message.data}');
+          
+          // Local notification will be shown automatically by the service
+        },
+      );
+      
+      // Register token if notifications are enabled
+      await manager.registerCurrentToken();
+      
+      debugPrint('✅ Push notifications initialized successfully');
+    } catch (e) {
+      debugPrint('❌ Error initializing push notifications: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
 }
 
 class MyApp extends ConsumerWidget {

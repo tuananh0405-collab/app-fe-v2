@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,9 +15,13 @@ import com.example.flutter_application_1.auth.AuthManager;
 import io.flutter.plugin.common.MethodChannel;
 
 /**
- * Success Activity cho Face ID Registration
- * Gửi dữ liệu thành công về Flutter và finish ngay lập tức
- * Không hiển thị UI native nữa
+ * Success Activity cho Face ID Registration/Update
+ * Hiển thị màn hình success với UI native và gửi dữ liệu về Flutter để sync state
+ * 
+ * Flow:
+ * 1. Hiển thị UI success với thông tin phù hợp (register/update/verify)
+ * 2. Gửi data về Flutter để sync state
+ * 3. User nhấn Continue/Back để quay về Flutter
  */
 public class FaceIdSuccessActivity extends AppCompatActivity {
     private static final String TAG = "FaceIdSuccessActivity";
@@ -100,14 +108,72 @@ public class FaceIdSuccessActivity extends AppCompatActivity {
             }
         }
         
-        // ✅ NEW: Không hiển thị UI native nữa, chỉ gửi dữ liệu về Flutter và finish
-        Log.d(TAG, "🎯 Face ID success - sending data to Flutter and finishing");
+        // ✅ UPDATED: Hiển thị UI success trước khi về Flutter
+        Log.d(TAG, "🎯 Face ID success - showing success screen");
         
-        // Gửi dữ liệu về Flutter ngay lập tức
+        // Inflate layout để hiển thị UI success
+        setContentView(com.example.flutter_application_1.R.layout.activity_face_id_success);
+        
+        // Lấy thông tin từ intent
+        String action = getIntent().getStringExtra(EXTRA_ACTION);
+        String userName = getIntent().getStringExtra(EXTRA_USER_NAME);
+        boolean showUpdateButton = getIntent().getBooleanExtra(EXTRA_SHOW_UPDATE_BUTTON, false);
+        
+        // Setup UI elements
+        setupUI(action, userName, showUpdateButton);
+        
+        // Gửi dữ liệu về Flutter (để sync state)
         sendSuccessDataToFlutter();
+    }
+    
+    /**
+     * Setup UI elements based on action type
+     */
+    private void setupUI(String action, String userName, boolean showUpdateButton) {
+        // Find views
+        android.widget.TextView tvSuccessTitle = findViewById(com.example.flutter_application_1.R.id.tvSuccessTitle);
+        android.widget.TextView tvSuccessSubtitle = findViewById(com.example.flutter_application_1.R.id.tvSuccessSubtitle);
+        android.widget.ImageView ivBack = findViewById(com.example.flutter_application_1.R.id.ivBack);
+        android.widget.Button btnContinue = findViewById(com.example.flutter_application_1.R.id.btnContinue);
+        android.widget.Button btnUpdateFaceId = findViewById(com.example.flutter_application_1.R.id.btnUpdateFaceId);
         
-        // Finish activity ngay lập tức để về Flutter
-        finish();
+        // Set text based on action
+        if ("register".equals(action)) {
+            tvSuccessTitle.setText("Face ID Registered Successfully!");
+            tvSuccessSubtitle.setText("Now you can use your Face ID for quick and secure verification.");
+        } else if ("update".equals(action)) {
+            tvSuccessTitle.setText("Face ID Updated Successfully!");
+            tvSuccessSubtitle.setText("Your Face ID has been updated. You can now use it for verification.");
+        } else if ("verify".equals(action)) {
+            tvSuccessTitle.setText("Verification Successful!");
+            tvSuccessSubtitle.setText("Welcome back" + (userName != null ? ", " + userName : "") + "!");
+        }
+        
+        // Show/hide update button
+        if (showUpdateButton && btnUpdateFaceId != null) {
+            btnUpdateFaceId.setVisibility(android.view.View.VISIBLE);
+            btnUpdateFaceId.setOnClickListener(v -> {
+                // Navigate to update Face ID screen
+                Log.d(TAG, "Update Face ID button clicked");
+                // TODO: Navigate to update screen
+                finish();
+            });
+        }
+        
+        // Back button
+        if (ivBack != null) {
+            ivBack.setOnClickListener(v -> {
+                finish();
+            });
+        }
+        
+        // Continue button
+        if (btnContinue != null) {
+            btnContinue.setOnClickListener(v -> {
+                Log.d(TAG, "Continue button clicked - finishing activity");
+                finish();
+            });
+        }
     }
     
     private void sendSuccessDataToFlutter() {
