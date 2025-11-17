@@ -29,6 +29,11 @@ class PushNotificationEnabledNotifier extends Notifier<bool> {
       await manager.initialize();
       await manager.registerCurrentToken();
     }
+    
+    if (!enabled) {
+      final manager = ref.read(pushNotificationManagerProvider);
+      await manager.unregisterPushToken();
+    }
   }
 }
 

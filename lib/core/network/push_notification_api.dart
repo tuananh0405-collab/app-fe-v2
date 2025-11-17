@@ -27,7 +27,6 @@ class PushNotificationApi {
         ));
       }
     } on DioException catch (e) {
-      debugPrint('-----------------------------------------------------------------------------------DioException in registerPushToken: ${e.type}, ${e.message}, ${e.error}');
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         return Left(ServerFailure('Connection timeout'));
@@ -49,7 +48,7 @@ class PushNotificationApi {
     UnregisterPushTokenDto dto,
   ) async {
     try {
-      final response = await _dio.post(
+      final response = await _dio.delete(
         '/notification/push-tokens/unregister',
         data: dto.toJson(),
       );

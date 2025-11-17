@@ -75,7 +75,7 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
     private FaceIdService faceIdService;
     private FaceIdEnhancer faceIdEnhancer; // Add FaceIdEnhancer
     private boolean faceIdEnhancerInitialized = false;
-    private boolean faceIdServiceInitialized = false; // Add this line to declare the missing field
+    private boolean faceIdServiceInitialized = false;
 
     // Analysis UI components
     private View analysisOverlay;

@@ -95,17 +95,12 @@ class PushNotificationManager {
   Future<void> unregisterPushToken() async {
     try {
       final deviceId = _notificationService.deviceId;
-      final token = _notificationService.fcmToken;
-      
-      if (deviceId == null && token == null) {
-        debugPrint('No device ID or token to unregister');
+      if (deviceId == null) {
+        debugPrint('No device ID available to unregister');
         return;
       }
-      
-      final dto = models.UnregisterPushTokenDto(
-        deviceId: deviceId,
-        token: token,
-      );
+
+      final dto = models.UnregisterPushTokenDto(deviceId: deviceId);
       
       final result = await _api.unregisterPushToken(dto);
       

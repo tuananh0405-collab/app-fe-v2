@@ -50,20 +50,17 @@ class RegisterPushTokenDto {
 }
 
 class UnregisterPushTokenDto {
-  final String? deviceId;
-  final String? token;
+  final String deviceId;
 
-  UnregisterPushTokenDto({this.deviceId, this.token});
+  UnregisterPushTokenDto({required this.deviceId});
 
   Map<String, dynamic> toJson() => {
-        if (deviceId != null) 'deviceId': deviceId,
-        if (token != null) 'token': token,
+        'deviceId': deviceId,
       };
 
   factory UnregisterPushTokenDto.fromJson(Map<String, dynamic> json) {
     return UnregisterPushTokenDto(
-      deviceId: json['deviceId'] as String?,
-      token: json['token'] as String?,
+      deviceId: json['deviceId'] as String? ?? '',
     );
   }
 }
