@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'common_localizations.dart';
 import 'leave_localizations.dart';
 import 'notification_localizations.dart';
+import 'notification_preference_localizations.dart';
 import 'home_localizations.dart';
 
 // Locale Provider - Simple state management without persistence
@@ -15,12 +16,14 @@ class AppLocalizations {
   late final CommonLocalizations common;
   late final LeaveLocalizations leave;
   late final NotificationLocalizations notification;
+  late final NotificationPreferenceLocalizations notificationPreference;
   late final HomeLocalizations home;
 
   AppLocalizations(this.locale) {
     common = CommonLocalizations(locale);
     leave = LeaveLocalizations(locale);
     notification = NotificationLocalizations(locale);
+    notificationPreference = NotificationPreferenceLocalizations(locale);
     home = HomeLocalizations(locale);
   }
 

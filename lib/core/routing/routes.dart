@@ -21,6 +21,7 @@ class AppRouteName {
   // Notifications
   static const notifications = 'notifications';
   static const notificationsManage = 'notifications-manage';
+  static const notificationPreferences = 'notification-preferences';
 
   // Profile
   static const profile = 'profile';
@@ -64,6 +65,7 @@ class AppRoutePath {
   // Notifications
   static const notifications = '/notifications';
   static const notificationsManage = '/notifications/manage';
+  static const notificationPreferences = '/notifications/preferences';
 
   // Profile
   static const profile = '/profile';

@@ -1,6 +1,7 @@
 import 'package:flutter_application_1/features/profile/presentation/profile_screen.dart';
 import 'package:flutter_application_1/features/profile/presentation/profile_detail_screen.dart';
 import 'package:flutter_application_1/features/notifications/presentation/pages/notifications_list_screen.dart';
+import 'package:flutter_application_1/features/notification_preferences/presentation/pages/notification_preferences_screen.dart';
 import 'package:flutter_application_1/features/leave/presentation/screens/leave_list_screen.dart';
 import 'package:flutter_application_1/features/leave/presentation/screens/create_leave_screen.dart';
 import 'package:flutter_application_1/features/leave/presentation/screens/leave_detail_screen.dart';
@@ -153,6 +154,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutePath.notificationsManage,
         name: AppRouteName.notificationsManage,
         builder: (c, s) => const StubScreen(title: 'Manage Notifications'),
+      ),
+      GoRoute(
+        path: AppRoutePath.notificationPreferences,
+        name: AppRouteName.notificationPreferences,
+        builder: (context, state) {
+          // Get employee ID from login state
+          final ref = ProviderScope.containerOf(context);
+          final loginState = ref.read(loginControllerProvider);
+          final employeeId = int.tryParse(loginState.user?.id ?? '0') ?? 0;
+          
+          return NotificationPreferencesScreen(employeeId: employeeId);
+        },
       ),
 
       // Profile & Contract

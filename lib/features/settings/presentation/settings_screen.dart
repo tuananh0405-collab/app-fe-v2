@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/routing/routes.dart';
 import '../../../core/services/push_notification_providers.dart';
 import '../../../flutter_flow/flutter_flow.dart';
 
@@ -87,6 +89,16 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                _buildSettingItem(
+                  theme: theme,
+                  icon: Icons.tune,
+                  title: 'Notification Preferences / Tùy chọn thông báo',
+                  subtitle: 'Manage notification settings / Quản lý cài đặt thông báo',
+                  onTap: () {
+                    context.push(AppRoutePath.notificationPreferences);
+                  },
+                ),
+                Divider(height: 1, color: theme.secondaryText.withValues(alpha: 0.2)),
                 SwitchListTile(
                   title: Text(
                     'Push Notifications / Thông báo đẩy',
@@ -219,6 +231,7 @@ class SettingsScreen extends ConsumerWidget {
     required FlutterFlowTheme theme,
     required IconData icon,
     required String title,
+    String? subtitle,
     Widget? trailing,
     VoidCallback? onTap,
   }) {
@@ -228,6 +241,12 @@ class SettingsScreen extends ConsumerWidget {
         title,
         style: theme.subtitle1.override(color: theme.primaryText),
       ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: theme.bodyText2.override(color: theme.secondaryText),
+            )
+          : null,
       trailing: trailing ?? const Icon(Icons.chevron_right),
       onTap: onTap,
       enabled: onTap != null,
