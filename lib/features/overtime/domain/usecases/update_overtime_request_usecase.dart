@@ -3,15 +3,14 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../entities/overtime_entity.dart';
 import '../repositories/overtime_repository.dart';
-
 class UpdateOvertimeRequestUseCase
-    implements UseCase<OvertimeEntity, UpdateOvertimeRequestParams> {
+    implements UseCase<void, UpdateOvertimeRequestParams> {
   final OvertimeRepository repository;
 
   UpdateOvertimeRequestUseCase(this.repository);
 
   @override
-  Future<Either<Failure, OvertimeEntity>> call(
+  Future<Either<Failure, void>> call(
       UpdateOvertimeRequestParams params) async {
     return await repository.updateOvertimeRequest(
       overtimeId: params.overtimeId,

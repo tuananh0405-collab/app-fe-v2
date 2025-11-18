@@ -21,7 +21,7 @@ abstract class OvertimeRepository {
     required int overtimeId,
   });
 
-  Future<Either<Failure, OvertimeEntity>> updateOvertimeRequest({
+  Future<Either<Failure, void>> updateOvertimeRequest({
     required int overtimeId,
     required int shiftId,
     required DateTime overtimeDate,

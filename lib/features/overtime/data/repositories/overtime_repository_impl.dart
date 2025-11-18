@@ -88,7 +88,7 @@ class OvertimeRepositoryImpl implements OvertimeRepository {
   }
 
   @override
-  Future<Either<Failure, OvertimeEntity>> updateOvertimeRequest({
+  Future<Either<Failure, void>> updateOvertimeRequest({
     required int overtimeId,
     required int shiftId,
     required DateTime overtimeDate,
@@ -99,7 +99,7 @@ class OvertimeRepositoryImpl implements OvertimeRepository {
   }) async {
     if (await networkInfo.isConnected) {
       try {
-        final overtime = await remoteDataSource.updateOvertimeRequest(
+        await remoteDataSource.updateOvertimeRequest(
           overtimeId: overtimeId,
           shiftId: shiftId,
           overtimeDate: overtimeDate,
@@ -108,7 +108,7 @@ class OvertimeRepositoryImpl implements OvertimeRepository {
           estimatedHours: estimatedHours,
           reason: reason,
         );
-        return Right(overtime);
+        return const Right(null); // Hoặc Right(unit) nếu dùng dartz
       } on UnauthorizedException catch (e) {
         return Left(AuthFailure(e.message));
       } on ServerException catch (e) {

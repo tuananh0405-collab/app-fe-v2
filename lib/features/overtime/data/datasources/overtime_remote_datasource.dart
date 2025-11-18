@@ -22,7 +22,7 @@ abstract class OvertimeRemoteDataSource {
     required int overtimeId,
   });
 
-  Future<OvertimeModel> updateOvertimeRequest({
+  Future<void> updateOvertimeRequest({
     required int overtimeId,
     required int shiftId,
     required DateTime overtimeDate,
@@ -186,7 +186,7 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
   }
 
   @override
-  Future<OvertimeModel> updateOvertimeRequest({
+  Future<void> updateOvertimeRequest({
     required int overtimeId,
     required int shiftId,
     required DateTime overtimeDate,
@@ -206,20 +206,16 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
         },
       );
 
-      final apiResponse = OvertimeApiResponseModel.fromJson(
-        response.data,
-        (data) => OvertimeModel.fromJson(data as Map<String, dynamic>),
-      );
-
-      if (response.statusCode == 200) {
-        if (apiResponse.data == null) {
-          throw const ServerException('Overtime request data is null');
-        }
-        return apiResponse.data!;
+       if (response.statusCode == 200) {
+        return; // Success
       } else if (response.statusCode == 401) {
-        throw UnauthorizedException(apiResponse.message);
+        throw UnauthorizedException(
+          response.data['message'] ?? 'Unauthorized',
+        );
       } else {
-        throw ServerException(apiResponse.message);
+        throw ServerException(
+          response.data['message'] ?? 'Update failed',
+        );
       }
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {

@@ -124,7 +124,10 @@ class OvertimeController extends Notifier<OvertimeState> {
     required String reason,
   }) async {
     state = state.copyWith(
-        isSubmitting: true, clearError: true, clearSuccess: true);
+      isSubmitting: true,
+      clearError: true,
+      clearSuccess: true,
+    );
 
     final result = await _updateOvertimeRequestUseCase(
       UpdateOvertimeRequestParams(
@@ -145,11 +148,10 @@ class OvertimeController extends Notifier<OvertimeState> {
           errorMessage: failure.message,
         );
       },
-      (overtime) {
+      (_) {
         state = state.copyWith(
           isSubmitting: false,
           successMessage: 'Đơn làm thêm giờ đã được cập nhật thành công',
-          selectedOvertime: overtime,
         );
         // Refresh overtime requests after updating
         getMyOvertimeRequests();
