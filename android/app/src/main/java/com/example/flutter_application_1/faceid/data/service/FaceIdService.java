@@ -996,7 +996,24 @@ public class FaceIdService {
                                 authManager.setFaceIdRegistered(true);
                                 runOnMainThread(() -> callback.onSuccess("Face ID updated successfully"));
                             } else {
-                                runOnMainThread(() -> callback.onFailure("Failed to update Face ID: " + response.message()));
+                                // Try to parse error body for detailed message
+                                String errorMessage = response.message();
+                                try {
+                                    if (response.errorBody() != null) {
+                                        String errorBodyString = response.errorBody().string();
+                                        // Try to parse as JSON
+                                        com.google.gson.Gson gson = new com.google.gson.Gson();
+                                        FaceIdResponse errorResponse = gson.fromJson(errorBodyString, FaceIdResponse.class);
+                                        if (errorResponse != null && errorResponse.getMessage() != null) {
+                                            errorMessage = errorResponse.getMessage();
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    // If parsing fails, use the default message
+                                    Log.w("FaceIdService", "Failed to parse error body: " + e.getMessage());
+                                }
+                                final String finalErrorMessage = errorMessage;
+                                runOnMainThread(() -> callback.onFailure("Failed to update Face ID: " + finalErrorMessage));
                             }
                         }
                         

@@ -14,6 +14,7 @@ class AppRouteName {
   static const leaveEdit = 'leave-edit';
 
   // Overtimes
+  static const overtimes = 'overtimes';
   static const overtimesCreate = 'overtimes-create';
   static const overtimeDetail = 'overtime-detail';
   static const overtimeEdit = 'overtime-edit';
@@ -58,6 +59,7 @@ class AppRoutePath {
   static String leaveEdit(String id) => '/leaves/$id/edit';
 
   // Overtimes
+  static const overtimes = '/overtimes';
   static const overtimesCreate = '/overtimes/create';
   static String overtimeDetail(String id) => '/overtimes/$id';
   static String overtimeEdit(String id) => '/overtimes/$id/edit';

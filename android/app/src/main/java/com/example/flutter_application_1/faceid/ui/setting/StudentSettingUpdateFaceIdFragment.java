@@ -1013,177 +1013,251 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
     }
 
     /**
-     * 📸 Capture and Update face with enhanced security validation
+     *  Capture and Update face with enhanced security validation
      */
     private void captureAndUpdateFace() {
-        // Check if fragment is still attached
-        if (!isAdded()) {
-            Log.w(TAG, "Fragment not attached, cannot capture and Update face");
-            return;
-        }
-
-        if (currentFrameBitmap == null || currentFaceRect == null) {
-            Log.w(TAG, "⚠️ Cannot capture - no frame or face rect");
-            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-                    "Capture failed - no data available");
-            return;
-        }
-
-        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Processing face data...");
-
-        // Check again if fragment is still attached
-        if (!isAdded()) {
-            Log.w(TAG, "Fragment detached during face registration process");
-            return;
-        }
-
-        String userId;
-        try {
-            userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
-            if (userId == null || userId.isEmpty()) {
-                Log.e(TAG, "❌ No user ID available");
-                stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "User not logged in");
-                return;
-            }
-        } catch (IllegalStateException e) {
-            Log.e(TAG, "❌ Fragment not attached when getting user ID", e);
-            return;
-        }
-
-        // Stop camera before registration to prevent infinite loop on error
-        stopCamera();
-
-        // Capture local copies for use in callback
-        final Bitmap capturedBitmap = currentFrameBitmap;
-        final Rect capturedFaceRect = currentFaceRect;
-        final String finalUserId = userId;
-
-        // 🔧 NEW: Show progress updates
-        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Generating face embedding...");
-
-        // Kiểm tra và ẩn overlay phân tích nếu đang hiển thị
-        if (analysisOverlay != null && analysisOverlay.getVisibility() == View.VISIBLE) {
-            analysisOverlay.setVisibility(View.GONE);
-        }
-
-        // 🎯 Update face with enhanced security validation
-        faceIdService.captureAndUpdateFace(
-                capturedBitmap,
-                capturedFaceRect,
-                faceOverlayView != null ? faceOverlayView.getOvalRect() : null,
-                finalUserId,
-                new FaceIdService.FaceIdCallback() {
-                    @Override
-                    public void onSuccess(String message) {
-                        if (!isAdded()) {
-                            Log.w(TAG, "Fragment not attached during success callback");
-                            return;
-                        }
-
-                        Log.d(TAG, "✅ Registration successful: " + message);
-                        stateManager.transitionTo(FaceRegistrationState.SUCCESS, message);
-                    }
-
-                    @Override
-                    public void onFailure(String errorMessage) {
-                        if (!isAdded()) {
-                            Log.w(TAG, "Fragment not attached during failure callback");
-                            return;
-                        }
-
-                        Log.e(TAG, "❌ Update failed: " + errorMessage);
-
-                        // Store detailed error information for UI display
-                        lastDetailedErrorMessage = "Update failure details:\n" + errorMessage;
-                        hasDetailedError = true;
-
-                        // 🔧 ENHANCED: Better error categorization for update failures
-                        if (errorMessage.contains("similarity") && errorMessage.contains("below threshold")) {
-                            // Face similarity too low - not the same person
-                            lastDetailedErrorMessage += "\n\nError type: Face Mismatch";
-                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-                                    "Face verification failed. The captured face does not match your registered face. Please try again.");
-                        } else if (errorMessage.contains("timeout") || errorMessage.contains("Timeout")) {
-                            lastDetailedErrorMessage += "\n\nError type: Network Timeout";
-                            handleNetworkError("Request timeout. Please try again.");
-                        } else if (errorMessage.contains("Network error") || errorMessage.contains("Cannot connect")) {
-                            lastDetailedErrorMessage += "\n\nError type: Network Connectivity";
-                            handleNetworkError(errorMessage);
-                        } else if (errorMessage.contains("Authentication failed")) {
-                            lastDetailedErrorMessage += "\n\nError type: Authentication";
-                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-                                    "Authentication failed. Please login again.");
-                        } else if (errorMessage.contains("Server error")) {
-                            lastDetailedErrorMessage += "\n\nError type: Server";
-                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-                                    "Server error. Please try again later.");
-                        } else if (errorMessage.contains("spoof") || errorMessage.contains("Spoof")) {
-                            lastDetailedErrorMessage += "\n\nError type: Spoof Detection";
-                            stateManager.transitionTo(FaceRegistrationState.FAILED_SPOOF,
-                                    "Update failed: " + errorMessage);
-                        } else {
-                            lastDetailedErrorMessage += "\n\nError type: Other/Unknown";
-                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-                                    "Update failed: " + errorMessage);
-                        }
-                    }
-                });
+    // Check if fragment is still attached
+    if (!isAdded()) {
+        Log.w(TAG, "Fragment not attached, cannot capture and Update face");
+        return;
     }
+
+    if (currentFrameBitmap == null || currentFaceRect == null) {
+        Log.w(TAG, "⚠️ Cannot capture - no frame or face rect");
+        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
+                "Capture failed - no data available");
+        return;
+    }
+
+    stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Processing face data...");
+
+    // Check again if fragment is still attached
+    if (!isAdded()) {
+        Log.w(TAG, "Fragment detached during face registration process");
+        return;
+    }
+String userId;
+    try {
+        userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
+        if (userId == null || userId.isEmpty()) {
+            Log.e(TAG, "❌ No user ID available");
+            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "User not logged in");
+            return;
+        }
+    } catch (IllegalStateException e) {
+        Log.e(TAG, "❌ Fragment not attached when getting user ID", e);
+        return;
+    }
+
+    // Stop camera before registration to prevent infinite loop on error
+    stopCamera();
+
+    // Capture local copies for use in callback
+    final Bitmap capturedBitmap = currentFrameBitmap;
+    final Rect capturedFaceRect = currentFaceRect;
+    final String finalUserId = userId;
+
+    // 🔧 NEW: Show progress updates
+    stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Generating face embedding...");
+
+    // Kiểm tra và ẩn overlay phân tích nếu đang hiển thị
+    if (analysisOverlay != null && analysisOverlay.getVisibility() == View.VISIBLE) {
+        analysisOverlay.setVisibility(View.GONE);
+    }
+
+    // 🎯 Update face with enhanced security validation
+    faceIdService.captureAndUpdateFace(
+            capturedBitmap,
+            capturedFaceRect,
+            faceOverlayView != null ? faceOverlayView.getOvalRect() : null,
+            finalUserId,
+            new FaceIdService.FaceIdCallback() {
+                @Override
+                public void onSuccess(String message) {
+                    if (!isAdded()) {
+                        Log.w(TAG, "Fragment not attached during success callback");
+                        return;
+                    }
+
+                    Log.d(TAG, "✅ Update successful: " + message);
+                    
+                    // ✅ FIX: Update state to SUCCESS
+                    stateManager.transitionTo(FaceRegistrationState.SUCCESS, message);
+                    
+                    // ✅ FIX: Save registration status
+                    AuthManager.getInstance(requireContext()).setFaceIdRegistered(true);
+                    
+                    // ✅ FIX: Navigate to success screen after a short delay
+                    mainHandler.postDelayed(() -> {
+                        if (isAdded()) {
+                            Log.d(TAG, "🚀 Navigating to FaceIdSuccessActivity");
+                            handleSuccessState();
+                        }
+                    }, 1000); // 1 second delay to show success state
+                }
+
+                @Override
+                public void onFailure(String errorMessage) {
+                    if (!isAdded()) {
+                        Log.w(TAG, "Fragment not attached during failure callback");
+                        return;
+                    }
+
+                    Log.e(TAG, "❌ Update failed: " + errorMessage);
+
+                    // Store detailed error information for UI display
+                    lastDetailedErrorMessage = "Update failure details:\n" + errorMessage;
+                    hasDetailedError = true;
+
+                    // 🔧 ENHANCED: Better error categorization for update failures
+                    if (errorMessage.contains("similarity") && errorMessage.contains("below threshold")) {
+                        // Face similarity too low - not the same person
+                        lastDetailedErrorMessage += "\n\nError type: Face Mismatch";
+                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
+                                "Face verification failed. The captured face does not match your registered face. Please try again.");
+                    } else if (errorMessage.contains("timeout") || errorMessage.contains("Timeout")) {
+                        lastDetailedErrorMessage += "\n\nError type: Network Timeout";
+                        handleNetworkError("Request timeout. Please try again.");
+                    } else if (errorMessage.contains("Network error") || errorMessage.contains("Cannot connect")) {
+                        lastDetailedErrorMessage += "\n\nError type: Network Connectivity";
+                        handleNetworkError(errorMessage);
+                    } else if (errorMessage.contains("Authentication failed")) {
+                        lastDetailedErrorMessage += "\n\nError type: Authentication";
+                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
+                                "Authentication failed. Please login again.");
+                    } else if (errorMessage.contains("Server error")) {
+                        lastDetailedErrorMessage += "\n\nError type: Server";
+                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
+                                "Server error. Please try again later.");
+                    } else if (errorMessage.contains("spoof") || errorMessage.contains("Spoof")) {
+                        lastDetailedErrorMessage += "\n\nError type: Spoof Detection";
+                        stateManager.transitionTo(FaceRegistrationState.FAILED_SPOOF,
+                                "Update failed: " + errorMessage);
+                    } else {
+                        lastDetailedErrorMessage += "\n\nError type: Other/Unknown";
+                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
+                                "Update failed: " + errorMessage);
+                    }
+                }
+                
+                @Override
+                public void onAlreadyRegistered(okhttp3.MultipartBody.Part embeddingPart, 
+                                               okhttp3.RequestBody userIdBody) {
+                    // This callback should not be called for update operation
+                    // But handle it just in case
+                    if (!isAdded()) {
+                        Log.w(TAG, "Fragment not attached during already registered callback");
+                        return;
+                    }
+                    
+                    Log.w(TAG, "⚠️ Unexpected onAlreadyRegistered callback during update");
+                    stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
+                            "Face ID updated successfully!");
+                    
+                    // Navigate to success screen
+                    mainHandler.postDelayed(() -> {
+                        if (isAdded()) {
+                            handleSuccessState();
+                        }
+                    }, 1000);
+                }
+            });
+}
 
     /**
      * 🎉 Handle success - Navigate to Success Activity
      */
     private void handleSuccessState() {
-        // Check if fragment is still attached before proceeding
+    Log.d(TAG, "==================== handleSuccessState START ====================");
+    
+    // Check if fragment is still attached before proceeding
+    if (!isAdded()) {
+        Log.e(TAG, "❌ Fragment not added, cannot show success");
+        return;
+    }
+
+    try {
+        stopCamera();
+
+        // Save bitmap for background sync
+        String bitmapPath = null;
+        try {
+            if (currentFrameBitmap != null) {
+                bitmapPath = saveBitmapToTempFile(currentFrameBitmap);
+                Log.d(TAG, "✅ Bitmap saved to: " + bitmapPath);
+            } else {
+                Log.w(TAG, "⚠️ currentFrameBitmap is null");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Error saving bitmap", e);
+        }
+        
+        String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
+        String userName = AuthManager.getInstance(requireContext()).getCurrentUserName();
+        
+        Log.d(TAG, "📝 Preparing intent with:");
+        Log.d(TAG, "  - userId: " + userId);
+        Log.d(TAG, "  - userName: " + userName);
+        Log.d(TAG, "  - bitmapPath: " + bitmapPath);
+        
+        // Double-check fragment is still attached before starting activity
         if (!isAdded()) {
-            Log.w(TAG, "Fragment not attached, cannot handle success state");
+            Log.e(TAG, "❌ Fragment detached before starting activity");
             return;
         }
+        
+        // ✅ FIX: Use createUpdateSuccessIntent instead of generic createIntent
+        Intent successIntent = FaceIdSuccessActivity.createUpdateSuccessIntent(
+            requireContext(),
+            userId,
+            userName,
+            bitmapPath
+        );
+        
+        // Verify intent has extras before starting
+        if (successIntent.getExtras() != null) {
+            Log.d(TAG, "✅ Intent extras verified:");
+            for (String key : successIntent.getExtras().keySet()) {
+                Log.d(TAG, "  " + key + " = " + successIntent.getExtras().get(key));
+            }
+        } else {
+            Log.e(TAG, "❌ Intent extras is NULL!");
+        }
+        
+        Log.d(TAG, "🚀 Starting FaceIdSuccessActivity...");
+        startActivityForResult(successIntent, SUCCESS_ACTIVITY_REQUEST_CODE);
+        Log.d(TAG, "✅ Activity started successfully");
 
-        try {
-            stopCamera();
-
-            // Save bitmap for background sync
-            String bitmapPath = null;
+    } catch (Exception e) {
+        Log.e(TAG, "❌ Exception in handleSuccessState", e);
+        
+        // Fallback: Show toast and finish
+        if (isAdded()) {
+            Toast.makeText(requireContext(), 
+                    "Face ID updated successfully!", 
+                    Toast.LENGTH_LONG).show();
+            
+            // Try to navigate back to Flutter with success data
             try {
-                bitmapPath = saveBitmapToTempFile(currentFrameBitmap);
-            } catch (Exception e) {
-                Log.w(TAG, "Failed to save bitmap for background sync, proceeding without worker", e);
-            }
-            String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
-            String successMessage = "Face ID has been Updated successfully!";
-
-            // Double-check fragment is still attached before starting activity
-            if (!isAdded()) {
-                Log.w(TAG, "Fragment no longer attached, cannot start success activity");
-                return;
-            }
-
-            // ✅ NEW: Sử dụng Intent mới với userName
-            Intent successIntent = FaceIdSuccessActivity.createUpdateSuccessIntent(
-                requireContext(),
-                userId,
-                AuthManager.getInstance(requireContext()).getCurrentUserName(),
-                bitmapPath
-            );
-            startActivity(successIntent);
-
-            Log.d(TAG, "🎉 Navigating to Success Activity");
-
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Error handling success", e);
-
-            // Check if fragment is still attached before showing toast
-            if (isAdded()) {
-                Toast.makeText(requireContext(), "Registration completed!", Toast.LENGTH_LONG).show();
-
-                // Check again before calling onBackPressed
-                if (isAdded()) {
-                    requireActivity().onBackPressed();
-                }
+                Intent flutterIntent = new Intent();
+                flutterIntent.setClassName(requireContext(), 
+                        "com.example.flutter_application_1.MainActivity");
+                flutterIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | 
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                flutterIntent.putExtra("face_id_update_success", true);
+                flutterIntent.putExtra("navigate_to", "face_id_success");
+                startActivity(flutterIntent);
+                requireActivity().finish();
+            } catch (Exception ex) {
+                Log.e(TAG, "❌ Error navigating to Flutter", ex);
+                requireActivity().finish();
             }
         }
     }
+    
+    Log.d(TAG, "==================== handleSuccessState END ====================");
+}
+
 
     /**
      * Handle network errors with retry option
@@ -1696,13 +1770,17 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == SUCCESS_ACTIVITY_REQUEST_CODE) {
-            // Success Activity finished, go back
-            requireActivity().onBackPressed();
+    if (requestCode == SUCCESS_ACTIVITY_REQUEST_CODE) {
+        
+        // Success Activity finished, go back to Flutter
+        if (getActivity() != null) {
+            getActivity().finish();
         }
     }
+}
+
 
     @Override
     public void onDestroyView() {

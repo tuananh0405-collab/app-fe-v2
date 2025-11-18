@@ -6,6 +6,9 @@ import 'package:flutter_application_1/features/leave/presentation/screens/leave_
 import 'package:flutter_application_1/features/leave/presentation/screens/create_leave_screen.dart';
 import 'package:flutter_application_1/features/leave/presentation/screens/leave_detail_screen.dart';
 import 'package:flutter_application_1/features/leave/presentation/screens/update_leave_screen.dart';
+import 'package:flutter_application_1/features/overtime/presentation/screens/overtime_list_screen.dart';
+import 'package:flutter_application_1/features/overtime/presentation/screens/create_overtime_screen.dart';
+import 'package:flutter_application_1/features/overtime/presentation/screens/overtime_detail_screen.dart';
 import 'package:flutter_application_1/features/settings/presentation/settings_screen.dart';
 import 'package:flutter_application_1/features/face_id/face_id_success_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -118,16 +121,23 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Overtimes
       GoRoute(
-        path: AppRoutePath.overtimesCreate,
-        name: AppRouteName.overtimesCreate,
-        builder: (c, s) => const StubScreen(title: 'Create Overtime Request'),
+        path: '/overtimes',
+        name: AppRouteName.overtimes,
+        builder: (c, s) => const OvertimeListScreen(),
       ),
+
+      GoRoute(
+        path: '/overtimes/create',
+        name: AppRouteName.overtimesCreate,
+        builder: (c, s) => const CreateOvertimeScreen(),
+      ),
+      
       GoRoute(
         path: '/overtimes/:id',
         name: AppRouteName.overtimeDetail,
         builder: (c, s) {
           final id = s.pathParameters['id']!;
-          return StubScreen(title: 'Overtime Detail', subtitle: 'id = $id');
+          return OvertimeDetailScreen(overtimeId: int.parse(id));
         },
         routes: [
           GoRoute(

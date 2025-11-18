@@ -684,7 +684,7 @@ class _QuickActionsSection extends StatelessWidget {
         'icon': Icons.access_time,
         'label': 'Overtime',
         'color': theme.warning,
-        'path': AppRoutePath.overtimesCreate,
+        'path': AppRoutePath.overtimes,
       },
       {
         'icon': Icons.schedule_outlined,

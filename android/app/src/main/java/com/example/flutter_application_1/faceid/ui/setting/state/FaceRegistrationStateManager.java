@@ -42,7 +42,6 @@ public class FaceRegistrationStateManager {
      * Thread-safe state transition with confirmation logic
      */
     public void transitionTo(FaceRegistrationState newState, String customMessage) {
-        Log.d(TAG, "State transition request: " + currentState.get() + " → " + newState);
         
         // For critical states, transition immediately
         if (newState.isErrorState() || newState == FaceRegistrationState.SUCCESS || 
@@ -86,7 +85,6 @@ public class FaceRegistrationStateManager {
 
         // Perform atomic state change
         if (currentState.compareAndSet(oldState, newState)) {
-            Log.d(TAG, "State changed: " + oldState + " → " + newState);
 
             // Cancel previous timeouts
             cancelTimeouts();

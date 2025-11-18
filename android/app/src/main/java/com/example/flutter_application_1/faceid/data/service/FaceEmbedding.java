@@ -124,7 +124,6 @@ public class FaceEmbedding {
                 if (file.endsWith(".tflite")) {
                     try {
                         MappedByteBuffer buffer = FileUtil.loadMappedFile(context, file);
-                        Log.d(TAG, "Model file: " + file + ", size: " + buffer.capacity() + " bytes");
                     } catch (Exception e) {
                         Log.e(TAG, "Error inspecting model file " + file + ": " + e.getMessage(), e);
                     }

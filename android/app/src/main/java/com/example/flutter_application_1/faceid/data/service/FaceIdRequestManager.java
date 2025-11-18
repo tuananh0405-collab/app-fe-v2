@@ -177,7 +177,6 @@ public class FaceIdRequestManager {
         RequestState newState = parseStatus(status);
         
         if (newState != currentState) {
-            Log.d(TAG, "🔄 Request state changed: " + currentState + " -> " + newState);
             currentState = newState;
             
             if (statusCallback != null) {
