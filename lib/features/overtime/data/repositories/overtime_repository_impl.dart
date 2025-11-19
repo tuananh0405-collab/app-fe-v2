@@ -118,4 +118,22 @@ class OvertimeRepositoryImpl implements OvertimeRepository {
       return const Left(NetworkFailure('No internet connection'));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> cancelOvertimeRequest({
+    required int overtimeId,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.cancelOvertimeRequest(overtimeId: overtimeId);
+        return const Right(null);
+      } on UnauthorizedException catch (e) {
+        return Left(AuthFailure(e.message));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 /// Service for Face ID registration and verification
 class FaceIdService {
@@ -25,7 +26,7 @@ class FaceIdService {
       });
       return true;
     } on PlatformException catch (e) {
-      print('Failed to save user info: ${e.message}');
+      debugPrint('Failed to save user info: ${e.message}');
       return false;
     }
   }
@@ -42,7 +43,7 @@ class FaceIdService {
       });
       return result;
     } on PlatformException catch (e) {
-      print('Failed to register Face ID: ${e.message}');
+      debugPrint('Failed to register Face ID: ${e.message}');
       return false;
     }
   }
@@ -59,7 +60,7 @@ class FaceIdService {
       });
       return result;
     } on PlatformException catch (e) {
-      print('Failed to verify Face ID: ${e.message}');
+      debugPrint('Failed to verify Face ID: ${e.message}');
       return false;
     }
   }
@@ -76,7 +77,7 @@ class FaceIdService {
       });
       return result;
     } on PlatformException catch (e) {
-      print('Failed to update Face ID: ${e.message}');
+      debugPrint('Failed to update Face ID: ${e.message}');
       return false;
     }
   }

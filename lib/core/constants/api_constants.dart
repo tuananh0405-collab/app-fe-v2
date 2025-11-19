@@ -9,10 +9,11 @@ class ApiConstants {
   static const String notificationBaseUrl = 'http://3.27.15.166:32527/api/v1';
   static const String reportingBaseUrl = 'http://3.27.15.166:32527/reporting/api/v1';
   static const String faceBaseUrl = 'http://3.27.15.166:32527/api/v1/face';
+  static const String myDevicesEndpoint = '$authBaseUrl/devices/my-devices';
 
   // Auth Endpoints
   static const String loginEndpoint = '/auth/login';
-  static const String refreshTokenEndpoint = '/auth/refresh-token';
+  static const String refreshTokenEndpoint = authBaseUrl + '/auth/refresh';
   
   // Headers
   static const Map<String, String> defaultHeaders = {

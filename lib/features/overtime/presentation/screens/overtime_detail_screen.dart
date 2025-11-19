@@ -33,6 +33,13 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
           duration: const Duration(milliseconds: 600),
         ),
       ),
+      'actionButtons': AnimationInfo(
+        trigger: AnimationTrigger.onPageLoad,
+        effects: FFAnimations.fadeInSlideUp(
+          delay: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 600),
+        ),
+      ),
     });
 
     // Load overtime request details
@@ -45,107 +52,270 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = FlutterFlowTheme.of(context);
-    final overtimeState = ref.watch(overtimeControllerProvider);
-    final overtime = overtimeState.selectedOvertime;
-    final canUpdate = overtime?.status?.toUpperCase() == 'PENDING';
+  final theme = FlutterFlowTheme.of(context);
+  final overtimeState = ref.watch(overtimeControllerProvider);
+  final overtime = overtimeState.selectedOvertime;
+  final canUpdate = overtime?.status?.toUpperCase() == 'PENDING';
 
-    return Scaffold(
-      backgroundColor: theme.primaryBackground,
-      appBar: AppBar(
-        title: Text(
-          'Chi tiết đơn làm thêm',
-          style: theme.title2.override(color: Colors.white),
-        ),
-        backgroundColor: theme.primaryColor,
-        elevation: 2,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          if (canUpdate && overtime != null)
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.white),
-              tooltip: 'Chỉnh sửa',
-              onPressed: () async {
-                final result = await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => UpdateOvertimeScreen(
-                      overtime: overtime,
-                    ),
-                  ),
-                );
-                // Reload data if update was successful
-                if (result == true && mounted) {
-                  ref
-                      .read(overtimeControllerProvider.notifier)
-                      .getOvertimeRequestById(widget.overtimeId);
-                }
-              },
-            ),
-        ],
+  return Scaffold(
+    backgroundColor: theme.primaryBackground,
+    appBar: AppBar(
+      title: Text(
+        'Chi tiết đơn làm thêm',
+        style: theme.title2.override(color: Colors.white),
       ),
-      body: overtimeState.isLoading
-          ? Center(child: FFLoadingIndicator(color: theme.primaryColor))
-          : overtime == null
-              ? Center(
-                  child: Text(
-                    'Không tìm thấy thông tin đơn làm thêm',
-                    style: theme.bodyText1,
-                  ),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildStatusCard(theme, overtime),
-                      const SizedBox(height: 16),
-                      _buildInfoCard(theme, overtime),
-                      const SizedBox(height: 16),
-                      _buildTimeCard(theme, overtime),
-                      const SizedBox(height: 16),
-                      _buildReasonCard(theme, overtime),
-                      if (overtime.rejectionReason != null) ...[
-                        const SizedBox(height: 16),
-                        _buildRejectionReasonCard(theme, overtime),
-                      ],
-                      // Add spacing for FAB
-                      if (canUpdate) const SizedBox(height: 80),
-                    ],
+      backgroundColor: theme.primaryColor,
+      elevation: 2,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+      actions: [
+        if (canUpdate && overtime != null)
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            tooltip: 'Chỉnh sửa',
+            onPressed: () async {
+              final result = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => UpdateOvertimeScreen(
+                    overtime: overtime,
                   ),
                 ),
-      floatingActionButton: canUpdate && overtime != null
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                final result = await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => UpdateOvertimeScreen(
-                      overtime: overtime,
-                    ),
-                  ),
-                );
-                // Reload data if update was successful
-                if (result == true && mounted) {
-                  ref
-                      .read(overtimeControllerProvider.notifier)
-                      .getOvertimeRequestById(widget.overtimeId);
-                }
-              },
-              icon: const Icon(Icons.edit),
-              label: Text(
-                'Chỉnh sửa',
-                style: theme.subtitle1.override(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+              );
+              // Reload data if update was successful
+              if (result == true && mounted) {
+                ref
+                    .read(overtimeControllerProvider.notifier)
+                    .getOvertimeRequestById(widget.overtimeId);
+              }
+            },
+          ),
+      ],
+    ),
+    body: overtimeState.isLoading
+        ? Center(child: FFLoadingIndicator(color: theme.primaryColor))
+        : overtime == null
+            ? Center(
+                child: Text(
+                  'Không tìm thấy thông tin đơn làm thêm',
+                  style: theme.bodyText1,
+                ),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildStatusCard(theme, overtime),
+                    const SizedBox(height: 16),
+                    _buildInfoCard(theme, overtime),
+                    const SizedBox(height: 16),
+                    _buildTimeCard(theme, overtime),
+                    const SizedBox(height: 16),
+                    // Add spacing for action buttons
+                    if (canUpdate) const SizedBox(height: 16),
+                  ],
                 ),
               ),
-              backgroundColor: theme.primaryColor,
-            )
-          : null,
+    bottomNavigationBar: canUpdate && overtime != null
+        ? SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      // Cancel Button
+                      Expanded(
+                        child: FFButton(
+                          onPressed: () {
+                            _showCancelDialog(context, ref);
+                          },
+                          text: 'Hủy đơn',
+                          icon: Icon(
+                            Icons.cancel_outlined,
+                            size: 22,
+                            color: Colors.white,
+                          ),
+                          options: FFButtonOptions(
+                            height: 50,
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            color: theme.error,
+                            textStyle: theme.subtitle1.override(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            elevation: 4,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Edit Button
+                      Expanded(
+                        child: FFButton(
+                          onPressed: () async {
+                            final result = await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => UpdateOvertimeScreen(
+                                  overtime: overtime,
+                                ),
+                              ),
+                            );
+                            // Reload data if update was successful
+                            if (result == true && mounted) {
+                              ref
+                                  .read(overtimeControllerProvider.notifier)
+                                  .getOvertimeRequestById(widget.overtimeId);
+                            }
+                          },
+                          text: 'Chỉnh sửa',
+                          icon: Icon(
+                            Icons.edit_rounded,
+                            size: 22,
+                            color: Colors.white,
+                          ),
+                          options: FFButtonOptions(
+                            height: 50,
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            color: theme.warning,
+                            textStyle: theme.subtitle1.override(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            elevation: 4,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ).animateOnPageLoad(animationsMap['actionButtons']!),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Text(
+                      'Chỉ có thể chỉnh sửa hoặc hủy khi trạng thái là "Chờ duyệt"',
+                      style: theme.bodyText2.override(
+                        color: theme.secondaryText,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        : null,
+  );
+}
+  void _showCancelDialog(BuildContext context, WidgetRef ref) {
+    final theme = FlutterFlowTheme.of(context);
+    final reasonController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: theme.secondaryBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Hủy đơn nghỉ',
+          style: theme.title2.override(
+            color: theme.primaryText,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          FFButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            text: 'Đóng',
+            options: FFButtonOptions(
+              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              color: theme.secondaryText.withValues(alpha: 0.1),
+              textStyle: theme.bodyText1.override(
+                color: theme.primaryText,
+                fontWeight: FontWeight.w500,
+              ),
+              elevation: 0,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          FFButton(
+            onPressed: () async {
+
+              Navigator.of(dialogContext).pop();
+
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => Center(
+                  child: FFLoadingIndicator(color: theme.primaryColor),
+                ),
+              );
+
+              // Call cancel API
+              await ref
+                  .read(overtimeControllerProvider.notifier)
+                  .cancelOvertimeRequest(
+                    widget.overtimeId
+                  );
+
+              // Close loading dialog
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+
+              // Check result
+              final overtimeState = ref.read(overtimeControllerProvider);
+
+              if (context.mounted) {
+                if (overtimeState.errorMessage != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        overtimeState.errorMessage!,
+                        style: theme.bodyText1.override(color: Colors.white),
+                      ),
+                      backgroundColor: theme.error,
+                    ),
+                  );
+                } else if (overtimeState.successMessage != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        overtimeState.successMessage!,
+                        style: theme.bodyText1.override(color: Colors.white),
+                      ),
+                      backgroundColor: theme.success,
+                    ),
+                  );
+                  // Refresh the leave details
+                  await ref
+                      .read(overtimeControllerProvider.notifier)
+                      .getOvertimeRequestById(widget.overtimeId);
+                }
+              }
+            },
+            text: 'Xác nhận hủy',
+            options: FFButtonOptions(
+              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              color: theme.error,
+              textStyle: theme.bodyText1.override(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              elevation: 2,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ],
+      ),
     );
   }
+
 
   Widget _buildStatusCard(FlutterFlowTheme theme, dynamic overtime) {
     final statusColor = _getStatusColor(overtime.status, theme);
@@ -245,7 +415,9 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
             theme,
             Icons.calendar_today,
             'Ngày làm thêm',
-            DateFormat('dd/MM/yyyy').format(overtime.overtimeDate),
+            overtime.overtimeDate != null
+                ? DateFormat('dd/MM/yyyy').format(overtime.overtimeDate)
+                : 'N/A',
           ),
           if (overtime.shiftId != null) ...[
             const SizedBox(height: 12),
@@ -293,7 +465,9 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
                 child: _buildTimeBox(
                   theme,
                   'Bắt đầu',
-                  timeFormat.format(overtime.startTime),
+                  overtime.startTime != null
+                      ? timeFormat.format(overtime.startTime)
+                      : 'N/A',
                   Colors.green,
                 ),
               ),
@@ -302,7 +476,9 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
                 child: _buildTimeBox(
                   theme,
                   'Kết thúc',
-                  timeFormat.format(overtime.endTime),
+                  overtime.endTime != null
+                      ? timeFormat.format(overtime.endTime)
+                      : 'N/A',
                   Colors.red,
                 ),
               ),
@@ -338,7 +514,7 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
                   ],
                 ),
                 Text(
-                  '${overtime.estimatedHours} giờ',
+                  '${overtime.estimatedHours ?? 0} giờ',
                   style: theme.subtitle1.override(
                     color: theme.primaryColor,
                     fontWeight: FontWeight.bold,
@@ -378,7 +554,7 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
                     ],
                   ),
                   Text(
-                    '${overtime.actualHours} giờ',
+                    '${overtime.actualHours ?? 0} giờ',
                     style: theme.subtitle1.override(
                       color: Colors.green,
                       fontWeight: FontWeight.bold,
@@ -428,51 +604,6 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
         ],
       ),
     );
-  }
-
-  Widget _buildReasonCard(FlutterFlowTheme theme, dynamic overtime) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.secondaryBackground,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: theme.primaryText.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.description_outlined,
-                color: theme.primaryColor,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Lý do',
-                style: theme.subtitle1.override(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            overtime.reason,
-            style: theme.bodyText1.override(
-              color: theme.primaryText,
-            ),
-          ),
-        ],
-      ),
-    ).animateOnPageLoad(animationsMap['containerAnimation']!);
   }
 
   Widget _buildRejectionReasonCard(FlutterFlowTheme theme, dynamic overtime) {
@@ -576,6 +707,8 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
         return 'Đã duyệt';
       case 'REJECTED':
         return 'Từ chối';
+      case 'CANCELED':
+        return 'Đã hủy';
       default:
         return 'Không xác định';
     }

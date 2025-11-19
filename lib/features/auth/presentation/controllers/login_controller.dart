@@ -3,7 +3,7 @@ import '../../../../core/services/face_id_service.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../providers/auth_providers.dart';
 import '../state/login_state.dart';
-
+import 'package:flutter/foundation.dart';
 class LoginController extends Notifier<LoginState> {
   late final LoginUseCase _loginUseCase;
 
@@ -42,7 +42,7 @@ class LoginController extends Notifier<LoginState> {
         
         state = newState;
         
-        print('🔍 State updated: mustChangePassword=${state.mustChangePassword}, isAuthenticated=${state.isAuthenticated}');
+        debugPrint('🔍 State updated: mustChangePassword=${state.mustChangePassword}, isAuthenticated=${state.isAuthenticated}');
         
         //  Lưu user info vào native SharedPreferences để Face ID sử dụng
         if (!loginResponse.mustChangePassword) {
@@ -61,7 +61,7 @@ class LoginController extends Notifier<LoginState> {
         authToken: loginResponse.accessToken,
       );
     } catch (e) {
-      print('⚠️ Failed to save user info to native: $e');
+      debugPrint('⚠️ Failed to save user info to native: $e');
     }
   }
 

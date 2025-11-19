@@ -3,6 +3,8 @@ import '../../../../core/error/exceptions.dart';
 import '../models/leave_api_response_model.dart';
 import '../models/leave_balance_model.dart';
 import '../models/leave_model.dart';
+import 'package:flutter/foundation.dart';
+
 
 abstract class LeaveRemoteDataSource {
   Future<LeaveModel> createLeaveRequest({
@@ -197,8 +199,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         throw ServerException(apiResponse.message);
       }
     } on DioException catch (e) {
-      print('❌ DioException: ${e.message}');
-      print('❌ Response: ${e.response?.data}');
+      debugPrint('❌ DioException: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
       
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
@@ -217,7 +219,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         throw const ServerException('Failed to connect to server');
       }
     } catch (e) {
-      print('❌ Unexpected error: $e');
+      debugPrint('❌ Unexpected error: $e');
       if (e is UnauthorizedException ||
           e is ServerException ||
           e is NetworkException) {
@@ -243,8 +245,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      print('🔄 Updating leave request $leaveId');
-      print('📤 Request body: ${{
+      debugPrint('🔄 Updating leave request $leaveId');
+      debugPrint('📤 Request body: ${{
         'start_date': startDate.toIso8601String().split('T')[0],
         'end_date': endDate.toIso8601String().split('T')[0],
         'is_half_day_start': isHalfDayStart,
@@ -268,8 +270,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         },
       );
 
-      print('✅ Update response status: ${response.statusCode}');
-      print('📥 Response data: ${response.data}');
+      debugPrint('✅ Update response status: ${response.statusCode}');
+      debugPrint('📥 Response data: ${response.data}');
 
       final apiResponse = LeaveApiResponseModel.fromJson(
         response.data,
@@ -287,8 +289,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         throw ServerException(apiResponse.message);
       }
     } on DioException catch (e) {
-      print('❌ DioException: ${e.message}');
-      print('❌ Response: ${e.response?.data}');
+      debugPrint('❌ DioException: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
           e.type == DioExceptionType.sendTimeout) {
@@ -303,7 +305,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         throw const ServerException('Failed to connect to server');
       }
     } catch (e) {
-      print('❌ Unexpected error: $e');
+      debugPrint('❌ Unexpected error: $e');
       if (e is UnauthorizedException ||
           e is ServerException ||
           e is NetworkException) {
@@ -317,7 +319,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
   Future<List<LeaveBalanceModel>> getLeaveBalance() async {
     try {
       final response =
-          await dio.get('/leave/leave-balances');
+          await dio.get('/leave/leave-balances/me');
 
       final apiResponse = LeaveApiResponseModel.fromJson(
         response.data,
@@ -367,8 +369,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
     required String cancellationReason,
   }) async {
     try {
-      print('🔄 Cancelling leave request $leaveId');
-      print('📤 Request body: ${{
+      debugPrint('🔄 Cancelling leave request $leaveId');
+      debugPrint('📤 Request body: ${{
         'cancellation_reason': cancellationReason,
         'cancelled_by': '',
       }}');
@@ -377,12 +379,12 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         '/leave/leave-records/$leaveId/cancel',
         data: {
           'cancellation_reason': cancellationReason,
-          'cancelled_by': '',
+          'cancelled_by': 5,
         },
       );
 
-      print('✅ Cancel response status: ${response.statusCode}');
-      print('📥 Response data: ${response.data}');
+      debugPrint('✅ Cancel response status: ${response.statusCode}');
+      debugPrint('📥 Response data: ${response.data}');
 
       if (response.statusCode == 200) {
         // Handle the case where data might be a list or a single object
@@ -413,8 +415,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      print('❌ DioException: ${e.message}');
-      print('❌ Response: ${e.response?.data}');
+      debugPrint('❌ DioException: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
           e.type == DioExceptionType.sendTimeout) {
@@ -429,7 +431,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         throw const ServerException('Failed to connect to server');
       }
     } catch (e) {
-      print('❌ Unexpected error: $e');
+      debugPrint('❌ Unexpected error: $e');
       if (e is UnauthorizedException ||
           e is ServerException ||
           e is NetworkException) {

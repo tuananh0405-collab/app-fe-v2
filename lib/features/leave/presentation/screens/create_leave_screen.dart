@@ -20,15 +20,15 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
   final _supportingDocUrlController = TextEditingController();
 
   // Mock data - will be replaced with actual data later
-  int _employeeId = 7;
-  String _employeeCode = 'EMP001';
-  int _departmentId = 1;
+  final int  _employeeId = 7;
+  final String _employeeCode = 'EMP001';
+  final int _departmentId = 1;
   int _leaveTypeId = 1;
 
   DateTime? _startDate;
   DateTime? _endDate;
-  bool _isHalfDayStart = false;
-  bool _isHalfDayEnd = false;
+  final bool _isHalfDayStart = false;
+  final bool _isHalfDayEnd = false;
 
   @override
   void initState() {

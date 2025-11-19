@@ -31,7 +31,7 @@ class FFButton extends StatelessWidget {
         boxShadow: buttonOptions.elevation != null
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha:0.3),
                   spreadRadius: 0,
                   blurRadius: buttonOptions.elevation!,
                   offset: Offset(0, buttonOptions.elevation! / 2),

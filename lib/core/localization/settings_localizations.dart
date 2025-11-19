@@ -17,6 +17,8 @@ class SettingsLocalizations {
       'pushNotifications': 'Push Notifications',
       'pushNotificationsSubtitle': 'Receive push notifications for updates',
       'general': 'General',
+      'devices': 'Devices & Sessions',
+      'devicesSubtitle': 'View and manage signed-in devices',
       'privacy': 'Privacy',
       'about': 'About',
       'appVersion': 'App Version',
@@ -32,6 +34,8 @@ class SettingsLocalizations {
       'pushNotifications': 'Thông báo đẩy',
       'pushNotificationsSubtitle': 'Nhận thông báo đẩy cho các cập nhật',
       'general': 'Chung',
+      'devices': 'Thiết bị & Phiên đăng nhập',
+      'devicesSubtitle': 'Xem và quản lý các thiết bị đã đăng nhập',
       'privacy': 'Quyền riêng tư',
       'about': 'Thông tin',
       'appVersion': 'Phiên bản',
@@ -54,6 +58,8 @@ class SettingsLocalizations {
   String get pushNotificationsSubtitle =>
       translate('pushNotificationsSubtitle');
   String get general => translate('general');
+  String get devices => translate('devices');
+  String get devicesSubtitle => translate('devicesSubtitle');
   String get privacy => translate('privacy');
   String get about => translate('about');
   String get appVersion => translate('appVersion');

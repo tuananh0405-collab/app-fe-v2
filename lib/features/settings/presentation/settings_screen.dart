@@ -149,6 +149,19 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 _buildSettingItem(
                   theme: theme,
+                  icon: Icons.devices_other,
+                  title: settings.devices,
+                  subtitle: settings.devicesSubtitle,
+                  onTap: () {
+                    context.push(AppRoutePath.devices);
+                  },
+                ),
+                Divider(
+                  height: 1,
+                  color: theme.secondaryText.withValues(alpha: 0.2),
+                ),
+                _buildSettingItem(
+                  theme: theme,
                   icon: Icons.notifications_outlined,
                   title: settings.notifications,
                   onTap: () {

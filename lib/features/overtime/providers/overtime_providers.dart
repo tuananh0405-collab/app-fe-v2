@@ -4,6 +4,7 @@ import '../../../core/network/network_info.dart';
 import '../data/datasources/overtime_remote_datasource.dart';
 import '../data/repositories/overtime_repository_impl.dart';
 import '../domain/repositories/overtime_repository.dart';
+import '../domain/usecases/cancel_overtime_request_usecase.dart';
 import '../domain/usecases/create_overtime_request_usecase.dart';
 import '../domain/usecases/get_my_overtime_requests_usecase.dart';
 import '../domain/usecases/get_overtime_request_by_id_usecase.dart';
@@ -45,6 +46,10 @@ final getOvertimeRequestByIdUseCaseProvider =
 final updateOvertimeRequestUseCaseProvider =
     Provider<UpdateOvertimeRequestUseCase>((ref) {
   return UpdateOvertimeRequestUseCase(ref.read(overtimeRepositoryProvider));
+});
+
+final cancelOvertimeRequestUseCaseProvider = Provider<CancelOvertimeRequestUseCase>((ref) {
+  return CancelOvertimeRequestUseCase(ref.read(overtimeRepositoryProvider));
 });
 
 // Overtime Controller Provider

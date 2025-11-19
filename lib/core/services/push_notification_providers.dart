@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/common_providers.dart';
 import '../network/dio_client.dart';
 import '../network/push_notification_api.dart';

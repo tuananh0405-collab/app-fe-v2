@@ -79,7 +79,7 @@ class _FaceIdRegistrationExampleState extends ConsumerState<FaceIdRegistrationEx
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6367F1).withOpacity(0.1),
+                  color: const Color(0xFF6367F1).withValues(alpha:0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

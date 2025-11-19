@@ -31,6 +31,10 @@ abstract class OvertimeRemoteDataSource {
     required double estimatedHours,
     required String reason,
   });
+  
+    Future<void> cancelOvertimeRequest({
+      required int overtimeId,
+    });
 }
 
 class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
@@ -67,7 +71,7 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         if (apiResponse.data == null) {
-          throw const ServerException('Overtime request data is null');
+          throw ServerException('Overtime request data is null');
         }
         return apiResponse.data!;
       } else if (response.statusCode == 401) {
@@ -82,7 +86,44 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
         );
       }
       throw ServerException(
-        e.response?.data['message'] ?? 'Failed to create overtime request',
+        e.response != null && e.response!.data != null && e.response!.data['message'] != null
+            ? e.response!.data['message']
+            : 'Failed to create overtime request',
+      );
+    } catch (e) {
+      throw ServerException('An unexpected error occurred: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> cancelOvertimeRequest({
+    required int overtimeId,
+  }) async {
+    try {
+      final response = await dio.post(
+        '/attendance/overtime-requests/$overtimeId/cancel',
+      );
+      if (response.statusCode == 200) {
+        return;
+      } else if (response.statusCode == 401) {
+        throw UnauthorizedException(
+          response.data['message'] ?? 'Unauthorized',
+        );
+      } else {
+        throw ServerException(
+          response.data['message'] ?? 'Cancel failed',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw UnauthorizedException(
+          e.response?.data['message'] ?? 'Unauthorized',
+        );
+      }
+      throw ServerException(
+        e.response != null && e.response!.data != null && e.response!.data['message'] != null
+            ? e.response!.data['message']
+            : 'Failed to cancel overtime request',
       );
     } catch (e) {
       throw ServerException('An unexpected error occurred: ${e.toString()}');

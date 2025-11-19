@@ -30,4 +30,8 @@ abstract class OvertimeRepository {
     required double estimatedHours,
     required String reason,
   });
+
+  Future<Either<Failure, void>> cancelOvertimeRequest({
+    required int overtimeId,
+  });
 }

@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../entities/overtime_entity.dart';
 import '../repositories/overtime_repository.dart';
 class UpdateOvertimeRequestUseCase
     implements UseCase<void, UpdateOvertimeRequestParams> {

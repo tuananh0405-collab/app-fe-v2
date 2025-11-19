@@ -3,6 +3,7 @@ import '../../domain/usecases/create_overtime_request_usecase.dart';
 import '../../domain/usecases/get_my_overtime_requests_usecase.dart';
 import '../../domain/usecases/get_overtime_request_by_id_usecase.dart';
 import '../../domain/usecases/update_overtime_request_usecase.dart';
+import '../../domain/usecases/cancel_overtime_request_usecase.dart';
 import '../../providers/overtime_providers.dart';
 import '../state/overtime_state.dart';
 
@@ -11,6 +12,7 @@ class OvertimeController extends Notifier<OvertimeState> {
   late final GetMyOvertimeRequestsUseCase _getMyOvertimeRequestsUseCase;
   late final GetOvertimeRequestByIdUseCase _getOvertimeRequestByIdUseCase;
   late final UpdateOvertimeRequestUseCase _updateOvertimeRequestUseCase;
+  late final CancelOvertimeRequestUseCase _cancelOvertimeRequestUseCase;
 
   @override
   OvertimeState build() {
@@ -22,6 +24,8 @@ class OvertimeController extends Notifier<OvertimeState> {
         ref.read(getOvertimeRequestByIdUseCaseProvider);
     _updateOvertimeRequestUseCase =
         ref.read(updateOvertimeRequestUseCaseProvider);
+    _cancelOvertimeRequestUseCase =
+        ref.read(cancelOvertimeRequestUseCaseProvider);
     return const OvertimeState();
   }
 
@@ -154,6 +158,26 @@ class OvertimeController extends Notifier<OvertimeState> {
           successMessage: 'Đơn làm thêm giờ đã được cập nhật thành công',
         );
         // Refresh overtime requests after updating
+        getMyOvertimeRequests();
+      },
+    );
+  }
+
+  Future<void> cancelOvertimeRequest(int overtimeId) async {
+    state = state.copyWith(isSubmitting: true, clearError: true, clearSuccess: true);
+    final result = await _cancelOvertimeRequestUseCase(overtimeId);
+    result.fold(
+      (failure) {
+        state = state.copyWith(
+          isSubmitting: false,
+          errorMessage: failure.message,
+        );
+      },
+      (_) {
+        state = state.copyWith(
+          isSubmitting: false,
+          successMessage: 'Hủy đơn làm thêm thành công',
+        );
         getMyOvertimeRequests();
       },
     );

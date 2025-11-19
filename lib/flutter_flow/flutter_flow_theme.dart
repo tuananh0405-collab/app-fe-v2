@@ -7,19 +7,20 @@ abstract class FlutterFlowTheme {
     return LightModeTheme();
   }
 
-  late Color primaryColor;
-  late Color secondaryColor;
-  late Color tertiaryColor;
-  late Color alternate;
-  late Color primaryBackground;
-  late Color secondaryBackground;
-  late Color primaryText;
-  late Color secondaryText;
+  // Convert all fields into abstract getters
+  Color get primaryColor;
+  Color get secondaryColor;
+  Color get tertiaryColor;
+  Color get alternate;
+  Color get primaryBackground;
+  Color get secondaryBackground;
+  Color get primaryText;
+  Color get secondaryText;
 
-  late Color error;
-  late Color success;
-  late Color warning;
-  late Color info;
+  Color get error;
+  Color get success;
+  Color get warning;
+  Color get info;
 
   String get title1Family => typography.title1Family;
   TextStyle get title1 => typography.title1;
@@ -41,58 +42,58 @@ abstract class FlutterFlowTheme {
 
 class LightModeTheme extends FlutterFlowTheme {
   @override
-  Color primaryColor = const Color(0xFF4B39EF);
+  Color get primaryColor => const Color(0xFF4B39EF);
   @override
-  Color secondaryColor = const Color(0xFF39D2C0);
+  Color get secondaryColor => const Color(0xFF39D2C0);
   @override
-  Color tertiaryColor = const Color(0xFFEE8B60);
+  Color get tertiaryColor => const Color(0xFFEE8B60);
   @override
-  Color alternate = const Color(0xFFE0E3E7);
+  Color get alternate => const Color(0xFFE0E3E7);
   @override
-  Color primaryBackground = const Color(0xFFF1F4F8);
+  Color get primaryBackground => const Color(0xFFF1F4F8);
   @override
-  Color secondaryBackground = const Color(0xFFFFFFFF);
+  Color get secondaryBackground => const Color(0xFFFFFFFF);
   @override
-  Color primaryText = const Color(0xFF14181B);
+  Color get primaryText => const Color(0xFF14181B);
   @override
-  Color secondaryText = const Color(0xFF57636C);
+  Color get secondaryText => const Color(0xFF57636C);
 
   @override
-  Color error = const Color(0xFFFF5963);
+  Color get error => const Color(0xFFFF5963);
   @override
-  Color success = const Color(0xFF249689);
+  Color get success => const Color(0xFF249689);
   @override
-  Color warning = const Color(0xFFF9CF58);
+  Color get warning => const Color(0xFFF9CF58);
   @override
-  Color info = const Color(0xFFFFFFFF);
+  Color get info => const Color(0xFFFFFFFF);
 }
 
 class DarkModeTheme extends FlutterFlowTheme {
   @override
-  Color primaryColor = const Color(0xFF4B39EF);
+  Color get primaryColor => const Color(0xFF4B39EF);
   @override
-  Color secondaryColor = const Color(0xFF39D2C0);
+  Color get secondaryColor => const Color(0xFF39D2C0);
   @override
-  Color tertiaryColor = const Color(0xFFEE8B60);
+  Color get tertiaryColor => const Color(0xFFEE8B60);
   @override
-  Color alternate = const Color(0xFF262D34);
+  Color get alternate => const Color(0xFF262D34);
   @override
-  Color primaryBackground = const Color(0xFF1A1F24);
+  Color get primaryBackground => const Color(0xFF1A1F24);
   @override
-  Color secondaryBackground = const Color(0xFF14181B);
+  Color get secondaryBackground => const Color(0xFF14181B);
   @override
-  Color primaryText = const Color(0xFFFFFFFF);
+  Color get primaryText => const Color(0xFFFFFFFF);
   @override
-  Color secondaryText = const Color(0xFF95A1AC);
+  Color get secondaryText => const Color(0xFF95A1AC);
 
   @override
-  Color error = const Color(0xFFFF5963);
+  Color get error => const Color(0xFFFF5963);
   @override
-  Color success = const Color(0xFF249689);
+  Color get success => const Color(0xFF249689);
   @override
-  Color warning = const Color(0xFFF9CF58);
+  Color get warning => const Color(0xFFF9CF58);
   @override
-  Color info = const Color(0xFFFFFFFF);
+  Color get info => const Color(0xFFFFFFFF);
 }
 
 class ThemeTypography {

@@ -11,6 +11,7 @@ import 'package:flutter_application_1/features/overtime/presentation/screens/cre
 import 'package:flutter_application_1/features/overtime/presentation/screens/overtime_detail_screen.dart';
 import 'package:flutter_application_1/features/settings/presentation/settings_screen.dart';
 import 'package:flutter_application_1/features/face_id/face_id_success_page.dart';
+import 'package:flutter_application_1/features/devices/presentation/screens/device_list_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -199,7 +200,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutePath.devices,
         name: AppRouteName.devices,
-        builder: (c, s) => const StubScreen(title: 'Manage Devices'),
+        builder: (c, s) => const DeviceListScreen(),
       ),
       GoRoute(
         path: AppRoutePath.deviceRegister,

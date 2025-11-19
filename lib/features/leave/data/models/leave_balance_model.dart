@@ -19,7 +19,7 @@ class LeaveBalanceModel extends LeaveBalanceEntity {
       id: (json['id'] as num).toInt(),
       employeeId: (json['employee_id'] as num).toInt(),
       leaveTypeId: (json['leave_type_id'] as num).toInt(),
-      leaveTypeName: json['leave_type_name'] as String,
+      leaveTypeName: json['leave_type_name']?.toString() ?? 'Unknown',
       totalDays: (json['total_days'] as num).toDouble(),
       usedDays: (json['used_days'] as num).toDouble(),
       remainingDays: (json['remaining_days'] as num).toDouble(),

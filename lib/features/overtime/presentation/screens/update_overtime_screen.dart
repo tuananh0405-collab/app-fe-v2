@@ -98,11 +98,11 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
   }
 
   void _handleSubmit() {
-    print('_handleSubmit called');
-    print('Form is valid: ${_formKey.currentState?.validate()}');
+    debugPrint('_handleSubmit called');
+    debugPrint('Form is valid: ${_formKey.currentState?.validate()}');
     
     if (_formKey.currentState!.validate()) {
-      print('Validation passed, preparing to update overtime...');
+      debugPrint('Validation passed, preparing to update overtime...');
       
       // Combine date with time
       final startDateTime = DateTime(
@@ -121,7 +121,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
         _endTime.minute,
       );
 
-      print('Calling updateOvertimeRequest with ID: ${widget.overtime.id}');
+      debugPrint('Calling updateOvertimeRequest with ID: ${widget.overtime.id}');
       
       ref.read(overtimeControllerProvider.notifier).updateOvertimeRequest(
             overtimeId: widget.overtime.id!,
@@ -133,7 +133,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
             reason: _reasonController.text.trim(),
           );
     } else {
-      print('Form validation failed');
+      debugPrint('Form validation failed');
     }
   }
 
@@ -144,7 +144,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
     final dateFormat = DateFormat('dd/MM/yyyy');
 
     // Debug: Print state to check if isSubmitting is stuck
-    print('OvertimeState - isSubmitting: ${overtimeState.isSubmitting}, isLoading: ${overtimeState.isLoading}');
+    debugPrint('OvertimeState - isSubmitting: ${overtimeState.isSubmitting}, isLoading: ${overtimeState.isLoading}');
 
     // Listen for success or error
     ref.listen(overtimeControllerProvider, (previous, next) {
@@ -487,7 +487,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                 onPressed: overtimeState.isSubmitting 
                     ? null 
                     : () {
-                        print('Update button pressed!');
+                        debugPrint('Update button pressed!');
                         _handleSubmit();
                       },
                 style: ElevatedButton.styleFrom(
