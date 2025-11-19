@@ -12,6 +12,7 @@ import 'package:flutter_application_1/features/overtime/presentation/screens/ove
 import 'package:flutter_application_1/features/settings/presentation/settings_screen.dart';
 import 'package:flutter_application_1/features/face_id/face_id_success_page.dart';
 import 'package:flutter_application_1/features/devices/presentation/screens/device_list_screen.dart';
+import 'package:flutter_application_1/features/work_schedule/presentation/screens/work_schedule_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -239,7 +240,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutePath.schedule,
         name: AppRouteName.schedule,
-        builder: (c, s) => const StubScreen(title: 'Schedule Management'),
+        builder: (c, s) => const WorkScheduleScreen(),
       ),
 
       // Settings
