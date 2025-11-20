@@ -98,33 +98,24 @@ public class FaceIdSuccessActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        // 🔧 DEBUG: Log intent extras để debug
-        Log.d(TAG, "🔍 Intent extras:");
         if (getIntent() != null && getIntent().getExtras() != null) {
             for (String key : getIntent().getExtras().keySet()) {
                 Object value = getIntent().getExtras().get(key);
-                Log.d(TAG, "  " + key + " = " + value + " (" + (value != null ? value.getClass().getSimpleName() : "null") + ")");
             }
         }
-        
-        // ✅ UPDATED: Hiển thị UI success trước khi về Flutter
-        Log.d(TAG, "🎯 Face ID success - showing success screen");
-        
-        // Inflate layout để hiển thị UI success
+
+        // Show UI success
         setContentView(com.example.flutter_application_1.R.layout.activity_face_id_success);
-        
-        // Lấy thông tin từ intent
+
+        // Get data
         String action = getIntent().getStringExtra(EXTRA_ACTION);
         String userName = getIntent().getStringExtra(EXTRA_USER_NAME);
         boolean showUpdateButton = getIntent().getBooleanExtra(EXTRA_SHOW_UPDATE_BUTTON, false);
-        
-        // Setup UI elements
+
+        // Setup UI
         setupUI(action, userName, showUpdateButton);
-        
-        // Gửi dữ liệu về Flutter (để sync state)
-        sendSuccessDataToFlutter();
     }
+
     
     /**
      * Setup UI elements based on action type
@@ -170,7 +161,11 @@ public class FaceIdSuccessActivity extends AppCompatActivity {
         // Continue button
         if (btnContinue != null) {
             btnContinue.setOnClickListener(v -> {
-                Log.d(TAG, "Continue button clicked - finishing activity");
+                Log.d(TAG, "Continue button clicked - navigating to Profile");
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("navigate_to", "profile");
+                resultIntent.putExtra("action", action);
+                setResult(RESULT_OK, resultIntent);
                 finish();
             });
         }

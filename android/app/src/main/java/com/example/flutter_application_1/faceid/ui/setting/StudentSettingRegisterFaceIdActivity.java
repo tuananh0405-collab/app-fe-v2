@@ -24,8 +24,6 @@ public class StudentSettingRegisterFaceIdActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // ✅ NEW: Xử lý back press để quay về setting
-        // Finish activity hiện tại để quay về StudentSettingFragment
         finish();
     }
 }

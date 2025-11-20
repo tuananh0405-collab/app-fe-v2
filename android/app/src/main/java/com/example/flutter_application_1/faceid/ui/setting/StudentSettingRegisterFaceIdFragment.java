@@ -280,7 +280,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
 
         switch (state) {
             case SUCCESS:
-Log.d(TAG, "============================= SUCCESS =============================");
+                Log.d(TAG, "============================= SUCCESS =============================");
 
                 handleSuccessState();
                 break;
@@ -1051,18 +1051,13 @@ Log.d(TAG, "============================= SUCCESS ============================="
             String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
             String userName = AuthManager.getInstance(requireContext()).getCurrentUserName();
             
-            Log.d(TAG, "📝 Preparing intent with:");
-            Log.d(TAG, "  - userId: " + userId);
-            Log.d(TAG, "  - userName: " + userName);
-            Log.d(TAG, "  - bitmapPath: " + bitmapPath);
             
             // Double-check fragment is still attached before starting activity
             if (!isAdded()) {
-                Log.e(TAG, "❌ Fragment detached before starting activity");
                 return;
             }
             
-            // ✅ NEW: Sử dụng Intent mới với userName
+            //  NEW: Sử dụng Intent mới với userName
             Intent successIntent = FaceIdSuccessActivity.createRegisterSuccessIntent(
                 requireContext(),
                 userId,
@@ -1072,7 +1067,6 @@ Log.d(TAG, "============================= SUCCESS ============================="
             
             // Verify intent has extras before starting
             if (successIntent.getExtras() != null) {
-                Log.d(TAG, "✅ Intent extras verified:");
                 for (String key : successIntent.getExtras().keySet()) {
                     Log.d(TAG, "  " + key + " = " + successIntent.getExtras().get(key));
                 }
@@ -1080,9 +1074,7 @@ Log.d(TAG, "============================= SUCCESS ============================="
                 Log.e(TAG, "❌ Intent extras is NULL!");
             }
             
-            Log.d(TAG, "🚀 Starting FaceIdSuccessActivity...");
-            startActivity(successIntent);
-            Log.d(TAG, "✅ Activity started successfully");
+            startActivityForResult(successIntent, SUCCESS_ACTIVITY_REQUEST_CODE);
 
         } catch (Exception e) {
             Log.e(TAG, "❌ Exception in handleSuccessState", e);

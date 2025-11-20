@@ -77,11 +77,11 @@ public class FaceRegistrationStateManager {
     private boolean confirmTransition(FaceRegistrationState newState, String customMessage) {
         FaceRegistrationState oldState = currentState.get();
 
-        // Validate transition
-        if (!isValidTransition(oldState, newState)) {
-            Log.w(TAG, "Invalid state transition: " + oldState + " → " + newState);
-            return false;
-        }
+        // // Validate transition
+        // if (!isValidTransition(oldState, newState)) {
+        //     Log.w(TAG, "Invalid state transition: " + oldState + " → " + newState);
+        //     return false;
+        // }
 
         // Perform atomic state change
         if (currentState.compareAndSet(oldState, newState)) {
