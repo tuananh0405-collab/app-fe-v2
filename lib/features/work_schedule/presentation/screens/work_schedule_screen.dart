@@ -99,24 +99,24 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
                   Divider(height: 1, color: theme.secondaryText.withValues(alpha: 0.2)),
                   
                   // Timeline and Shift Details Section
-                  Expanded(
-                    child: Row(
-                      children: [
-                        // Timeline (Left)
-                        Expanded(
-                          flex: 1,
-                          child: _buildTimelineSection(
-                            theme,
-                            scheduleState,
-                            controller,
-                          ),
-                        ),
+                  // Expanded(
+                  //   child: Row(
+                  //     children: [
+                  //       // Timeline (Left)
+                  //       Expanded(
+                  //         flex: 1,
+                  //         child: _buildTimelineSection(
+                  //           theme,
+                  //           scheduleState,
+                  //           controller,
+                  //         ),
+                  //       ),
                         
-                        // Divider
-                        VerticalDivider(
-                          width: 1,
-                          color: theme.secondaryText.withValues(alpha: 0.2),
-                        ),
+                  //       // Divider
+                  //       VerticalDivider(
+                  //         width: 1,
+                  //         color: theme.secondaryText.withValues(alpha: 0.2),
+                  //       ),
                         
                         // Shift Details (Right)
                         Expanded(
@@ -127,9 +127,9 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
                             _selectedDay,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                    //   ],
+                    // ),
+                  // ),
                 ],
               ),
             ),
