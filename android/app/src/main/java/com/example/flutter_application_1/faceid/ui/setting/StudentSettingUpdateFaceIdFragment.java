@@ -1952,12 +1952,12 @@ String userId;
             boolean isAcceptableQuality = averageScore >= (minAvg - 0.05f);
 
             // Log detailed quality information
-            String qualityLog = String.format(Locale.US,
-                    "Face Analysis Results - Frames: %d, Average Score: %.3f, Min: %.3f, Max: %.3f, Variance: %.5f, " +
-                            "isConsistent: %b, isHighQuality: %b, isAcceptableQuality: %b",
-                    frameScores.size(), averageScore, min, max, variance,
-                    isConsistent, isHighQuality, isAcceptableQuality);
-            Log.d(TAG, qualityLog);
+            // String qualityLog = String.format(Locale.US,
+            //         "Face Analysis Results - Frames: %d, Average Score: %.3f, Min: %.3f, Max: %.3f, Variance: %.5f, " +
+            //                 "isConsistent: %b, isHighQuality: %b, isAcceptableQuality: %b",
+            //         frameScores.size(), averageScore, min, max, variance,
+            //         isConsistent, isHighQuality, isAcceptableQuality);
+            // Log.d(TAG, qualityLog);
 
             // Different paths based on quality assessment
             if (isHighQuality && isConsistent) {
@@ -1972,10 +1972,13 @@ String userId;
                 captureAndUpdateFace();
             } else {
                 // Low quality - provide specific feedback based on issues
+                    String qualityLog = String.format(Locale.US,
+                        "Face Analysis Results - Frames: %d, Average Score: %.3f, Min: %.3f, Max: %.3f, Variance: %.5f",
+                        frameScores.size(), averageScore, min, max, variance);
                 String feedbackMessage = generateQualityFeedback(averageScore, variance);
-                lastDetailedErrorMessage = qualityLog + "\n\nDetailed Analysis: " + feedbackMessage;
+                // lastDetailedErrorMessage = qualityLog + "\n\nDetailed Analysis: " + feedbackMessage;
                 hasDetailedError = true;
-                Log.e(TAG, "❌ Analysis failed: " + lastDetailedErrorMessage);
+                // Log.e(TAG, "❌ Analysis failed: " + lastDetailedErrorMessage);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, feedbackMessage);
             }
         }, ANALYSIS_DURATION_MS);

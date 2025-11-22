@@ -3,7 +3,6 @@ package com.example.flutter_application_1.faceid.data.api;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
-import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.PATCH;
 import retrofit2.http.Multipart;
@@ -46,9 +45,11 @@ public interface FaceIdApiController {
     );
     
     /**
-     * Verify a face ID
-     * @param embedding Face embedding data
+     * Verify a face ID (request-based, requires requestId from notification)
+     * @param requestId Request ID from notification
      * @param userId User ID
+     * @param embedding Face embedding data
+     * @param threshold Optional threshold
      * @return Response indicating success or failure
      */
     @Multipart
@@ -57,7 +58,22 @@ public interface FaceIdApiController {
             @Path("requestId") String requestId,
             @Part("userId") RequestBody userId,
             @Part MultipartBody.Part embedding,
-            @Part("threshold") RequestBody threshold // optional; pass null to omit
+            @Part("threshold") RequestBody threshold
+    );
+
+    /**
+     * Verify a face ID (ad-hoc, no request needed)
+     * @param userId User ID
+     * @param embedding Face embedding data
+     * @param threshold Optional threshold
+     * @return Response indicating success or failure
+     */
+    @Multipart
+    @POST("api/v1/face/faceid/verify")
+    Call<FaceIdVerifyResponse> verifyFaceIdAdHoc(
+            @Part("userId") RequestBody userId,
+            @Part MultipartBody.Part embedding,
+            @Part("threshold") RequestBody threshold
     );
 
     @PATCH("api/faceid/requests/{requestId}/cancel")

@@ -47,7 +47,6 @@ class _FaceIdPageState extends ConsumerState<FaceIdPage>
   }
 
   Future<void> _openRegister() async {
-    // ✅ Lấy user ID từ login state
     final loginState = ref.read(loginControllerProvider);
     final userId = loginState.user?.id;
     

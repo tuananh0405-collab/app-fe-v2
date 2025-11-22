@@ -1235,12 +1235,31 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
             );
             return;
         }
-        // No requestId present: stop and inform user; do NOT fallback to ad-hoc
-        Log.w(TAG, "⚠️ Missing requestId for verification. Aborting to avoid ad-hoc verify.");
-        lastDetailedErrorMessage = "Missing requestId. Please open verification from the notification link.";
-        hasDetailedError = true;
-        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-                "Cannot verify: missing requestId. Please retry from notification.");
+        
+        // No requestId present: fallback to ad-hoc verification
+        Log.d(TAG, "ℹ️ No requestId provided, using ad-hoc verification");
+        faceIdService.verifyFaceId(
+                capturedBitmap,
+                finalUserId,
+                new FaceIdService.FaceIdCallback() {
+                    @Override
+                    public void onSuccess(String message) {
+                        if (!isAdded()) return;
+                        Log.d(TAG, "✅ Ad-hoc verification successful: " + message);
+                        stateManager.transitionTo(FaceRegistrationState.SUCCESS, message);
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {
+                        if (!isAdded()) return;
+                        Log.e(TAG, "❌ Ad-hoc verification failed: " + errorMessage);
+                        lastDetailedErrorMessage = "Verification failure details:\n" + errorMessage;
+                        hasDetailedError = true;
+                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
+                                "Verification failed: " + errorMessage);
+                    }
+                }
+        );
     }
 
     /**
@@ -1977,12 +1996,12 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
             boolean isAcceptableQuality = averageScore >= (minAvg - 0.05f);
 
             // Log detailed quality information
-            String qualityLog = String.format(Locale.US,
-                    "Face Analysis Results - Frames: %d, Average Score: %.3f, Min: %.3f, Max: %.3f, Variance: %.5f, " +
-                            "isConsistent: %b, isHighQuality: %b, isAcceptableQuality: %b",
-                    frameScores.size(), averageScore, min, max, variance,
-                    isConsistent, isHighQuality, isAcceptableQuality);
-            Log.d(TAG, qualityLog);
+            // String qualityLog = String.format(Locale.US,
+            //         "Face Analysis Results - Frames: %d, Average Score: %.3f, Min: %.3f, Max: %.3f, Variance: %.5f, " +
+            //                 "isConsistent: %b, isHighQuality: %b, isAcceptableQuality: %b",
+            //         frameScores.size(), averageScore, min, max, variance,
+            //         isConsistent, isHighQuality, isAcceptableQuality);
+            // Log.d(TAG, qualityLog);
 
             // Different paths based on quality assessment
             if (isHighQuality && isConsistent) {
@@ -1998,9 +2017,9 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
             } else {
                 // Low quality - provide specific feedback based on issues
                 String feedbackMessage = generateQualityFeedback(averageScore, variance);
-                lastDetailedErrorMessage = qualityLog + "\n\nDetailed Analysis: " + feedbackMessage;
+                // lastDetailedErrorMessage = qualityLog + "\n\nDetailed Analysis: " + feedbackMessage;
                 hasDetailedError = true;
-                Log.e(TAG, "❌ Analysis failed: " + lastDetailedErrorMessage);
+                // Log.e(TAG, "❌ Analysis failed: " + lastDetailedErrorMessage);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, feedbackMessage);
             }
         }, ANALYSIS_DURATION_MS);

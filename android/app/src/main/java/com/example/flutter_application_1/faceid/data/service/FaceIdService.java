@@ -1098,7 +1098,7 @@ public class FaceIdService {
     }
     
     /**
-     * Verify face ID against stored embedding
+     * Verify face ID against stored embedding (ad-hoc, no request needed)
      */
     public void verifyFaceId(Bitmap faceBitmap, String userId, FaceIdCallback callback) {
         // Check if models are initialized
@@ -1135,8 +1135,53 @@ public class FaceIdService {
                     RequestBody userIdPart = RequestBody.create(
                             MediaType.parse("text/plain"), userId);
                     
-                    // Legacy ad-hoc verification removed
-                    runOnMainThread(() -> callback.onFailure("Ad-hoc verification is no longer supported. Use request-based verification."));
+                    // Call ad-hoc verification API
+                    FaceIdApiController api = ApiClient.getClient(context).create(FaceIdApiController.class);
+                    retrofit2.Call<FaceIdVerifyResponse> call = api.verifyFaceIdAdHoc(userIdPart, filePart, null);
+                    
+                    call.enqueue(new retrofit2.Callback<FaceIdVerifyResponse>() {
+                        @Override
+                        public void onResponse(@NonNull retrofit2.Call<FaceIdVerifyResponse> c,
+                                             @NonNull retrofit2.Response<FaceIdVerifyResponse> resp) {
+                            if (resp.isSuccessful() && resp.body() != null) {
+                                if (resp.body().isSuccess()) {
+                                    runOnMainThread(() -> callback.onSuccess("Face ID verified successfully"));
+                                } else {
+                                    runOnMainThread(() -> callback.onFailure(resp.body().getMessage() != null ? resp.body().getMessage() : "Verification failed"));
+                                }
+                            } else {
+                                String errorMsg = "Failed to verify: HTTP " + resp.code();
+                                try {
+                                    if (resp.errorBody() != null) {
+                                        String errorBody = resp.errorBody().string();
+                                        Log.d(TAG, "Verify error body: " + errorBody);
+                                        // Try to parse error message
+                                        if (errorBody.contains("message")) {
+                                            int start = errorBody.indexOf("\"message\"");
+                                            if (start >= 0) {
+                                                int colon = errorBody.indexOf(":", start);
+                                                int valueStart = errorBody.indexOf("\"", colon + 1);
+                                                int valueEnd = errorBody.indexOf("\"", valueStart + 1);
+                                                if (valueStart > 0 && valueEnd > valueStart) {
+                                                    errorMsg = errorBody.substring(valueStart + 1, valueEnd);
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Error parsing error body", e);
+                                }
+                                final String finalErrorMsg = errorMsg;
+                                runOnMainThread(() -> callback.onFailure(finalErrorMsg));
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull retrofit2.Call<FaceIdVerifyResponse> c,
+                                            @NonNull Throwable t) {
+                            runOnMainThread(() -> callback.onFailure("Network error: " + t.getMessage()));
+                        }
+                    });
                     
                 } catch (Exception e) {
                     runOnMainThread(() -> callback.onFailure("Error: " + e.getMessage()));

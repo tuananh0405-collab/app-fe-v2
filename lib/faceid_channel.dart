@@ -71,6 +71,18 @@ class FaceIdChannel {
     }
   }
 
+  /// Opens the native Face ID verify screen. Returns true when the native call succeeded
+  /// to start the activity.
+  static Future<bool> verifyFace({required String userId}) async {
+    try {
+      final res = await _channel.invokeMethod('verifyFaceId', {'userId': userId});
+      if (res is bool) return res;
+      return true;
+    } on PlatformException catch (_) {
+      return false;
+    }
+  }
+
   /// Set a one-off listener callback for registration result coming from native.
   static void setOnRegisteredListener(Function(bool) listener) {
     _onRegisteredListener = listener;

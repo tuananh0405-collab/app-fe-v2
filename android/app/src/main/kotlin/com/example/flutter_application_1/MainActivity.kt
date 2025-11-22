@@ -45,7 +45,7 @@ class MainActivity : FlutterActivity() {
                 "verifyFaceId" -> {
                     val userId = call.argument<String>("userId")
                     if (userId != null) {
-                        // Implement verify if needed later
+                        verifyFaceId(userId)
                         result.success(true)
                     } else {
                         result.error("INVALID_ARGUMENT", "userId is required", null)
@@ -72,6 +72,17 @@ class MainActivity : FlutterActivity() {
             val intent = Intent(this, Class.forName("com.example.flutter_application_1.faceid.ui.setting.StudentSettingRegisterFaceIdActivity"))
             intent.putExtra("userId", userId)
             startActivityForResult(intent, FACE_ID_REGISTER_REQUEST)
+        } catch (e: ClassNotFoundException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun verifyFaceId(userId: String) {
+        try {
+            val intent = Intent(this, Class.forName("com.example.flutter_application_1.faceid.ui.setting.StudentSettingVerifyFaceIdActivity"))
+            intent.putExtra("userId", userId)
+            // We don't necessarily need a result for verification in this flow, but we can add it if needed
+            startActivity(intent)
         } catch (e: ClassNotFoundException) {
             e.printStackTrace()
         }
