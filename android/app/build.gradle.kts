@@ -79,6 +79,9 @@ dependencies {
     
     // CameraView for Face ID
     implementation("com.otaliastudios:cameraview:2.7.2")
+
+    // AltBeacon for beacon scanning
+    implementation("org.altbeacon:android-beacon-library:2.19.5")
     
     // Retrofit for API calls
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

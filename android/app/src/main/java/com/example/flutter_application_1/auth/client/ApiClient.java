@@ -1,6 +1,7 @@
 package com.example.flutter_application_1.auth.client;
 
 import android.content.Context;
+import android.util.Log;
 import com.example.flutter_application_1.auth.AuthManager;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -33,7 +34,6 @@ public class ApiClient {
             httpClient.addInterceptor(chain -> {
                 Request original = chain.request();
                 String token = AuthManager.getInstance(context).getAuthToken();
-                
                 if (token != null && !token.isEmpty()) {
                     Request request = original.newBuilder()
                             .header("Authorization", "Bearer " + token)
@@ -41,7 +41,7 @@ public class ApiClient {
                             .build();
                     return chain.proceed(request);
                 }
-                
+                Log.d("ApiClient", "No Authorization header added"); // Debug log for missing token
                 return chain.proceed(original);
             });
 

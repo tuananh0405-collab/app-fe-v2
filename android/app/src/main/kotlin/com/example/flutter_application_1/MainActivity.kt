@@ -16,22 +16,20 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "saveUserInfo" -> {
-                    // Commented out to fix file access error
-                    // val userId = call.argument<String>("userId")
-                    // val userName = call.argument<String>("userName")
-                    // val authToken = call.argument<String>("authToken")
-                    
-                    // if (userId != null) {
-                    //     // Save to SharedPreferences via AuthManager
-                    //     val authManager = com.example.flutter_application_1.auth.AuthManager.getInstance(this)
-                    //     authManager.setUserId(userId)
-                    //     if (userName != null) authManager.setCurrentUserName(userName)
-                    //     if (authToken != null) authManager.setAuthToken(authToken)
-                    //     result.success(true)
-                    // } else {
-                    //     result.error("INVALID_ARGUMENT", "userId is required", null)
-                    // }
-                    result.success(true)
+                    val userId = call.argument<String>("userId")
+                    val userName = call.argument<String>("userName")
+                    val authToken = call.argument<String>("authToken")
+
+                    if (userId != null) {
+                        // Save to SharedPreferences via AuthManager
+                        val authManager = com.example.flutter_application_1.auth.AuthManager.getInstance(this)
+                        authManager.setUserId(userId)
+                        if (userName != null) authManager.setCurrentUserName(userName)
+                        if (authToken != null) authManager.setAuthToken(authToken)
+                        result.success(true)
+                    } else {
+                        result.error("INVALID_ARGUMENT", "userId is required", null)
+                    }
                 }
                 "registerFaceId" -> {
                     val userId = call.argument<String>("userId")

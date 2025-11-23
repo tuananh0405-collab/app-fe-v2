@@ -81,4 +81,26 @@ public interface FaceIdApiController {
 
     @GET("api/faceid/requests/{requestId}/status")
     Call<FaceIdRequestStatusResponse> getFaceIdRequestStatus(@Path("requestId") String requestId);
+    
+    /**
+     * Verify face for attendance check-in/check-out
+     * Endpoint: POST /api/face-id/attendance/verify
+     * Based on CLIENT_API_SEQUENCE.md
+     * 
+     * @param attendanceCheckId Attendance check ID from step 2
+     * @param employeeId Employee ID
+     * @param employeeCode Employee code
+     * @param checkType "check_in" or "check_out"
+     * @param faceImage Face image file (JPEG/PNG, max 5MB)
+     * @return Response indicating success or failure
+     */
+    @Multipart
+    @POST("api/face-id/attendance/verify")
+    Call<FaceIdVerifyResponse> verifyFaceForAttendance(
+            @Part("AttendanceCheckId") RequestBody attendanceCheckId,
+            @Part("EmployeeId") RequestBody employeeId,
+            @Part("EmployeeCode") RequestBody employeeCode,
+            @Part("CheckType") RequestBody checkType,
+            @Part MultipartBody.Part faceImage
+    );
 } 

@@ -52,8 +52,9 @@ import com.example.flutter_application_1.faceid.ui.setting.success.FaceIdSuccess
 import com.example.flutter_application_1.faceid.data.service.FaceIdRequestManager;
 
 
-public class StudentSettingVerifyFaceIdFragment extends Fragment
-        implements FaceIdEnhancer.FaceIdEnhancerCallback {
+public class StudentSettingVerifyFaceIdFragment extends Fragment implements FaceIdEnhancer.FaceIdEnhancerCallback {
+    // BroadcastReceiver để nhận beacon
+    private android.content.BroadcastReceiver beaconReceiver;
     private static final String TAG = "VerifyFaceIdFragment";
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private static final int SUCCESS_ACTIVITY_REQUEST_CODE = 200;
@@ -146,6 +147,34 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
         // Setup verification window from deeplink/args
         setupVerificationWindowFromArgs();
         startVerificationCountdown();
+
+        startVerificationCountdown();
+
+        // Khởi động BeaconScanService - MOVED to checkRequiredPermissions to ensure permissions first
+
+        // Đăng ký receiver để nhận beacon
+        beaconReceiver = new android.content.BroadcastReceiver() {
+            @Override
+            public void onReceive(android.content.Context context, Intent intent) {
+                if ("com.example.flutter_application_1.BEACON_FOUND".equals(intent.getAction())) {
+                    String uuid = intent.getStringExtra("beaconUuid");
+                    int major = intent.getIntExtra("beaconMajor", -1);
+                    int minor = intent.getIntExtra("beaconMinor", -1);
+                    int rssi = intent.getIntExtra("rssi", -100);
+                    Log.d(TAG, "Beacon received: " + uuid + ", " + major + ", " + minor + ", " + rssi);
+                    // Truyền beacon vào arguments để verify
+                    Bundle args = getArguments();
+                    if (args == null) args = new Bundle();
+                    args.putString("beaconUuid", uuid);
+                    args.putInt("beaconMajor", major);
+                    args.putInt("beaconMinor", minor);
+                    args.putInt("rssi", rssi);
+                    setArguments(args);
+                }
+            }
+        };
+        android.content.IntentFilter filter = new android.content.IntentFilter("com.example.flutter_application_1.BEACON_FOUND");
+        requireActivity().registerReceiver(beaconReceiver, filter);
     }
 
     private void setupVerificationWindowFromArgs() {
@@ -607,7 +636,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
             // Đảm bảo chuyển sang trạng thái READY trước khi khởi động camera
             stateManager.transitionTo(FaceRegistrationState.READY, "Position your face in the oval");
 
-            checkCameraPermissionAndStart();
+            checkRequiredPermissions();
             return;
         }
 
@@ -628,7 +657,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
                 // Đảm bảo chuyển sang trạng thái READY trước khi khởi động camera
                 stateManager.transitionTo(FaceRegistrationState.READY, "Position your face in the oval");
 
-                checkCameraPermissionAndStart();
+                checkRequiredPermissions();
                 Log.d(TAG, "✅ FaceIdService initialized with REGISTRATION scenario");
             }
 
@@ -659,13 +688,59 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
         }
     }
 
-    private void checkCameraPermissionAndStart() {
+    private void checkRequiredPermissions() {
+        java.util.List<String> permissionsNeeded = new java.util.ArrayList<>();
+
+        // Camera Permission
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.CAMERA},
+            permissionsNeeded.add(Manifest.permission.CAMERA);
+        }
+
+        // Location Permissions (Required for Beacon scanning on Android < 12)
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        }
+
+        // Bluetooth Permissions (Required for Beacon scanning on Android 12+)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_SCAN)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.BLUETOOTH_SCAN);
+            }
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.BLUETOOTH_CONNECT);
+            }
+        }
+
+        if (!permissionsNeeded.isEmpty()) {
+            // Request all missing permissions
+            requestPermissions(permissionsNeeded.toArray(new String[0]),
                     CAMERA_PERMISSION_REQUEST_CODE);
         } else {
+            // All permissions granted
             startCamera();
+            startBeaconService();
+        }
+    }
+
+    private void startBeaconService() {
+        try {
+            Log.d(TAG, "Starting BeaconScanService...");
+            Intent intent = new Intent(requireContext(), com.example.flutter_application_1.attendance.data.service.BeaconScanService.class);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                requireActivity().startForegroundService(intent);
+            } else {
+                requireActivity().startService(intent);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to start BeaconScanService", e);
         }
     }
 
@@ -1205,61 +1280,84 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
             analysisOverlay.setVisibility(View.GONE);
         }
 
-        // 🎯 Verify face with enhanced security validation
-        String requestId = getRequestIdFromArgs();
-        if (requestId != null) {
-            // Use request-based verify path
-            faceIdService.verifyFaceIdForRequest(
-                    capturedBitmap,
-                    finalUserId,
-                    requestId,
-                    null,
-                    new FaceIdService.FaceIdCallback() {
-                        @Override
-                        public void onSuccess(String message) {
-                            if (!isAdded()) return;
-                            Log.d(TAG, "✅ Verification successful: " + message);
-                            stateManager.transitionTo(FaceRegistrationState.SUCCESS, message);
-                        }
-
-                        @Override
-                        public void onFailure(String errorMessage) {
-                            if (!isAdded()) return;
-                            Log.e(TAG, "❌ Verification failed: " + errorMessage);
-                            lastDetailedErrorMessage = "Verification failure details:\n" + errorMessage;
-                            hasDetailedError = true;
-                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-                                    "Verification failed: " + errorMessage);
-                        }
-                    }
-            );
-            return;
-        }
+        // 🎯 ALWAYS use full 3-step Attendance Check-In Flow
+        // User requirement: "luôn dùng full 3 bước, và trong 3 bước đấy cũng không dùng requestId"
+        Log.d(TAG, "🚀 Always using full attendance check-in flow (3 steps: Beacon -> GPS -> Face)");
         
-        // No requestId present: fallback to ad-hoc verification
-        Log.d(TAG, "ℹ️ No requestId provided, using ad-hoc verification");
-        faceIdService.verifyFaceId(
-                capturedBitmap,
-                finalUserId,
-                new FaceIdService.FaceIdCallback() {
-                    @Override
-                    public void onSuccess(String message) {
-                        if (!isAdded()) return;
-                        Log.d(TAG, "✅ Ad-hoc verification successful: " + message);
-                        stateManager.transitionTo(FaceRegistrationState.SUCCESS, message);
-                    }
+        // Note: The 3-step flow generates its own attendance_check_id in Step 2,
+        // so we do not need/use the requestId from arguments.
+        performAttendanceCheckIn(capturedBitmap);
+    }
+    
+    /**
+     * 🚀 Perform attendance check-in using AttendanceService (3-step flow)
+     */
+    private void performAttendanceCheckIn(Bitmap faceImage) {
+        if (!isAdded()) return;
+        
+    Log.d(TAG, "🚀 Starting attendance check-in flow");
 
-                    @Override
-                    public void onFailure(String errorMessage) {
-                        if (!isAdded()) return;
-                        Log.e(TAG, "❌ Ad-hoc verification failed: " + errorMessage);
-                        lastDetailedErrorMessage = "Verification failure details:\n" + errorMessage;
-                        hasDetailedError = true;
-                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-                                "Verification failed: " + errorMessage);
-                    }
-                }
-        );
+    // Get attendance data from arguments
+    Bundle args = getArguments();
+    if (args == null) {
+        Log.e(TAG, "❌ No arguments provided for attendance flow");
+        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
+            "Attendance data not available");
+        return;
+    }
+
+    // Extract beacon data (không fix cứng, lấy đúng dữ liệu truyền vào)
+    String beaconUuid = args.getString("beaconUuid");
+    int beaconMajor = args.getInt("beaconMajor");
+    int beaconMinor = args.getInt("beaconMinor");
+    int rssi = args.getInt("rssi");
+
+    // Kiểm tra dữ liệu beacon hợp lệ
+    if ((beaconUuid == null || beaconUuid.isEmpty()) && beaconMajor == 0 && beaconMinor == 0) {
+        Log.e(TAG, "❌ Beacon data not available or invalid: uuid=" + beaconUuid + ", major=" + beaconMajor + ", minor=" + beaconMinor);
+        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
+            "Beacon data not available. Please wait for beacon scan.");
+        return;
+    }
+
+    // Extract GPS data
+    double latitude = args.getDouble("latitude", 10.762622);
+    double longitude = args.getDouble("longitude", 106.660172);
+    double accuracy = args.getDouble("accuracy", 15.0);
+
+    // Get device ID
+    String deviceId = android.provider.Settings.Secure.getString(
+        requireContext().getContentResolver(),
+        android.provider.Settings.Secure.ANDROID_ID);
+
+    // Initialize AttendanceService
+    com.example.flutter_application_1.attendance.data.service.AttendanceService attendanceService =
+        new com.example.flutter_application_1.attendance.data.service.AttendanceService(requireContext());
+
+    // Perform complete check-in flow
+    attendanceService.performCheckIn(
+        beaconUuid, beaconMajor, beaconMinor, rssi,
+        latitude, longitude, accuracy,
+        deviceId,
+        faceImage,
+        new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+            if (!isAdded()) return;
+            Log.d(TAG, "✅ Attendance check-in successful: " + result);
+            stateManager.transitionTo(FaceRegistrationState.SUCCESS, result);
+            }
+            @Override
+            public void onFailure(String error) {
+            if (!isAdded()) return;
+            Log.e(TAG, "❌ Attendance check-in failed: " + error);
+            lastDetailedErrorMessage = "Attendance check-in failure:\n" + error;
+            hasDetailedError = true;
+            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
+                "Check-in failed: " + error);
+            }
+        }
+    );
     }
 
     /**
@@ -1802,11 +1900,21 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (allGranted) {
                 startCamera();
+                // Start beacon service now that permissions are granted
+                startBeaconService();
             } else {
                 stateManager.transitionTo(FaceRegistrationState.FAILED_PERMISSION,
-                        "Camera permission is required");
+                        "Camera, Location, and Bluetooth permissions are required");
             }
         }
     }
@@ -1828,6 +1936,12 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
         // ✅ REMOVED: Không cần hiện navbar vì đang chạy trong Activity riêng biệt
 
         stopCameraSafe();
+
+        // Hủy đăng ký receiver khi destroy view
+        if (beaconReceiver != null) {
+            requireActivity().unregisterReceiver(beaconReceiver);
+            beaconReceiver = null;
+        }
 
         // ✅ NEW: Cleanup FaceIdRequestManager
         if (requestManager != null) {
@@ -2224,5 +2338,6 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment
         }
     }
 }
+
 
 
