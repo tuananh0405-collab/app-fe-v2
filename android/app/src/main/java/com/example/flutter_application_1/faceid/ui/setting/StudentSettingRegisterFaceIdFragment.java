@@ -1013,16 +1013,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         }
     }
 
-    /**
-     * 📸 Capture and register face with enhanced security validation
-     */
-    // NOTE: captureAndRegisterFace implementation was moved later in the file (uses explicit embedding extraction
-    // and API upload). The earlier implementation that delegated to faceIdService.captureAndRegisterFace was
-    // removed to avoid duplicate method definitions and to keep a single, clearer registration flow below.
-
-    /**
-     * 🎉 Handle success - Navigate to Success Activity
-     */
+ 
     private void handleSuccessState() {
         Log.d(TAG, "==================== handleSuccessState START ====================");
         

@@ -19,6 +19,7 @@ import java.util.Collection;
 public class BeaconScanService extends Service implements BeaconConsumer {
     private static final String TAG = "BeaconScanService";
     private static final String CHANNEL_ID = "BeaconScanServiceChannel";
+    public static final String ACTION_STOP = "com.example.flutter_application_1.ACTION_STOP_SCAN";
     private static final int NOTIFICATION_ID = 123;
     private BeaconManager beaconManager;
 
@@ -58,6 +59,17 @@ public class BeaconScanService extends Service implements BeaconConsumer {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "BeaconScanService started command");
+        // Support an explicit STOP action so callers can ask the service to shutdown cleanly
+        if (intent != null && ACTION_STOP.equals(intent.getAction())) {
+            Log.d(TAG, "Stop action received - stopping BeaconScanService");
+            try {
+                // Stop foreground and the service
+                stopForeground(true);
+            } catch (Exception ignored) {}
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+
         return START_STICKY;
     }
 
@@ -82,9 +94,9 @@ public class BeaconScanService extends Service implements BeaconConsumer {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
                 if (beacons.size() > 0) {
-                    Log.d(TAG, "Beacons found: " + beacons.size());
+                    // Log.d(TAG, "Beacons found: " + beacons.size());
                     for (Beacon beacon : beacons) {
-                        Log.d(TAG, "Beacon: " + beacon.toString() + " RSSI: " + beacon.getRssi());
+                        // Log.d(TAG, "Beacon: " + beacon.toString() + " RSSI: " + beacon.getRssi());
                         // Broadcast beacon info
                         Intent intent = new Intent("com.example.flutter_application_1.BEACON_FOUND");
                         intent.putExtra("beaconUuid", beacon.getId1().toString());

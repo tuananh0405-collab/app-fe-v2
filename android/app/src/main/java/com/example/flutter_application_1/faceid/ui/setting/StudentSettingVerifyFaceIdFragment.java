@@ -109,6 +109,15 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private LocationManager locationManager;
     private Location currentLocation;
 
+    // 📡 BEACON DATA (stored as instance variables to avoid fragment lifecycle issues)
+    private String beaconUuid;
+    private int beaconMajor = -1;
+    private int beaconMinor = -1;
+    private int beaconRssi = -100;
+    
+    // ✅ SUCCESS FLAG - Prevent processing after successful verification
+    private boolean verificationCompleted = false;
+
     // Verification window control
     private long verifyDeadlineMs = 0L;
     private final Runnable verifyCountdownRunnable = new Runnable() {
@@ -163,20 +172,31 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         beaconReceiver = new android.content.BroadcastReceiver() {
             @Override
             public void onReceive(android.content.Context context, Intent intent) {
-                if ("com.example.flutter_application_1.BEACON_FOUND".equals(intent.getAction())) {
-                    String uuid = intent.getStringExtra("beaconUuid");
-                    int major = intent.getIntExtra("beaconMajor", -1);
-                    int minor = intent.getIntExtra("beaconMinor", -1);
-                    int rssi = intent.getIntExtra("rssi", -100);
-                    Log.d(TAG, "Beacon received: " + uuid + ", " + major + ", " + minor + ", " + rssi);
-                    // Truyền beacon vào arguments để verify
-                    Bundle args = getArguments();
-                    if (args == null) args = new Bundle();
-                    args.putString("beaconUuid", uuid);
-                    args.putInt("beaconMajor", major);
-                    args.putInt("beaconMinor", minor);
-                    args.putInt("rssi", rssi);
-                    setArguments(args);
+                try {
+                    // Check if Fragment is still attached and state is not saved
+                    if (!isAdded() || isStateSaved()) {
+                        Log.w(TAG, "Fragment not attached or state saved, ignoring beacon broadcast");
+                        return;
+                    }
+                    
+                    if ("com.example.flutter_application_1.BEACON_FOUND".equals(intent.getAction())) {
+                        String uuid = intent.getStringExtra("beaconUuid");
+                        int major = intent.getIntExtra("beaconMajor", -1);
+                        int minor = intent.getIntExtra("beaconMinor", -1);
+                        int rssi = intent.getIntExtra("rssi", -100);
+                        Log.d(TAG, "Beacon received: " + uuid + ", " + major + ", " + minor + ", " + rssi);
+                        
+                        // Store beacon data in instance variables instead of modifying arguments
+                        // This prevents "Fragment already added and state has been saved" crash
+                        beaconUuid = uuid;
+                        beaconMajor = major;
+                        beaconMinor = minor;
+                        beaconRssi = rssi;
+                        
+                        Log.d(TAG, "✅ Beacon data stored successfully");
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error processing beacon broadcast: " + e.getMessage(), e);
                 }
             }
         };
@@ -752,6 +772,46 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
 
     /**
+     * Stop the BeaconScanService if it's running.
+     */
+    private void stopBeaconService() {
+        try {
+            if (!isAdded() || requireActivity() == null) {
+                Log.w(TAG, "Fragment not added - cannot stop BeaconScanService safely");
+                return;
+            }
+            Intent intent = new Intent(requireContext(), com.example.flutter_application_1.attendance.data.service.BeaconScanService.class);
+            boolean stopped = requireActivity().stopService(intent);
+            Log.d(TAG, "BeaconScanService stop requested, result=" + stopped);
+            // Also send an explicit STOP action to the service so it can self-terminate reliably
+            try {
+                Intent stopIntent = new Intent(requireContext(), com.example.flutter_application_1.attendance.data.service.BeaconScanService.class);
+                stopIntent.setAction(com.example.flutter_application_1.attendance.data.service.BeaconScanService.ACTION_STOP);
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    requireActivity().startForegroundService(stopIntent);
+                } else {
+                    requireActivity().startService(stopIntent);
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to send explicit stop action to BeaconScanService", e);
+            }
+
+            // Unregister receiver immediately to avoid receiving further broadcasts
+            if (beaconReceiver != null) {
+                try {
+                    requireActivity().unregisterReceiver(beaconReceiver);
+                    beaconReceiver = null;
+                    Log.d(TAG, "Beacon receiver unregistered during stopBeaconService");
+                } catch (Exception e) {
+                    Log.w(TAG, "Could not unregister beaconReceiver during stopBeaconService", e);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to stop BeaconScanService", e);
+        }
+    }
+
+    /**
      * 📷 Start camera and begin processing
      */
     private void startCamera() {
@@ -1237,6 +1297,12 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
      * 📸 Capture and verify face with enhanced security validation
      */
     private void captureAndVerifyFace() {
+        // Check if verification has already completed successfully
+        if (verificationCompleted) {
+            Log.w(TAG, "⚠️ Verification already completed, ignoring duplicate request");
+            return;
+        }
+        
         // Check if fragment is still attached
         if (!isAdded()) {
             Log.w(TAG, "Fragment not attached, cannot capture and register face");
@@ -1331,6 +1397,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         }
     }
     
+    
     /**
      *  Perform attendance check-in using AttendanceService (3-step flow)
      */
@@ -1339,21 +1406,15 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
         Log.d(TAG, "Starting attendance check-in flow (stepwise from fragment)");
 
-        // Get attendance data from arguments
-        Bundle args = getArguments();
-        if (args == null) {
-            Log.e(TAG, "No arguments provided for attendance flow");
-            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Attendance data not available");
-            return;
-        }
+        // Get attendance data from instance variables (not arguments to avoid lifecycle issues)
+        // Beacon data is populated by the BroadcastReceiver
+        String beaconUuidLocal = this.beaconUuid;
+        int beaconMajorLocal = this.beaconMajor;
+        int beaconMinorLocal = this.beaconMinor;
+        int rssiLocal = this.beaconRssi;
 
-        String beaconUuid = args.getString("beaconUuid");
-        int beaconMajor = args.getInt("beaconMajor");
-        int beaconMinor = args.getInt("beaconMinor");
-        int rssi = args.getInt("rssi");
-
-        if ((beaconUuid == null || beaconUuid.isEmpty()) && beaconMajor == 0 && beaconMinor == 0) {
-            Log.e(TAG, "Beacon data not available or invalid: uuid=" + beaconUuid + ", major=" + beaconMajor + ", minor=" + beaconMinor);
+        if ((beaconUuidLocal == null || beaconUuidLocal.isEmpty()) && beaconMajorLocal == -1 && beaconMinorLocal == -1) {
+            Log.e(TAG, "Beacon data not available or invalid: uuid=" + beaconUuidLocal + ", major=" + beaconMajorLocal + ", minor=" + beaconMinorLocal);
             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Beacon data not available. Please wait for beacon scan.");
             return;
         }
@@ -1378,7 +1439,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
         // Step 1: Validate Beacon
         stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Validating beacon...");
-        attendanceService.validateBeacon(beaconUuid, beaconMajor, beaconMinor, rssi, new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse>() {
+        attendanceService.validateBeacon(beaconUuidLocal, beaconMajorLocal, beaconMinorLocal, rssiLocal, new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse>() {
             @Override
             public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse beaconResult) {
                 if (!isAdded()) return;
@@ -1457,6 +1518,10 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             Log.w(TAG, "Fragment not attached, cannot handle success state");
             return;
         }
+        
+        // Set flag to prevent duplicate processing
+        verificationCompleted = true;
+        Log.d(TAG, "✅ Verification completed flag set");
 
         try {
             stopCamera();
@@ -1479,9 +1544,15 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 userId,
                 AuthManager.getInstance(requireContext()).getCurrentUserName()
             );
+            // Ensure beacon scanning is stopped once verification is successful
+            stopBeaconService();
             startActivity(successIntent);
+            
+            // Finish the parent activity to prevent it from staying in the back stack
+            // This ensures no duplicate requests when user clicks Continue
+            requireActivity().finish();
 
-            Log.d(TAG, "🎉 Navigating to Success Activity");
+            Log.d(TAG, "🎉 Navigating to Success Activity and finishing parent activity");
 
         } catch (Exception e) {
             Log.e(TAG, " Error handling success", e);
@@ -2027,7 +2098,13 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
         // Hủy đăng ký receiver khi destroy view
         if (beaconReceiver != null) {
-            requireActivity().unregisterReceiver(beaconReceiver);
+            try {
+                requireActivity().unregisterReceiver(beaconReceiver);
+                Log.d(TAG, "✅ BroadcastReceiver unregistered successfully");
+            } catch (IllegalArgumentException e) {
+                // Receiver was not registered or already unregistered
+                Log.w(TAG, "BroadcastReceiver was not registered: " + e.getMessage());
+            }
             beaconReceiver = null;
         }
 
@@ -2058,6 +2135,12 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         }
 
         mainHandler.removeCallbacksAndMessages(null);
+        
+        // Dismiss any error dialogs
+        if (currentErrorDialog != null && currentErrorDialog.isShowing()) {
+            currentErrorDialog.dismiss();
+            currentErrorDialog = null;
+        }
 
         // Clear references
         cameraView = null;
@@ -2374,6 +2457,8 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             userId,
             userName
         );
+        // Stop beacon scanning when a remote request is verified as well
+        stopBeaconService();
         startActivity(successIntent);
         requireActivity().finish();
     }
@@ -2425,6 +2510,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             requireActivity().onBackPressed();
         }
     }
+    
 }
 
 
