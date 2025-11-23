@@ -71,7 +71,7 @@ public class MainActivity extends FlutterActivity {
                     intent.removeExtra("user_id");
                     
                 } catch (Exception e) {
-                    Log.e(TAG, "❌ Failed to send success data from MainActivity", e);
+                    Log.e(TAG, " Failed to send success data from MainActivity", e);
                 }
             }
 
@@ -93,7 +93,7 @@ public class MainActivity extends FlutterActivity {
                     intent.removeExtra("face_id_operation_failed");
                     intent.removeExtra("error_message");
                 } catch (Exception e) {
-                    Log.e(TAG, "❌ Failed to send failure data from MainActivity", e);
+                    Log.e(TAG, " Failed to send failure data from MainActivity", e);
                 }
             }
         }

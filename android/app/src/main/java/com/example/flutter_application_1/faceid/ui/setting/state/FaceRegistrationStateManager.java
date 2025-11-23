@@ -146,7 +146,7 @@ public class FaceRegistrationStateManager {
                 return to == FaceRegistrationState.PROCESSING || to.isErrorState();
                 
             case FACE_REAL:
-                // ✅ After liveness verification, allow transition to CAPTURING or PROCESSING
+                //  After liveness verification, allow transition to CAPTURING or PROCESSING
                 return to == FaceRegistrationState.CAPTURING || 
                        to == FaceRegistrationState.PROCESSING || 
                        to.isErrorState();

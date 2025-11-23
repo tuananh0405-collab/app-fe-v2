@@ -69,7 +69,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private FaceIdEnhancer faceIdEnhancer; // Add FaceIdEnhancer
     private boolean faceIdEnhancerInitialized = false;
     
-    // ✅ NEW: Face ID Request Manager để quản lý request lifecycle
+    //  NEW: Face ID Request Manager để quản lý request lifecycle
     private FaceIdRequestManager requestManager;
 
 
@@ -142,7 +142,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         // Đảm bảo biến analysisOverlay ban đầu là null để thiết lập UI phân tích khi cần
         analysisOverlay = null;
 
-        Log.d(TAG, "✅ Fragment initialized with clean architecture");
+        Log.d(TAG, " Fragment initialized with clean architecture");
 
         // Setup verification window from deeplink/args
         setupVerificationWindowFromArgs();
@@ -228,9 +228,9 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         verifyDeadlineMs = deadline;
         Log.d(TAG, "Verify deadline set to: " + verifyDeadlineMs + " (in " + ((verifyDeadlineMs - now) / 1000) + "s)");
         
-        // ✅ NEW: Initialize FaceIdRequestManager nếu có requestId
+        //  NEW: Initialize FaceIdRequestManager nếu có requestId
         if (requestId != null && sessionId != null) {
-            Log.d(TAG, "🚀 Initializing Face ID request: " + requestId + " for session: " + sessionId);
+            Log.d(TAG, " Initializing Face ID request: " + requestId + " for session: " + sessionId);
             requestManager.initializeRequest(requestId, sessionId, deadline);
         } else {
             Log.d(TAG, "⚠️ No requestId/sessionId found, using legacy verification mode");
@@ -322,10 +322,10 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         // 4. Face Tracker with optimized settings for stability
         faceTracker = new FaceTracker(10); // Increased from 8 to 10 frames for better stability (~ 0.33 seconds)
 
-        // ✅ NEW: Initialize FaceIdRequestManager
+        //  NEW: Initialize FaceIdRequestManager
         requestManager = new FaceIdRequestManager(requireContext());
         
-        // ✅ NEW: Setup request manager callbacks
+        //  NEW: Setup request manager callbacks
         setupRequestManagerCallbacks();
         
         Log.d(TAG, "📦 All components initialized successfully");
@@ -550,7 +550,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 break;
 
             case FACE_REAL:
-                // ✅ Liveness verified! Auto-transition to capture and verify
+                //  Liveness verified! Auto-transition to capture and verify
                 Log.d(TAG, "🎉 Face is REAL - Starting automatic capture and verification");
                 livenessVerified = true;
                 
@@ -596,10 +596,10 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
 
     /**
-     * 🚀 Start face registration process
+     *  Start face registration process
      */
     private void startFaceRegistration() {
-        Log.d(TAG, "🚀 Starting face registration process");
+        Log.d(TAG, " Starting face registration process");
 
         // Dismiss any existing error dialog before starting camera
         if (currentErrorDialog != null && currentErrorDialog.isShowing()) {
@@ -658,14 +658,14 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 stateManager.transitionTo(FaceRegistrationState.READY, "Position your face in the oval");
 
                 checkRequiredPermissions();
-                Log.d(TAG, "✅ FaceIdService initialized with REGISTRATION scenario");
+                Log.d(TAG, " FaceIdService initialized with REGISTRATION scenario");
             }
 
             @Override
             public void onError(String message) {
                 if (!isAdded()) return;
 
-                Log.e(TAG, "❌ FaceIdService error: " + message);
+                Log.e(TAG, " FaceIdService error: " + message);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
                         "Failed to initialize: " + message);
             }
@@ -682,7 +682,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             if (faceOverlayView != null) {
                 spoofDetectionManager.setOvalBoundary(faceOverlayView.getOvalRect());
             }
-            Log.d(TAG, "✅ SpoofDetectionManager initialized with oval boundary");
+            Log.d(TAG, " SpoofDetectionManager initialized with oval boundary");
         } else {
             Log.w(TAG, "⚠️ FaceSpoofDetector not available, using fallback detection");
         }
@@ -788,7 +788,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 // Hide loading and show camera view
                 uiController.showLoadingOverlay(false);
 
-                Log.d(TAG, "✅ Camera started successfully");
+                Log.d(TAG, " Camera started successfully");
                 stateManager.transitionTo(FaceRegistrationState.READY,
                         "Position your face in the oval");
             } catch (Exception e) {
@@ -798,7 +798,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                     return;
                 }
 
-                Log.e(TAG, "❌ Error starting camera: " + e.getMessage(), e);
+                Log.e(TAG, " Error starting camera: " + e.getMessage(), e);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_CAMERA,
                         "Failed to start camera: " + e.getMessage());
             }
@@ -1077,7 +1077,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
                     @Override
                     public void onError(String errorMessage) {
-                        Log.e(TAG, "❌ Frame processing error: " + errorMessage);
+                        Log.e(TAG, " Frame processing error: " + errorMessage);
                         stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
                                 "Detection error: " + errorMessage);
                     }
@@ -1255,12 +1255,12 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         try {
             userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
             if (userId == null || userId.isEmpty()) {
-                Log.e(TAG, "❌ No user ID available");
+                Log.e(TAG, " No user ID available");
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "User not logged in");
                 return;
             }
         } catch (IllegalStateException e) {
-            Log.e(TAG, "❌ Fragment not attached when getting user ID", e);
+            Log.e(TAG, " Fragment not attached when getting user ID", e);
             return;
         }
 
@@ -1282,7 +1282,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
         // 🎯 ALWAYS use full 3-step Attendance Check-In Flow
         // User requirement: "luôn dùng full 3 bước, và trong 3 bước đấy cũng không dùng requestId"
-        Log.d(TAG, "🚀 Always using full attendance check-in flow (3 steps: Beacon -> GPS -> Face)");
+        Log.d(TAG, " Always using full attendance check-in flow (3 steps: Beacon -> GPS -> Face)");
         
         // Note: The 3-step flow generates its own attendance_check_id in Step 2,
         // so we do not need/use the requestId from arguments.
@@ -1290,17 +1290,17 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
     
     /**
-     * 🚀 Perform attendance check-in using AttendanceService (3-step flow)
+     *  Perform attendance check-in using AttendanceService (3-step flow)
      */
     private void performAttendanceCheckIn(Bitmap faceImage) {
         if (!isAdded()) return;
         
-    Log.d(TAG, "🚀 Starting attendance check-in flow");
+    Log.d(TAG, " Starting attendance check-in flow");
 
     // Get attendance data from arguments
     Bundle args = getArguments();
     if (args == null) {
-        Log.e(TAG, "❌ No arguments provided for attendance flow");
+        Log.e(TAG, " No arguments provided for attendance flow");
         stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
             "Attendance data not available");
         return;
@@ -1314,7 +1314,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
     // Kiểm tra dữ liệu beacon hợp lệ
     if ((beaconUuid == null || beaconUuid.isEmpty()) && beaconMajor == 0 && beaconMinor == 0) {
-        Log.e(TAG, "❌ Beacon data not available or invalid: uuid=" + beaconUuid + ", major=" + beaconMajor + ", minor=" + beaconMinor);
+        Log.e(TAG, " Beacon data not available or invalid: uuid=" + beaconUuid + ", major=" + beaconMajor + ", minor=" + beaconMinor);
         stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
             "Beacon data not available. Please wait for beacon scan.");
         return;
@@ -1344,13 +1344,13 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             @Override
             public void onSuccess(String result) {
             if (!isAdded()) return;
-            Log.d(TAG, "✅ Attendance check-in successful: " + result);
+            Log.d(TAG, " Attendance check-in successful: " + result);
             stateManager.transitionTo(FaceRegistrationState.SUCCESS, result);
             }
             @Override
             public void onFailure(String error) {
             if (!isAdded()) return;
-            Log.e(TAG, "❌ Attendance check-in failed: " + error);
+            Log.e(TAG, " Attendance check-in failed: " + error);
             lastDetailedErrorMessage = "Attendance check-in failure:\n" + error;
             hasDetailedError = true;
             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
@@ -1384,8 +1384,8 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 return;
             }
 
-            // 🚀 Launch Success Activity
-            // ✅ NEW: Sử dụng Intent mới với userName
+            //  Launch Success Activity
+            //  NEW: Sử dụng Intent mới với userName
             Intent successIntent = FaceIdSuccessActivity.createVerifySuccessIntent(
                 requireContext(),
                 userId,
@@ -1396,7 +1396,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             Log.d(TAG, "🎉 Navigating to Success Activity");
 
         } catch (Exception e) {
-            Log.e(TAG, "❌ Error handling success", e);
+            Log.e(TAG, " Error handling success", e);
 
             // Check if fragment is still attached before showing toast
             if (isAdded()) {
@@ -1452,7 +1452,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
 
     /**
-     * ❌ Handle error states with retry
+     *  Handle error states with retry
      */
     private void handleErrorState(FaceRegistrationState state) {
         // Ensure camera is stopped to prevent infinite loop
@@ -1593,7 +1593,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         if (uiController != null) {
             uiController.showScreen(FaceVerificationUIController.UIScreenState.SETUP);
         }
-        // ✅ REMOVED: Không cần hiện navbar vì đang chạy trong Activity riêng biệt
+        //  REMOVED: Không cần hiện navbar vì đang chạy trong Activity riêng biệt
     }
 
     /**
@@ -1762,7 +1762,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     public void onBlinkDetected() {
         if (!isAdded()) return;
 
-        Log.d(TAG, "👁️ Blink detected!");
+        Log.d(TAG, " Blink detected!");
         // Update UI to show blink was detected with visual feedback
         if (binding != null) {
             // Update status message with clear instructions
@@ -1797,7 +1797,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     public void onGazeDirectionCompleted(String direction) {
         if (!isAdded() || binding == null) return;
         
-        Log.d(TAG, "✅ Head direction completed: " + direction);
+        Log.d(TAG, " Head direction completed: " + direction);
         
         // Update UI based on completed direction
         switch (direction) {
@@ -1837,7 +1837,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     public void onVerificationComplete(boolean success) {
         if (!isAdded()) return;
 
-        Log.d(TAG, "✅ Verification complete: " + (success ? "SUCCESS" : "FAILED"));
+        Log.d(TAG, " Verification complete: " + (success ? "SUCCESS" : "FAILED"));
         if (success) {
             // Proceed with face registration
             stateManager.transitionTo(FaceRegistrationState.FACE_REAL, "Verification complete!");
@@ -1933,7 +1933,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     public void onDestroyView() {
         super.onDestroyView();
 
-        // ✅ REMOVED: Không cần hiện navbar vì đang chạy trong Activity riêng biệt
+        //  REMOVED: Không cần hiện navbar vì đang chạy trong Activity riêng biệt
 
         stopCameraSafe();
 
@@ -1943,7 +1943,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             beaconReceiver = null;
         }
 
-        // ✅ NEW: Cleanup FaceIdRequestManager
+        //  NEW: Cleanup FaceIdRequestManager
         if (requestManager != null) {
             requestManager.cleanup();
         }
@@ -2133,7 +2133,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 String feedbackMessage = generateQualityFeedback(averageScore, variance);
                 // lastDetailedErrorMessage = qualityLog + "\n\nDetailed Analysis: " + feedbackMessage;
                 hasDetailedError = true;
-                // Log.e(TAG, "❌ Analysis failed: " + lastDetailedErrorMessage);
+                // Log.e(TAG, " Analysis failed: " + lastDetailedErrorMessage);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, feedbackMessage);
             }
         }, ANALYSIS_DURATION_MS);
@@ -2218,7 +2218,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
 
     /**
-     * ✅ NEW: Setup callbacks cho FaceIdRequestManager
+     *  NEW: Setup callbacks cho FaceIdRequestManager
      */
     private void setupRequestManagerCallbacks() {
         requestManager.setStatusCallback(new FaceIdRequestManager.RequestStatusCallback() {
@@ -2271,10 +2271,10 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
     
     /**
-     * ✅ NEW: Handle request verified successfully
+     *  NEW: Handle request verified successfully
      */
     private void handleRequestVerified() {
-        Log.d(TAG, "✅ Request verified successfully");
+        Log.d(TAG, " Request verified successfully");
         stopCameraSafe();
         
         // Navigate to success screen
@@ -2291,7 +2291,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
     
     /**
-     * ✅ NEW: Handle request expired
+     *  NEW: Handle request expired
      */
     private void handleRequestExpired() {
         Log.d(TAG, "⏰ Request expired");
@@ -2305,10 +2305,10 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
     
     /**
-     * ✅ NEW: Handle request cancelled
+     *  NEW: Handle request cancelled
      */
     private void handleRequestCancelled() {
-        Log.d(TAG, "❌ Request cancelled");
+        Log.d(TAG, " Request cancelled");
         stopCameraSafe();
         
         // Show cancelled message
@@ -2319,10 +2319,10 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
     
     /**
-     * ✅ NEW: Handle request failed
+     *  NEW: Handle request failed
      */
     private void handleRequestFailed(String error) {
-        Log.e(TAG, "❌ Request failed: " + error);
+        Log.e(TAG, " Request failed: " + error);
         
         // Show error message
         Toast.makeText(requireContext(), "Verification failed: " + error, Toast.LENGTH_LONG).show();

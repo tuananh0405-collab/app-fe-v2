@@ -91,7 +91,7 @@ public class FaceIdRequestManager {
      * Khởi tạo request với thông tin từ deeplink
      */
     public void initializeRequest(String requestId, String sessionId, long expirationTime) {
-        Log.d(TAG, "🚀 Initializing request: " + requestId + ", expires in " + 
+        Log.d(TAG, " Initializing request: " + requestId + ", expires in " + 
               ((expirationTime - System.currentTimeMillis()) / 1000) + "s");
         
         // Stop any existing polling first
@@ -158,7 +158,7 @@ public class FaceIdRequestManager {
             
             @Override
             public void onFailure(@NonNull Call<FaceIdRequestStatusResponse> call, @NonNull Throwable t) {
-                Log.e(TAG, "❌ Network error polling request status", t);
+                Log.e(TAG, " Network error polling request status", t);
                 handlePollingError("Network error: " + t.getMessage());
             }
         });
@@ -224,7 +224,7 @@ public class FaceIdRequestManager {
      * Xử lý khi request được verify thành công
      */
     private void handleRequestVerified() {
-        Log.d(TAG, "✅ Request verified successfully: " + currentRequestId);
+        Log.d(TAG, " Request verified successfully: " + currentRequestId);
         stopStatusPolling();
         
         if (statusCallback != null) {
@@ -253,7 +253,7 @@ public class FaceIdRequestManager {
      * Xử lý khi request bị hủy
      */
     private void handleRequestCancelled() {
-        Log.d(TAG, "❌ Request cancelled: " + currentRequestId);
+        Log.d(TAG, " Request cancelled: " + currentRequestId);
         currentState = RequestState.CANCELLED;
         stopStatusPolling();
         
@@ -321,7 +321,7 @@ public class FaceIdRequestManager {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull retrofit2.Response<Void> response) {
                 if (response.isSuccessful()) {
-                    Log.d(TAG, "✅ Request cancelled successfully");
+                    Log.d(TAG, " Request cancelled successfully");
                     handleRequestCancelled();
                 } else {
                     Log.w(TAG, "⚠️ Failed to cancel request: HTTP " + response.code());
@@ -330,7 +330,7 @@ public class FaceIdRequestManager {
             
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                Log.e(TAG, "❌ Error cancelling request", t);
+                Log.e(TAG, " Error cancelling request", t);
             }
         });
     }

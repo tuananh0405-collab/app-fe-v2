@@ -114,8 +114,8 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
         // Đảm bảo biến analysisOverlay ban đầu là null để thiết lập UI phân tích khi cần
         analysisOverlay = null;
 
-        Log.d(TAG, "✅ Fragment initialized with clean architecture");
-        // ✅ REMOVED: Không cần ẩn navbar vì đang chạy trong Activity riêng biệt
+        Log.d(TAG, " Fragment initialized with clean architecture");
+        //  REMOVED: Không cần ẩn navbar vì đang chạy trong Activity riêng biệt
 
         // If this fragment was opened from the "already registered" dialog, show a helpful message
         try {
@@ -383,7 +383,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
                 break;
 
             case FACE_REAL:
-                // ✅ Liveness verified! Auto-transition to capture and update
+                //  Liveness verified! Auto-transition to capture and update
                 Log.d(TAG, "🎉 Face is REAL - Starting automatic capture and update");
                 livenessVerified = true;
                 
@@ -429,10 +429,10 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
     }
 
     /**
-     * 🚀 Start face registration process
+     *  Start face registration process
      */
     private void startFaceRegistration() {
-        Log.d(TAG, "🚀 Starting face registration process");
+        Log.d(TAG, " Starting face registration process");
 
         // Dismiss any existing error dialog before starting camera
         if (currentErrorDialog != null && currentErrorDialog.isShowing()) {
@@ -460,7 +460,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
 
         // Check if already initialized to prevent duplicate initializations
         if (FaceIdServiceManager.getInstance().isInitialized() && faceIdService != null) {
-            Log.d(TAG, "✅ FaceIdService already initialized, proceeding to camera");
+            Log.d(TAG, " FaceIdService already initialized, proceeding to camera");
 
             // Đánh dấu đã khởi tạo thành công
             faceIdServiceInitialized = true;
@@ -492,14 +492,14 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
                 stateManager.transitionTo(FaceRegistrationState.READY, "Position your face in the oval");
 
                 checkCameraPermissionAndStart();
-                Log.d(TAG, "✅ FaceIdService initialized with REGISTRATION scenario");
+                Log.d(TAG, " FaceIdService initialized with REGISTRATION scenario");
             }
 
             @Override
             public void onError(String message) {
                 if (!isAdded()) return;
 
-                Log.e(TAG, "❌ FaceIdService error: " + message);
+                Log.e(TAG, " FaceIdService error: " + message);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
                         "Failed to initialize: " + message);
             }
@@ -516,7 +516,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
             if (faceOverlayView != null) {
                 spoofDetectionManager.setOvalBoundary(faceOverlayView.getOvalRect());
             }
-            Log.d(TAG, "✅ SpoofDetectionManager initialized with oval boundary");
+            Log.d(TAG, " SpoofDetectionManager initialized with oval boundary");
         } else {
             Log.w(TAG, "⚠️ FaceSpoofDetector not available, using fallback detection");
         }
@@ -576,7 +576,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
                 // Hide loading and show camera view
                 uiController.showLoadingOverlay(false);
 
-                Log.d(TAG, "✅ Camera started successfully");
+                Log.d(TAG, " Camera started successfully");
                 stateManager.transitionTo(FaceRegistrationState.READY,
                         "Position your face in the oval");
             } catch (Exception e) {
@@ -586,7 +586,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
                     return;
                 }
 
-                Log.e(TAG, "❌ Error starting camera: " + e.getMessage(), e);
+                Log.e(TAG, " Error starting camera: " + e.getMessage(), e);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_CAMERA,
                         "Failed to start camera: " + e.getMessage());
             }
@@ -863,7 +863,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
 
                     @Override
                     public void onError(String errorMessage) {
-                        Log.e(TAG, "❌ Frame processing error: " + errorMessage);
+                        Log.e(TAG, " Frame processing error: " + errorMessage);
                         stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
                                 "Detection error: " + errorMessage);
                     }
@@ -1040,12 +1040,12 @@ String userId;
     try {
         userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
         if (userId == null || userId.isEmpty()) {
-            Log.e(TAG, "❌ No user ID available");
+            Log.e(TAG, " No user ID available");
             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "User not logged in");
             return;
         }
     } catch (IllegalStateException e) {
-        Log.e(TAG, "❌ Fragment not attached when getting user ID", e);
+        Log.e(TAG, " Fragment not attached when getting user ID", e);
         return;
     }
 
@@ -1079,18 +1079,18 @@ String userId;
                         return;
                     }
 
-                    Log.d(TAG, "✅ Update successful: " + message);
+                    Log.d(TAG, " Update successful: " + message);
                     
-                    // ✅ FIX: Update state to SUCCESS
+                    //  FIX: Update state to SUCCESS
                     stateManager.transitionTo(FaceRegistrationState.SUCCESS, message);
                     
-                    // ✅ FIX: Save registration status
+                    //  FIX: Save registration status
                     AuthManager.getInstance(requireContext()).setFaceIdRegistered(true);
                     
-                    // ✅ FIX: Navigate to success screen after a short delay
+                    //  FIX: Navigate to success screen after a short delay
                     mainHandler.postDelayed(() -> {
                         if (isAdded()) {
-                            Log.d(TAG, "🚀 Navigating to FaceIdSuccessActivity");
+                            Log.d(TAG, " Navigating to FaceIdSuccessActivity");
                             handleSuccessState();
                         }
                     }, 1000); // 1 second delay to show success state
@@ -1103,7 +1103,7 @@ String userId;
                         return;
                     }
 
-                    Log.e(TAG, "❌ Update failed: " + errorMessage);
+                    Log.e(TAG, " Update failed: " + errorMessage);
 
                     // Store detailed error information for UI display
                     lastDetailedErrorMessage = "Update failure details:\n" + errorMessage;
@@ -1172,7 +1172,7 @@ String userId;
     
     // Check if fragment is still attached before proceeding
     if (!isAdded()) {
-        Log.e(TAG, "❌ Fragment not added, cannot show success");
+        Log.e(TAG, " Fragment not added, cannot show success");
         return;
     }
 
@@ -1184,12 +1184,12 @@ String userId;
         try {
             if (currentFrameBitmap != null) {
                 bitmapPath = saveBitmapToTempFile(currentFrameBitmap);
-                Log.d(TAG, "✅ Bitmap saved to: " + bitmapPath);
+                Log.d(TAG, " Bitmap saved to: " + bitmapPath);
             } else {
                 Log.w(TAG, "⚠️ currentFrameBitmap is null");
             }
         } catch (Exception e) {
-            Log.e(TAG, "❌ Error saving bitmap", e);
+            Log.e(TAG, " Error saving bitmap", e);
         }
         
         String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
@@ -1202,11 +1202,11 @@ String userId;
         
         // Double-check fragment is still attached before starting activity
         if (!isAdded()) {
-            Log.e(TAG, "❌ Fragment detached before starting activity");
+            Log.e(TAG, " Fragment detached before starting activity");
             return;
         }
         
-        // ✅ FIX: Use createUpdateSuccessIntent instead of generic createIntent
+        //  FIX: Use createUpdateSuccessIntent instead of generic createIntent
         Intent successIntent = FaceIdSuccessActivity.createUpdateSuccessIntent(
             requireContext(),
             userId,
@@ -1216,20 +1216,20 @@ String userId;
         
         // Verify intent has extras before starting
         if (successIntent.getExtras() != null) {
-            Log.d(TAG, "✅ Intent extras verified:");
+            Log.d(TAG, " Intent extras verified:");
             for (String key : successIntent.getExtras().keySet()) {
                 Log.d(TAG, "  " + key + " = " + successIntent.getExtras().get(key));
             }
         } else {
-            Log.e(TAG, "❌ Intent extras is NULL!");
+            Log.e(TAG, " Intent extras is NULL!");
         }
         
-        Log.d(TAG, "🚀 Starting FaceIdSuccessActivity...");
+        Log.d(TAG, " Starting FaceIdSuccessActivity...");
         startActivityForResult(successIntent, SUCCESS_ACTIVITY_REQUEST_CODE);
-        Log.d(TAG, "✅ Activity started successfully");
+        Log.d(TAG, " Activity started successfully");
 
     } catch (Exception e) {
-        Log.e(TAG, "❌ Exception in handleSuccessState", e);
+        Log.e(TAG, " Exception in handleSuccessState", e);
         
         // Fallback: Show toast and finish
         if (isAdded()) {
@@ -1249,7 +1249,7 @@ String userId;
                 startActivity(flutterIntent);
                 requireActivity().finish();
             } catch (Exception ex) {
-                Log.e(TAG, "❌ Error navigating to Flutter", ex);
+                Log.e(TAG, " Error navigating to Flutter", ex);
                 requireActivity().finish();
             }
         }
@@ -1301,7 +1301,7 @@ String userId;
     }
 
     /**
-     * ❌ Handle error states with retry
+     *  Handle error states with retry
      */
     private void handleErrorState(FaceRegistrationState state) {
         // Ensure camera is stopped to prevent infinite loop
@@ -1449,9 +1449,9 @@ String userId;
                 uiController.showScreen(FaceUpdationUIController.UIScreenState.SETUP);
             }
 
-            Log.d(TAG, "✅ Successfully returned to setup screen");
+            Log.d(TAG, " Successfully returned to setup screen");
         } catch (Exception e) {
-            Log.e(TAG, "❌ Error returning to setup", e);
+            Log.e(TAG, " Error returning to setup", e);
         }
     }
 
@@ -1621,7 +1621,7 @@ String userId;
     public void onBlinkDetected() {
         if (!isAdded()) return;
 
-        Log.d(TAG, "👁️ Blink detected!");
+        Log.d(TAG, " Blink detected!");
         // Update UI to show blink was detected with visual feedback
         if (binding != null) {
             // Update status message with clear instructions
@@ -1656,7 +1656,7 @@ String userId;
     public void onGazeDirectionCompleted(String direction) {
         if (!isAdded() || binding == null) return;
         
-        Log.d(TAG, "✅ Head direction completed: " + direction);
+        Log.d(TAG, " Head direction completed: " + direction);
         
         // Update UI based on completed direction
         switch (direction) {
@@ -1696,7 +1696,7 @@ String userId;
     public void onVerificationComplete(boolean success) {
         if (!isAdded()) return;
 
-        Log.d(TAG, "✅ Verification complete: " + (success ? "SUCCESS" : "FAILED"));
+        Log.d(TAG, " Verification complete: " + (success ? "SUCCESS" : "FAILED"));
         if (success) {
             // Proceed with face registration
             stateManager.transitionTo(FaceRegistrationState.FACE_REAL, "Verification complete!");
@@ -1786,7 +1786,7 @@ String userId;
     public void onDestroyView() {
         super.onDestroyView();
 
-        // ✅ REMOVED: Không cần hiện navbar vì đang chạy trong Activity riêng biệt
+        //  REMOVED: Không cần hiện navbar vì đang chạy trong Activity riêng biệt
 
         stopCamera();
 
@@ -1978,7 +1978,7 @@ String userId;
                 String feedbackMessage = generateQualityFeedback(averageScore, variance);
                 // lastDetailedErrorMessage = qualityLog + "\n\nDetailed Analysis: " + feedbackMessage;
                 hasDetailedError = true;
-                // Log.e(TAG, "❌ Analysis failed: " + lastDetailedErrorMessage);
+                // Log.e(TAG, " Analysis failed: " + lastDetailedErrorMessage);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, feedbackMessage);
             }
         }, ANALYSIS_DURATION_MS);

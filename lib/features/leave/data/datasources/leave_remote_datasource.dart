@@ -199,8 +199,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         throw ServerException(apiResponse.message);
       }
     } on DioException catch (e) {
-      debugPrint('❌ DioException: ${e.message}');
-      debugPrint('❌ Response: ${e.response?.data}');
+      debugPrint(' DioException: ${e.message}');
+      debugPrint(' Response: ${e.response?.data}');
       
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
@@ -219,7 +219,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         throw const ServerException('Failed to connect to server');
       }
     } catch (e) {
-      debugPrint('❌ Unexpected error: $e');
+      debugPrint(' Unexpected error: $e');
       if (e is UnauthorizedException ||
           e is ServerException ||
           e is NetworkException) {
@@ -270,7 +270,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         },
       );
 
-      debugPrint('✅ Update response status: ${response.statusCode}');
+      debugPrint(' Update response status: ${response.statusCode}');
       debugPrint('📥 Response data: ${response.data}');
 
       final apiResponse = LeaveApiResponseModel.fromJson(
@@ -289,8 +289,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         throw ServerException(apiResponse.message);
       }
     } on DioException catch (e) {
-      debugPrint('❌ DioException: ${e.message}');
-      debugPrint('❌ Response: ${e.response?.data}');
+      debugPrint(' DioException: ${e.message}');
+      debugPrint(' Response: ${e.response?.data}');
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
           e.type == DioExceptionType.sendTimeout) {
@@ -305,7 +305,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         throw const ServerException('Failed to connect to server');
       }
     } catch (e) {
-      debugPrint('❌ Unexpected error: $e');
+      debugPrint(' Unexpected error: $e');
       if (e is UnauthorizedException ||
           e is ServerException ||
           e is NetworkException) {
@@ -383,7 +383,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         },
       );
 
-      debugPrint('✅ Cancel response status: ${response.statusCode}');
+      debugPrint(' Cancel response status: ${response.statusCode}');
       debugPrint('📥 Response data: ${response.data}');
 
       if (response.statusCode == 200) {
@@ -415,8 +415,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      debugPrint('❌ DioException: ${e.message}');
-      debugPrint('❌ Response: ${e.response?.data}');
+      debugPrint(' DioException: ${e.message}');
+      debugPrint(' Response: ${e.response?.data}');
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
           e.type == DioExceptionType.sendTimeout) {
@@ -431,7 +431,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         throw const ServerException('Failed to connect to server');
       }
     } catch (e) {
-      debugPrint('❌ Unexpected error: $e');
+      debugPrint(' Unexpected error: $e');
       if (e is UnauthorizedException ||
           e is ServerException ||
           e is NetworkException) {

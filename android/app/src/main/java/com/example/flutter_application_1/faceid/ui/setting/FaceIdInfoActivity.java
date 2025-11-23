@@ -56,13 +56,13 @@ public class FaceIdInfoActivity extends AppCompatActivity {
         
         // Button update Face ID
         binding.btnUpdateFaceId.setOnClickListener(v -> {
-            Log.d(TAG, "✅ Update Face ID button clicked");
+            Log.d(TAG, " Update Face ID button clicked");
             try {
                 Intent updateIntent = new Intent(this, StudentSettingUpdateFaceIdActivity.class);
                 startActivity(updateIntent);
-                Log.d(TAG, "✅ Launched StudentSettingUpdateFaceIdActivity");
+                Log.d(TAG, " Launched StudentSettingUpdateFaceIdActivity");
             } catch (Exception e) {
-                Log.e(TAG, "❌ Error launching Update Face ID Activity", e);
+                Log.e(TAG, " Error launching Update Face ID Activity", e);
                 Toast.makeText(this, "Unable to open the Update Face ID screen", Toast.LENGTH_SHORT).show();
             }
         });

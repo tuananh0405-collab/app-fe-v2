@@ -40,7 +40,7 @@ class _FaceIdSuccessHandlerState extends ConsumerState<FaceIdSuccessHandler> {
           queryParameters: queryParams.isNotEmpty ? queryParams : null,
         );
 
-        print('🚀 FaceIdSuccessHandler: Navigating to ${uri.toString()}');
+        print(' FaceIdSuccessHandler: Navigating to ${uri.toString()}');
         router.go(uri.toString());
       }
     });

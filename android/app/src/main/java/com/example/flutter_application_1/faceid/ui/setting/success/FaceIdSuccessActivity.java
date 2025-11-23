@@ -47,13 +47,13 @@ public class FaceIdSuccessActivity extends AppCompatActivity {
     public static Intent createIntent(Context context, String userId, String successMessage, String bitmapPath, String action) {
         Intent intent = createIntent(context, userId, successMessage, bitmapPath);
         intent.putExtra(EXTRA_ACTION, action);
-        // ✅ FIX: Hiển thị button update khi update thành công, chỉ ẩn khi đăng ký thành công
+        //  FIX: Hiển thị button update khi update thành công, chỉ ẩn khi đăng ký thành công
         boolean showUpdateButton = !"register".equals(action); // Hiển thị button update cho update và verify, ẩn cho register
         intent.putExtra(EXTRA_SHOW_UPDATE_BUTTON, showUpdateButton);
         return intent;
     }
     
-    // ✅ NEW: Intent cho kiểm tra trạng thái (có button update)
+    //  NEW: Intent cho kiểm tra trạng thái (có button update)
     public static Intent createStatusCheckIntent(Context context, String userId, String successMessage) {
         Intent intent = new Intent(context, FaceIdSuccessActivity.class);
         intent.putExtra(EXTRA_USER_ID, userId);
@@ -63,7 +63,7 @@ public class FaceIdSuccessActivity extends AppCompatActivity {
         return intent;
     }
     
-    // ✅ NEW: Intent cho đăng ký thành công với userName
+    //  NEW: Intent cho đăng ký thành công với userName
     public static Intent createRegisterSuccessIntent(Context context, String userId, String userName, String bitmapPath) {
         Intent intent = new Intent(context, FaceIdSuccessActivity.class);
         intent.putExtra(EXTRA_USER_ID, userId);
@@ -74,7 +74,7 @@ public class FaceIdSuccessActivity extends AppCompatActivity {
         return intent;
     }
     
-    // ✅ NEW: Intent cho cập nhật thành công với userName
+    //  NEW: Intent cho cập nhật thành công với userName
     public static Intent createUpdateSuccessIntent(Context context, String userId, String userName, String bitmapPath) {
         Intent intent = new Intent(context, FaceIdSuccessActivity.class);
         intent.putExtra(EXTRA_USER_ID, userId);
@@ -85,7 +85,7 @@ public class FaceIdSuccessActivity extends AppCompatActivity {
         return intent;
     }
     
-    // ✅ NEW: Intent cho xác thực thành công với userName
+    //  NEW: Intent cho xác thực thành công với userName
     public static Intent createVerifySuccessIntent(Context context, String userId, String userName) {
         Intent intent = new Intent(context, FaceIdSuccessActivity.class);
         intent.putExtra(EXTRA_USER_ID, userId);

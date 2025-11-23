@@ -14,7 +14,7 @@ public class StudentSettingVerifyFaceIdActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_face_id_verify);
 
-        // ✅ NEW: Tạo và hiển thị fragment verify Face ID với arguments từ intent
+        //  NEW: Tạo và hiển thị fragment verify Face ID với arguments từ intent
         if (savedInstanceState == null) {
             StudentSettingVerifyFaceIdFragment fragment = new StudentSettingVerifyFaceIdFragment();
             
@@ -30,7 +30,7 @@ public class StudentSettingVerifyFaceIdActivity extends AppCompatActivity {
                 if (expiresAt != null) {
                     args.putString("expiresAt", expiresAt);
                 }
-                Log.d("VerifyActivity", "✅ Passing verification args: " + requestId + ", " + sessionId + ", expiresAt: " + expiresAt);
+                Log.d("VerifyActivity", " Passing verification args: " + requestId + ", " + sessionId + ", expiresAt: " + expiresAt);
             } else {
                 Log.w("VerifyActivity", "⚠️ No verification args found in intent");
             }
@@ -45,7 +45,7 @@ public class StudentSettingVerifyFaceIdActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // ✅ NEW: Xử lý back press để quay về setting
+        //  NEW: Xử lý back press để quay về setting
         // Finish activity hiện tại để quay về StudentSettingFragment
         finish();
     }

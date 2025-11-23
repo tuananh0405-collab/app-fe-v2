@@ -92,7 +92,7 @@ public class AttendanceService {
                     if (body.isSuccess() && body.isBeacon_validated()) {
                         // Save session token for next step
                         currentSessionToken = body.getSession_token();
-                        Log.d(TAG, "✅ Beacon validated! Session token: " + currentSessionToken);
+                        Log.d(TAG, " Beacon validated! Session token: " + currentSessionToken);
                         Log.d(TAG, "📍 Location: " + body.getLocation_name());
                         Log.d(TAG, "⏰ Expires at: " + body.getExpires_at());
                         callback.onSuccess(body);
@@ -108,7 +108,7 @@ public class AttendanceService {
             @Override
             public void onFailure(@NonNull Call<ValidateBeaconResponse> call,
                                 @NonNull Throwable t) {
-                Log.e(TAG, "❌ Beacon validation network error", t);
+                Log.e(TAG, " Beacon validation network error", t);
                 callback.onFailure("Network error: " + t.getMessage());
             }
         });
@@ -174,7 +174,7 @@ public class AttendanceService {
                         // Save attendance check ID for next step
                         currentAttendanceCheckId = body.getAttendance_check_id();
                         currentShiftId = body.getShift_id();
-                        Log.d(TAG, "✅ Face verification requested!");
+                        Log.d(TAG, " Face verification requested!");
                         Log.d(TAG, "📝 Attendance Check ID: " + currentAttendanceCheckId);
                         Log.d(TAG, "📅 Shift ID: " + currentShiftId);
                         callback.onSuccess(body);
@@ -194,7 +194,7 @@ public class AttendanceService {
             @Override
             public void onFailure(@NonNull Call<RequestFaceVerificationResponse> call,
                                 @NonNull Throwable t) {
-                Log.e(TAG, "❌ Face verification request network error", t);
+                Log.e(TAG, " Face verification request network error", t);
                 callback.onFailure("Network error: " + t.getMessage());
             }
         });
@@ -279,7 +279,7 @@ public class AttendanceService {
                         FaceIdVerifyResponse body = response.body();
                         
                         if (body.isSuccess()) {
-                            Log.d(TAG, "✅ Face verified for attendance!");
+                            Log.d(TAG, " Face verified for attendance!");
                             Log.d(TAG, "Similarity: " + body.getSimilarity());
                             callback.onSuccess(body);
                         } else {
@@ -294,13 +294,13 @@ public class AttendanceService {
                 @Override
                 public void onFailure(@NonNull Call<FaceIdVerifyResponse> call,
                                     @NonNull Throwable t) {
-                    Log.e(TAG, "❌ Face upload network error", t);
+                    Log.e(TAG, " Face upload network error", t);
                     callback.onFailure("Network error: " + t.getMessage());
                 }
             });
             
         } catch (Exception e) {
-            Log.e(TAG, "❌ Error uploading face image", e);
+            Log.e(TAG, " Error uploading face image", e);
             callback.onFailure("Error: " + e.getMessage());
         }
     }
@@ -321,7 +321,7 @@ public class AttendanceService {
             Bitmap faceImage,
             AttendanceCallback<String> callback) {
         
-        Log.d(TAG, "🚀 Starting complete check-in flow (production API)");
+        Log.d(TAG, " Starting complete check-in flow (production API)");
 
         // Step 1: Validate Beacon (only JWT in header)
         validateBeacon(beaconUuid, beaconMajor, beaconMinor, rssi,
@@ -332,7 +332,7 @@ public class AttendanceService {
                                     new AttendanceCallback<FaceIdVerifyResponse>() {
                                         @Override
                                         public void onSuccess(FaceIdVerifyResponse faceResult) {
-                                            Log.d(TAG, "Step 3 ✅ - Face verified: " + faceResult.getMessage());
+                                            Log.d(TAG, "Step 3  - Face verified: " + faceResult.getMessage());
                                             callback.onSuccess("Check-in successful! " + faceResult.getMessage());
                                         }
                                         @Override
@@ -342,19 +342,19 @@ public class AttendanceService {
                                     });
                             
 
-                    Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
+                    Log.d(TAG, "Step 1  - Beacon validated, session_token: " + beaconResult.getSession_token());
                     // Step 2: Request Face Verification (only JWT in header)
                     // requestFaceVerification("check_in", latitude, longitude, locationAccuracy, deviceId,
                     //     new AttendanceCallback<RequestFaceVerificationResponse>() {
                     //         @Override
                     //         public void onSuccess(RequestFaceVerificationResponse verifyResult) {
-                    //             Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
+                    //             Log.d(TAG, "Step 2  - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
                     //             // Step 3: Upload Face Image
                     //             uploadFaceImage(faceImage, "check_in",
                     //                 new AttendanceCallback<FaceIdVerifyResponse>() {
                     //                     @Override
                     //                     public void onSuccess(FaceIdVerifyResponse faceResult) {
-                    //                         Log.d(TAG, "Step 3 ✅ - Face verified: " + faceResult.getMessage());
+                    //                         Log.d(TAG, "Step 3  - Face verified: " + faceResult.getMessage());
                     //                         callback.onSuccess("Check-in successful! " + faceResult.getMessage());
                     //                     }
                     //                     @Override

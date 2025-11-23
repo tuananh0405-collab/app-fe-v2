@@ -19,10 +19,10 @@ class PaginatedNotificationsModel extends PaginatedNotifications {
         .toList();
 
     final total = data['total'] as int;
-    final unreadCount = data['unreadCount'] as int;  // ✅ Sửa thành camelCase
-    final limit = data['limit'] as int? ?? 20;  // ✅ Default value nếu không có
-    final offset = data['offset'] as int? ?? 0;  // ✅ Default value nếu không có
-    final hasMore = data['hasMore'] as bool? ?? false;  // ✅ Sử dụng hasMore từ API
+    final unreadCount = data['unreadCount'] as int;  //  Sửa thành camelCase
+    final limit = data['limit'] as int? ?? 20;  //  Default value nếu không có
+    final offset = data['offset'] as int? ?? 0;  //  Default value nếu không có
+    final hasMore = data['hasMore'] as bool? ?? false;  //  Sử dụng hasMore từ API
 
     return PaginatedNotificationsModel(
       notifications: notificationsList,

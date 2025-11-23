@@ -104,9 +104,9 @@ class _PushNotificationInitializerState extends ConsumerState<PushNotificationIn
       // Register token if notifications are enabled
       await manager.registerCurrentToken();
       
-      debugPrint('✅ Push notifications initialized successfully');
+      debugPrint(' Push notifications initialized successfully');
     } catch (e) {
-      debugPrint('❌ Error initializing push notifications: $e');
+      debugPrint(' Error initializing push notifications: $e');
     }
   }
 

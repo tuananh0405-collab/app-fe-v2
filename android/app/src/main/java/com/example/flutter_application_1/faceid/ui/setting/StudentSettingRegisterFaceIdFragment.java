@@ -409,7 +409,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                     mainHandler.postDelayed(() -> {
                         if (isAdded() && 
                             stateManager.getCurrentState() == FaceRegistrationState.FACE_REAL &&
-                            !hasStartedRegistration) { // ✅ Check thêm flag
+                            !hasStartedRegistration) { //  Check thêm flag
                             
                             // Bắt đầu analysis thay vì gọi trực tiếp captureAndRegisterFace
                             stateManager.transitionTo(FaceRegistrationState.FACE_STABLE, 
@@ -444,7 +444,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
     }
 
     /**
-     * 🚀 Start face registration process
+     *  Start face registration process
      */
     private void startFaceRegistration() {
         // Dismiss any existing error dialog before starting camera
@@ -1028,7 +1028,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         
         // Check if fragment is still attached before proceeding
         if (!isAdded()) {
-            Log.e(TAG, "❌ Fragment not added, cannot show success");
+            Log.e(TAG, " Fragment not added, cannot show success");
             return;
         }
 
@@ -1040,12 +1040,12 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
             try {
                 if (currentFrameBitmap != null) {
                     bitmapPath = saveBitmapToTempFile(currentFrameBitmap);
-                    Log.d(TAG, "✅ Bitmap saved to: " + bitmapPath);
+                    Log.d(TAG, " Bitmap saved to: " + bitmapPath);
                 } else {
                     Log.w(TAG, "⚠️ currentFrameBitmap is null");
                 }
             } catch (Exception e) {
-                Log.e(TAG, "❌ Error saving bitmap", e);
+                Log.e(TAG, " Error saving bitmap", e);
             }
             
             String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
@@ -1071,13 +1071,13 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                     Log.d(TAG, "  " + key + " = " + successIntent.getExtras().get(key));
                 }
             } else {
-                Log.e(TAG, "❌ Intent extras is NULL!");
+                Log.e(TAG, " Intent extras is NULL!");
             }
             
             startActivityForResult(successIntent, SUCCESS_ACTIVITY_REQUEST_CODE);
 
         } catch (Exception e) {
-            Log.e(TAG, "❌ Exception in handleSuccessState", e);
+            Log.e(TAG, " Exception in handleSuccessState", e);
         }
         
         Log.d(TAG, "==================== handleSuccessState END ====================");
@@ -1123,7 +1123,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
     }
 
     /**
-     * ❌ Handle error states with retry
+     *  Handle error states with retry
      */
     private void handleErrorState(FaceRegistrationState state) {
         // Ensure camera is stopped to prevent infinite loop
@@ -1346,7 +1346,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                         android.graphics.PorterDuff.Mode.SRC_IN);
             }
         } else if (newState == FaceIdEnhancer.AuthState.VERIFIED) {
-            // ✅ FIX: Kiểm tra flag trước khi proceed
+            //  FIX: Kiểm tra flag trước khi proceed
             if (hasStartedRegistration) {
                 Log.w(TAG, "⚠️ Liveness verified but registration already started, skipping");
                 return;
@@ -1366,7 +1366,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                 faceOverlayView.setOvalColor(ContextCompat.getColor(requireContext(), R.color.success_green));
             }
 
-            // ✅ FIX: Chỉ start analysis nếu chưa bắt đầu registration
+            //  FIX: Chỉ start analysis nếu chưa bắt đầu registration
             if (currentFaceRect != null && !hasStartedRegistration && !isAnalyzing) {
                 stateManager.transitionTo(FaceRegistrationState.FACE_STABLE, "Perfect! Processing...");
                 startAnalysis();
@@ -1514,7 +1514,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         isAnalyzing = false;
         frameScores.clear();
         
-        // ✅ RESET FLAGS
+        //  RESET FLAGS
         isRegistering = false;
         hasStartedRegistration = false;
 
@@ -1595,7 +1595,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
      * Collects frame scores to ensure consistent high-quality face detection
      */
        private void startAnalysis() {
-        // ✅ CHECK: Nếu đã bắt đầu registration, không start analysis nữa
+        //  CHECK: Nếu đã bắt đầu registration, không start analysis nữa
         if (hasStartedRegistration) {
             Log.w(TAG, "⚠️ Registration already started, skipping analysis");
             return;
@@ -1681,7 +1681,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                 return;
             }
             
-            // ✅ CHECK: Double-check trước khi proceed
+            //  CHECK: Double-check trước khi proceed
             if (hasStartedRegistration) {
                 Log.w(TAG, "⚠️ Registration already started during analysis, skipping");
                 return;
@@ -1817,7 +1817,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
      * Capture current frame and register face ID via API
      */
     private void captureAndRegisterFace() {
-        // ✅ CHECK: Ngăn gọi nhiều lần
+        //  CHECK: Ngăn gọi nhiều lần
         if (isRegistering) {
             Log.w(TAG, "⚠️ Registration already in progress, skipping duplicate call");
             return;
@@ -1838,11 +1838,11 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
             return;
         }
 
-        // ✅ SET FLAGS để ngăn duplicate calls
+        //  SET FLAGS để ngăn duplicate calls
         isRegistering = true;
         hasStartedRegistration = true;
         
-        Log.d(TAG, "🚀 Starting face registration API call...");
+        Log.d(TAG, " Starting face registration API call...");
 
         AuthManager authManager = AuthManager.getInstance(requireContext());
         String tempUserId = authManager.getUserId();
@@ -1857,7 +1857,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         }
         
         if (tempUserId == null || tempUserId.isEmpty()) {
-            // ✅ Reset flags on error
+            //  Reset flags on error
             isRegistering = false;
             hasStartedRegistration = false;
             
@@ -1872,12 +1872,12 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
             @Override
             public void onSuccess(String message) {
                 if (!isAdded()) {
-                    // ✅ Reset flag nếu fragment không còn attached
+                    //  Reset flag nếu fragment không còn attached
                     isRegistering = false;
                     return;
                 }
                 
-                Log.d(TAG, "✅ Registration API call succeeded");
+                Log.d(TAG, " Registration API call succeeded");
                 
                 // Save registration status
                 AuthManager.getInstance(requireContext()).setFaceIdRegistered(true);
@@ -1893,7 +1893,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                                 com.example.flutter_application_1.faceid.ui.setting.success.FaceIdSuccessActivity.class);
                         startActivityForResult(successIntent, SUCCESS_ACTIVITY_REQUEST_CODE);
                     }
-                    // ✅ Reset flag sau khi navigate
+                    //  Reset flag sau khi navigate
                     isRegistering = false;
                 }, 1000);
             }
@@ -1905,9 +1905,9 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                     return;
                 }
 
-                Log.e(TAG, "❌ Registration API call failed: " + errorMessage);
+                Log.e(TAG, " Registration API call failed: " + errorMessage);
                 
-                // ✅ Reset flags để có thể retry
+                //  Reset flags để có thể retry
                 isRegistering = false;
                 hasStartedRegistration = false;
 
@@ -1929,7 +1929,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                 
                 Log.d(TAG, "ℹ️ User already registered");
                 
-                // ✅ Reset flags
+                //  Reset flags
                 isRegistering = false;
                 hasStartedRegistration = false;
                 
@@ -1952,7 +1952,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                             .setTitle("Face ID đã được đăng ký")
                             .setMessage("Bạn đã đăng ký Face ID trước đó rồi.\n\nBạn có muốn cập nhật Face ID của mình không?")
                             .setPositiveButton("Cập nhật", (d, which) -> {
-                                // ✅ Navigate to Update Face ID screen instead of updating directly
+                                //  Navigate to Update Face ID screen instead of updating directly
                                 if (isAdded() && getActivity() != null) {
                                     try {
                                         Log.d(TAG, "User chose to update Face ID, navigating to Update screen...");
@@ -1981,9 +1981,9 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                                         Log.d(TAG, "Finishing Register Activity...");
                                         requireActivity().finish();
                                         
-                                        Log.d(TAG, "✅ Successfully navigated to Update screen");
+                                        Log.d(TAG, " Successfully navigated to Update screen");
                                     } catch (Exception e) {
-                                        Log.e(TAG, "❌ Error navigating to Update Face ID screen", e);
+                                        Log.e(TAG, " Error navigating to Update Face ID screen", e);
                                         Toast.makeText(requireContext(), 
                                             "Không thể mở màn hình cập nhật: " + e.getMessage(), 
                                             Toast.LENGTH_LONG).show();
@@ -2010,7 +2010,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                         dialog.show();
                         Log.d(TAG, "Already registered dialog shown");
                     } catch (Exception e) {
-                        Log.e(TAG, "❌ Error showing already registered dialog", e);
+                        Log.e(TAG, " Error showing already registered dialog", e);
                         // Fallback: just finish the activity
                         if (isAdded() && getActivity() != null) {
                             Toast.makeText(requireContext(), 

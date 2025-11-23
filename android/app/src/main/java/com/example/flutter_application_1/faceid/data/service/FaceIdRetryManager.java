@@ -59,7 +59,7 @@ public class FaceIdRetryManager {
             Log.d(TAG, "🔄 Executing task, attempt " + (attempt + 1) + "/" + (maxRetries + 1));
             
             T result = task.get();
-            Log.d(TAG, "✅ Task completed successfully on attempt " + (attempt + 1));
+            Log.d(TAG, " Task completed successfully on attempt " + (attempt + 1));
             callback.onSuccess(result);
             
         } catch (Exception e) {
@@ -74,7 +74,7 @@ public class FaceIdRetryManager {
                 }, delay, TimeUnit.MILLISECONDS);
                 
             } else {
-                Log.e(TAG, "❌ Task failed after " + (maxRetries + 1) + " attempts");
+                Log.e(TAG, " Task failed after " + (maxRetries + 1) + " attempts");
                 callback.onFailure(e);
             }
         }

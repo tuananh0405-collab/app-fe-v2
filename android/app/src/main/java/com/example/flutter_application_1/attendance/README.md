@@ -58,12 +58,12 @@ service.performCheckIn(
     new AttendanceService.AttendanceCallback<String>() {
         @Override
         public void onSuccess(String result) {
-            // ✅ Check-in successful
+            //  Check-in successful
         }
         
         @Override
         public void onFailure(String error) {
-            // ❌ Check-in failed
+            //  Check-in failed
         }
     }
 );

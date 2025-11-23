@@ -24,9 +24,9 @@ class _FaceIdRegistrationExampleState extends ConsumerState<FaceIdRegistrationEx
       setState(() {
         _isProcessing = false;
         if (success) {
-          _status = '✅ Face ID registered successfully!';
+          _status = ' Face ID registered successfully!';
         } else {
-          _status = '❌ Face ID registration failed';
+          _status = ' Face ID registration failed';
         }
       });
     });
@@ -38,14 +38,14 @@ class _FaceIdRegistrationExampleState extends ConsumerState<FaceIdRegistrationEx
       _status = 'Opening Face ID registration...';
     });
 
-    // ✅ Lấy user ID từ login state
+    //  Lấy user ID từ login state
     final loginState = ref.read(loginControllerProvider);
     final userId = loginState.user?.id;
     
     if (userId == null || userId.isEmpty) {
       setState(() {
         _isProcessing = false;
-        _status = '❌ Error: User not logged in';
+        _status = ' Error: User not logged in';
       });
       return;
     }
