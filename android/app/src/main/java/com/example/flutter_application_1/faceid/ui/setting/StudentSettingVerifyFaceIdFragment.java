@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -101,6 +104,10 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
     // 🔄 HANDLERS
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    // 📍 LOCATION
+    private LocationManager locationManager;
+    private Location currentLocation;
 
     // Verification window control
     private long verifyDeadlineMs = 0L;
@@ -1290,6 +1297,41 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
     
     /**
+     * 📍 Lấy tọa độ GPS hiện tại của thiết bị
+     */
+    private void getCurrentLocation() {
+        try {
+            if (locationManager == null) {
+                locationManager = (LocationManager) requireContext().getSystemService(android.content.Context.LOCATION_SERVICE);
+            }
+            
+            // Kiểm tra permission
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "⚠️ Location permission not granted");
+                return;
+            }
+            
+            // Lấy last known location từ GPS provider
+            Location gpsLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Location networkLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            
+            // Chọn location tốt nhất (GPS ưu tiên hơn Network)
+            if (gpsLocation != null && networkLocation != null) {
+                currentLocation = gpsLocation.getTime() > networkLocation.getTime() ? gpsLocation : networkLocation;
+            } else if (gpsLocation != null) {
+                currentLocation = gpsLocation;
+            } else if (networkLocation != null) {
+                currentLocation = networkLocation;
+            }
+            
+        
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Error getting current location", e);
+        }
+    }
+    
+    /**
      *  Perform attendance check-in using AttendanceService (3-step flow)
      */
     private void performAttendanceCheckIn(Bitmap faceImage) {
@@ -1316,11 +1358,20 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             return;
         }
 
-        double latitude = args.getDouble("latitude", 10.762622);
-        double longitude = args.getDouble("longitude", 106.660172);
-        double accuracy = args.getDouble("accuracy", 15.0);
+        // 📍 Lấy tọa độ GPS hiện tại thay vì dùng giá trị fix cứng
+        getCurrentLocation();
+        
+        final double latitude = (currentLocation != null) ? currentLocation.getLatitude() : 10.762622;
+        final double longitude = (currentLocation != null) ? currentLocation.getLongitude() : 106.660172;
+        final double accuracy = (currentLocation != null) ? currentLocation.getAccuracy() : 15.0;
+        
+        if (currentLocation != null) {
+            Log.d(TAG, "📍 Using current GPS location: lat=" + latitude + ", lng=" + longitude + ", accuracy=" + accuracy);
+        } else {
+            Log.w(TAG, "⚠️ GPS location not available, using default coordinates");
+        }
 
-        String deviceId = android.provider.Settings.Secure.getString(requireContext().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+        final String deviceId = android.provider.Settings.Secure.getString(requireContext().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 
         // Initialize AttendanceService
         com.example.flutter_application_1.attendance.data.service.AttendanceService attendanceService = new com.example.flutter_application_1.attendance.data.service.AttendanceService(requireContext());
@@ -1333,27 +1384,23 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 if (!isAdded()) return;
                 Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
 
-                // // Step 2: Request Face Verification
-                // stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Requesting face verification...");
-                // attendanceService.requestFaceVerification("check_in", latitude, longitude, accuracy, deviceId, new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse>() {
-                //     @Override
-                //     public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse verifyResult) {
-                //         if (!isAdded()) return;
-                //         Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
-
-                        // Step 3: Use local FaceIdService for verification instead of remote API
-                        // if (faceIdService == null || !faceIdServiceInitialized) {
-                        //     Log.e(TAG, "FaceIdService not initialized — cannot perform local verification");
-                        //     stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Verification service not available");
-                        //     return;
-                        // }
-
-                        // Prefer request-based verification when request/ session present
                         String requestId = getRequestIdFromArgs();
                         stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Verifying face...");
 
+                        // Lấy IP address (có thể để null nếu không cần)
+                        String ipAddress = null; // TODO: Implement IP address retrieval if needed
+
                         if (requestId != null) {
-                            faceIdService.verifyFaceIdForRequest(faceImage, AuthManager.getInstance(requireContext()).getCurrentUserId(), requestId, null, new com.example.flutter_application_1.faceid.data.service.FaceIdService.FaceIdCallback() {
+                            faceIdService.verifyFaceIdForRequest(faceImage, 
+                                AuthManager.getInstance(requireContext()).getCurrentUserId(), 
+                                requestId, 
+                                null, // threshold
+                                latitude, 
+                                longitude, 
+                                accuracy,
+                                deviceId,
+                                ipAddress,
+                                new com.example.flutter_application_1.faceid.data.service.FaceIdService.FaceIdCallback() {
                                 @Override
                                 public void onSuccess(String message) {
                                     if (!isAdded()) return;
@@ -1391,16 +1438,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                             });
                         }
                     }
-
-            //         @Override
-            //         public void onFailure(String error) {
-            //             if (!isAdded()) return;
-            //             Log.e(TAG, "Step 2 failed: " + error);
-            //             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 2 failed: " + error);
-            //         }
-            //     });
-            // }
-
+                    
             @Override
             public void onFailure(String error) {
                 if (!isAdded()) return;

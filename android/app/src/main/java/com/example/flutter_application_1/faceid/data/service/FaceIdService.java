@@ -705,10 +705,12 @@ public class FaceIdService {
     /**
      * Verify face embedding for a specific request window
      */
-    public void verifyFaceIdForRequest(Bitmap faceBitmap, String userId, String requestId, Float threshold, FaceIdCallback callback) {
+    public void verifyFaceIdForRequest(Bitmap faceBitmap, String userId, String requestId, Float threshold, 
+                                      Double latitude, Double longitude, Double locationAccuracy,
+                                      String deviceId, String ipAddress, FaceIdCallback callback) {
         if (!isInitialized()) {
             awaitInitialization(5000,
-                () -> verifyFaceIdForRequest(faceBitmap, userId, requestId, threshold, callback),
+                () -> verifyFaceIdForRequest(faceBitmap, userId, requestId, threshold, latitude, longitude, locationAccuracy, deviceId, ipAddress, callback),
                 () -> runOnMainThread(() -> callback.onFailure("Face embedding model not initialized yet"))
             );
             return;
@@ -730,9 +732,28 @@ public class FaceIdService {
                     RequestBody embeddingPart = RequestBody.create(MediaType.parse("application/octet-stream"), buffer.array());
                     MultipartBody.Part filePart = MultipartBody.Part.createFormData("embedding", "embedding.bin", embeddingPart);
 
+                    // 📍 Thêm location và device info
+                    RequestBody latitudePart = latitude != null ?
+                            RequestBody.create(MediaType.parse("text/plain"), String.valueOf(latitude)) :
+                            null;
+                    RequestBody longitudePart = longitude != null ?
+                            RequestBody.create(MediaType.parse("text/plain"), String.valueOf(longitude)) :
+                            null;
+                    RequestBody locationAccuracyPart = locationAccuracy != null ?
+                            RequestBody.create(MediaType.parse("text/plain"), String.valueOf(locationAccuracy)) :
+                            null;
+                    RequestBody deviceIdPart = deviceId != null ?
+                            RequestBody.create(MediaType.parse("text/plain"), deviceId) :
+                            null;
+                    RequestBody ipAddressPart = ipAddress != null ?
+                            RequestBody.create(MediaType.parse("text/plain"), ipAddress) :
+                            null;
+
                     FaceIdApiController api = ApiClient.getClient(context).create(FaceIdApiController.class);
                     retrofit2.Call<FaceIdVerifyResponse> call =
-                            api.verifyFaceId(requestId, userIdPart, filePart, thresholdPart);
+                            api.verifyFaceId(requestId, userIdPart, filePart, thresholdPart, 
+                                           latitudePart, longitudePart, locationAccuracyPart, 
+                                           deviceIdPart, ipAddressPart);
                     call.enqueue(new retrofit2.Callback<FaceIdVerifyResponse>() {
                         @Override
                         public void onResponse(@NonNull retrofit2.Call<FaceIdVerifyResponse> c,

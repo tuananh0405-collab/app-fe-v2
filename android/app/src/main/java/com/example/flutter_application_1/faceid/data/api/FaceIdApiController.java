@@ -58,7 +58,12 @@ public interface FaceIdApiController {
             @Path("requestId") String requestId,
             @Part("userId") RequestBody userId,
             @Part MultipartBody.Part embedding,
-            @Part("threshold") RequestBody threshold
+            @Part("threshold") RequestBody threshold,
+            @Part("latitude") RequestBody latitude,
+            @Part("longitude") RequestBody longitude,
+            @Part("location_accuracy") RequestBody locationAccuracy,
+            @Part("device_id") RequestBody deviceId,
+            @Part("ip_address") RequestBody ipAddress
     );
 
     /**
