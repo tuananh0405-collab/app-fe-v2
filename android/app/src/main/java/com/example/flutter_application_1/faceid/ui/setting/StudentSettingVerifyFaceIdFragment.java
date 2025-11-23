@@ -1294,70 +1294,120 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
      */
     private void performAttendanceCheckIn(Bitmap faceImage) {
         if (!isAdded()) return;
-        
-    Log.d(TAG, " Starting attendance check-in flow");
 
-    // Get attendance data from arguments
-    Bundle args = getArguments();
-    if (args == null) {
-        Log.e(TAG, " No arguments provided for attendance flow");
-        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-            "Attendance data not available");
-        return;
-    }
+        Log.d(TAG, "Starting attendance check-in flow (stepwise from fragment)");
 
-    // Extract beacon data (không fix cứng, lấy đúng dữ liệu truyền vào)
-    String beaconUuid = args.getString("beaconUuid");
-    int beaconMajor = args.getInt("beaconMajor");
-    int beaconMinor = args.getInt("beaconMinor");
-    int rssi = args.getInt("rssi");
+        // Get attendance data from arguments
+        Bundle args = getArguments();
+        if (args == null) {
+            Log.e(TAG, "No arguments provided for attendance flow");
+            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Attendance data not available");
+            return;
+        }
 
-    // Kiểm tra dữ liệu beacon hợp lệ
-    if ((beaconUuid == null || beaconUuid.isEmpty()) && beaconMajor == 0 && beaconMinor == 0) {
-        Log.e(TAG, " Beacon data not available or invalid: uuid=" + beaconUuid + ", major=" + beaconMajor + ", minor=" + beaconMinor);
-        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-            "Beacon data not available. Please wait for beacon scan.");
-        return;
-    }
+        String beaconUuid = args.getString("beaconUuid");
+        int beaconMajor = args.getInt("beaconMajor");
+        int beaconMinor = args.getInt("beaconMinor");
+        int rssi = args.getInt("rssi");
 
-    // Extract GPS data
-    double latitude = args.getDouble("latitude", 10.762622);
-    double longitude = args.getDouble("longitude", 106.660172);
-    double accuracy = args.getDouble("accuracy", 15.0);
+        if ((beaconUuid == null || beaconUuid.isEmpty()) && beaconMajor == 0 && beaconMinor == 0) {
+            Log.e(TAG, "Beacon data not available or invalid: uuid=" + beaconUuid + ", major=" + beaconMajor + ", minor=" + beaconMinor);
+            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Beacon data not available. Please wait for beacon scan.");
+            return;
+        }
 
-    // Get device ID
-    String deviceId = android.provider.Settings.Secure.getString(
-        requireContext().getContentResolver(),
-        android.provider.Settings.Secure.ANDROID_ID);
+        double latitude = args.getDouble("latitude", 10.762622);
+        double longitude = args.getDouble("longitude", 106.660172);
+        double accuracy = args.getDouble("accuracy", 15.0);
 
-    // Initialize AttendanceService
-    com.example.flutter_application_1.attendance.data.service.AttendanceService attendanceService =
-        new com.example.flutter_application_1.attendance.data.service.AttendanceService(requireContext());
+        String deviceId = android.provider.Settings.Secure.getString(requireContext().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 
-    // Perform complete check-in flow
-    attendanceService.performCheckIn(
-        beaconUuid, beaconMajor, beaconMinor, rssi,
-        latitude, longitude, accuracy,
-        deviceId,
-        faceImage,
-        new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<String>() {
+        // Initialize AttendanceService
+        com.example.flutter_application_1.attendance.data.service.AttendanceService attendanceService = new com.example.flutter_application_1.attendance.data.service.AttendanceService(requireContext());
+
+        // Step 1: Validate Beacon
+        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Validating beacon...");
+        attendanceService.validateBeacon(beaconUuid, beaconMajor, beaconMinor, rssi, new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse>() {
             @Override
-            public void onSuccess(String result) {
-            if (!isAdded()) return;
-            Log.d(TAG, " Attendance check-in successful: " + result);
-            stateManager.transitionTo(FaceRegistrationState.SUCCESS, result);
-            }
+            public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse beaconResult) {
+                if (!isAdded()) return;
+                Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
+
+                // // Step 2: Request Face Verification
+                // stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Requesting face verification...");
+                // attendanceService.requestFaceVerification("check_in", latitude, longitude, accuracy, deviceId, new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse>() {
+                //     @Override
+                //     public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse verifyResult) {
+                //         if (!isAdded()) return;
+                //         Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
+
+                        // Step 3: Use local FaceIdService for verification instead of remote API
+                        // if (faceIdService == null || !faceIdServiceInitialized) {
+                        //     Log.e(TAG, "FaceIdService not initialized — cannot perform local verification");
+                        //     stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Verification service not available");
+                        //     return;
+                        // }
+
+                        // Prefer request-based verification when request/ session present
+                        String requestId = getRequestIdFromArgs();
+                        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Verifying face...");
+
+                        if (requestId != null) {
+                            faceIdService.verifyFaceIdForRequest(faceImage, AuthManager.getInstance(requireContext()).getCurrentUserId(), requestId, null, new com.example.flutter_application_1.faceid.data.service.FaceIdService.FaceIdCallback() {
+                                @Override
+                                public void onSuccess(String message) {
+                                    if (!isAdded()) return;
+                                    Log.d(TAG, "✅ Verification successful: " + message);
+                                    stateManager.transitionTo(FaceRegistrationState.SUCCESS, message);
+                                }
+
+                                @Override
+                                public void onFailure(String errorMessage) {
+                                    if (!isAdded()) return;
+                                    Log.e(TAG, "❌ Verification failed: " + errorMessage);
+                                    lastDetailedErrorMessage = "Verification failure details:\n" + errorMessage;
+                                    hasDetailedError = true;
+                                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Verification failed: " + errorMessage);
+                                }
+                            });
+                        } else {
+                            // Fallback to ad-hoc verification
+                            faceIdService.verifyFaceId(faceImage, AuthManager.getInstance(requireContext()).getCurrentUserId(), new com.example.flutter_application_1.faceid.data.service.FaceIdService.FaceIdCallback() {
+                                @Override
+                                public void onSuccess(String message) {
+                                    if (!isAdded()) return;
+                                    Log.d(TAG, "✅ Ad-hoc verification successful: " + message);
+                                    stateManager.transitionTo(FaceRegistrationState.SUCCESS, message);
+                                }
+
+                                @Override
+                                public void onFailure(String errorMessage) {
+                                    if (!isAdded()) return;
+                                    Log.e(TAG, "❌ Ad-hoc verification failed: " + errorMessage);
+                                    lastDetailedErrorMessage = "Verification failure details:\n" + errorMessage;
+                                    hasDetailedError = true;
+                                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Verification failed: " + errorMessage);
+                                }
+                            });
+                        }
+                    }
+
+            //         @Override
+            //         public void onFailure(String error) {
+            //             if (!isAdded()) return;
+            //             Log.e(TAG, "Step 2 failed: " + error);
+            //             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 2 failed: " + error);
+            //         }
+            //     });
+            // }
+
             @Override
             public void onFailure(String error) {
-            if (!isAdded()) return;
-            Log.e(TAG, " Attendance check-in failed: " + error);
-            lastDetailedErrorMessage = "Attendance check-in failure:\n" + error;
-            hasDetailedError = true;
-            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
-                "Check-in failed: " + error);
+                if (!isAdded()) return;
+                Log.e(TAG, "Step 1 failed: " + error);
+                stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 1 failed: " + error);
             }
-        }
-    );
+        });
     }
 
     /**

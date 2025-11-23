@@ -213,96 +213,14 @@ public class AttendanceService {
             AttendanceCallback<FaceIdVerifyResponse> callback) {
         
         Log.d(TAG, "📸 Step 3: Uploading face image for verification");
-        
-        // Validate attendance check ID
-        if (currentAttendanceCheckId == null) {
-            callback.onFailure("No attendance check ID. Please request face verification first.");
-            return;
-        }
-        
-        // Get user info
-        String userId = AuthManager.getInstance(context).getCurrentUserId();
-        String employeeCode = AuthManager.getInstance(context).getCurrentUserName(); // Using username as employee code
-        
-        if (userId == null || userId.isEmpty()) {
-            callback.onFailure("User not logged in");
-            return;
-        }
-        
-        try {
-            // Convert bitmap to JPEG byte array
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            faceImage.compress(Bitmap.CompressFormat.JPEG, 90, baos);
-            byte[] imageBytes = baos.toByteArray();
-            
-            // Create multipart request
-            RequestBody attendanceCheckIdPart = RequestBody.create(
-                    MediaType.parse("text/plain"), 
-                    String.valueOf(currentAttendanceCheckId));
-            
-            RequestBody employeeIdPart = RequestBody.create(
-                    MediaType.parse("text/plain"), 
-                    userId);
-            
-            RequestBody employeeCodePart = RequestBody.create(
-                    MediaType.parse("text/plain"), 
-                    employeeCode);
-            
-            RequestBody checkTypePart = RequestBody.create(
-                    MediaType.parse("text/plain"), 
-                    checkType);
-            
-            RequestBody imageBody = RequestBody.create(
-                    MediaType.parse("image/jpeg"), 
-                    imageBytes);
-            
-            MultipartBody.Part imagePart = MultipartBody.Part.createFormData(
-                    "FaceImage", "face.jpg", imageBody);
-            
-            // Call Face ID API for attendance verification
-            Log.d(TAG, "Uploading face image - AttendanceCheckId: " + currentAttendanceCheckId + 
-                    ", EmployeeId: " + userId + ", CheckType: " + checkType);
-            
-            Call<FaceIdVerifyResponse> call = faceIdApi.verifyFaceForAttendance(
-                    attendanceCheckIdPart,
-                    employeeIdPart,
-                    employeeCodePart,
-                    checkTypePart,
-                    imagePart
-            );
-            
-            call.enqueue(new Callback<FaceIdVerifyResponse>() {
-                @Override
-                public void onResponse(@NonNull Call<FaceIdVerifyResponse> call,
-                                     @NonNull Response<FaceIdVerifyResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        FaceIdVerifyResponse body = response.body();
-                        
-                        if (body.isSuccess()) {
-                            Log.d(TAG, " Face verified for attendance!");
-                            Log.d(TAG, "Similarity: " + body.getSimilarity());
-                            callback.onSuccess(body);
-                        } else {
-                            callback.onFailure(body.getMessage() != null ? 
-                                    body.getMessage() : "Face verification failed");
-                        }
-                    } else {
-                        callback.onFailure("Face verification failed: HTTP " + response.code());
-                    }
-                }
-                
-                @Override
-                public void onFailure(@NonNull Call<FaceIdVerifyResponse> call,
-                                    @NonNull Throwable t) {
-                    Log.e(TAG, " Face upload network error", t);
-                    callback.onFailure("Network error: " + t.getMessage());
-                }
-            });
-            
-        } catch (Exception e) {
-            Log.e(TAG, " Error uploading face image", e);
-            callback.onFailure("Error: " + e.getMessage());
-        }
+        // NOTE: Remote face verification via faceIdApi.verifyFaceForAttendance is deprecated in
+        // favor of using local FaceIdService.verifyFaceIdForRequest inside the UI layer.
+        // This service will therefore NOT perform remote verification. Callers should
+        // perform local verification with FaceIdService and use AttendanceService only
+        // for beacon/verification request steps (validateBeacon/requestFaceVerification).
+
+        Log.w(TAG, "Remote face verification disabled — perform local verification via FaceIdService");
+        callback.onFailure("Remote face verification disabled; perform local verification via FaceIdService");
     }
     
     /**
