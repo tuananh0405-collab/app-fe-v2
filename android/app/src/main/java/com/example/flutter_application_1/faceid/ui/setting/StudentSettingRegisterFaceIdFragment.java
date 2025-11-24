@@ -109,6 +109,9 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
 
     private boolean isRegistering = false; // Ngăn gọi API nhiều lần
     private boolean hasStartedRegistration = false; // Track xem đã bắt đầu registration chưa
+    
+    // ✅ SUCCESS FLAG - Prevent processing after successful registration or error
+    private boolean verificationCompleted = false;
 
 
     // HANDLERS
@@ -1022,6 +1025,10 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
             Log.e(TAG, " Fragment not added, cannot show success");
             return;
         }
+        
+        // Set flag to prevent duplicate processing
+        verificationCompleted = true;
+        Log.d(TAG, "✅ Verification completed flag set");
 
         try {
             stopCamera();
@@ -1124,6 +1131,10 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         if (!isAdded()) {
             return;
         }
+        
+        // Set flag to prevent duplicate processing
+        verificationCompleted = true;
+        Log.d(TAG, "✅ Verification completed flag set (error state)");
 
         // Prepare error message based on state
         String title = "Registration Failed";
@@ -1508,6 +1519,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         //  RESET FLAGS
         isRegistering = false;
         hasStartedRegistration = false;
+        verificationCompleted = false;
 
         if (analysisOverlay != null) {
             analysisOverlay.setVisibility(View.GONE);
@@ -1808,6 +1820,12 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
      * Capture current frame and register face ID via API
      */
     private void captureAndRegisterFace() {
+        // Check if verification has already completed successfully
+        if (verificationCompleted) {
+            Log.w(TAG, "⚠️ Verification already completed, ignoring duplicate request");
+            return;
+        }
+        
         //  CHECK: Ngăn gọi nhiều lần
         if (isRegistering) {
             Log.w(TAG, "⚠️ Registration already in progress, skipping duplicate call");
@@ -1873,20 +1891,12 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                 // Save registration status
                 AuthManager.getInstance(requireContext()).setFaceIdRegistered(true);
                 
-                // Show success
+                //  Transition to SUCCESS state - handleSuccessState() will navigate to success screen
                 stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
                         "Đăng ký Face ID thành công!");
                 
-                // Navigate to success screen
-                mainHandler.postDelayed(() -> {
-                    if (isAdded()) {
-                        Intent successIntent = new Intent(requireContext(), 
-                                com.example.flutter_application_1.faceid.ui.setting.success.FaceIdSuccessActivity.class);
-                        startActivityForResult(successIntent, SUCCESS_ACTIVITY_REQUEST_CODE);
-                    }
-                    //  Reset flag sau khi navigate
-                    isRegistering = false;
-                }, 1000);
+                //  Reset flag - navigation is handled by handleSuccessState()
+                isRegistering = false;
             }
             
             @Override
