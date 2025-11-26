@@ -24,6 +24,9 @@ class PushNotificationService {
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   
+  final bool soundEnabled;
+  final bool vibrationEnabled;
+  
   String? _fcmToken;
   String? _deviceId;
 
@@ -35,6 +38,11 @@ class PushNotificationService {
   
   // Callback for when notification is received in foreground
   Function(RemoteMessage message)? onForegroundMessage;
+
+  PushNotificationService({
+    this.soundEnabled = true,
+    this.vibrationEnabled = true,
+  });
 
   String? get fcmToken => _fcmToken;
   String? get deviceId => _deviceId;
@@ -121,11 +129,13 @@ class PushNotificationService {
 
     // Create Android notification channel
     if (Platform.isAndroid) {
-      const channel = AndroidNotificationChannel(
+      final channel = AndroidNotificationChannel(
         'high_importance_channel',
         'High Importance Notifications',
         description: 'This channel is used for important notifications.',
         importance: Importance.high,
+        playSound: soundEnabled,
+        enableVibration: vibrationEnabled,
       );
       
       await _localNotifications
@@ -166,22 +176,24 @@ class PushNotificationService {
       return;
     }
 
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
       channelDescription: 'This channel is used for important notifications.',
       importance: Importance.high,
       priority: Priority.high,
       showWhen: true,
+      playSound: soundEnabled,
+      enableVibration: vibrationEnabled,
     );
     
-    const iosDetails = DarwinNotificationDetails(
+    final iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
-      presentSound: true,
+      presentSound: soundEnabled,
     );
     
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );

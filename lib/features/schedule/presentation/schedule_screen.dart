@@ -8,7 +8,6 @@ class ScheduleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Handle back button - go to home instead of exiting app
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -18,15 +17,15 @@ class ScheduleScreen extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Schedule'),
-          centerTitle: true,
-          elevation: 0,
-          // Override back button to go to home
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.go(AppRoutePath.home),
-          ),
+        title: const Text('Schedule'),
+        centerTitle: true,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go(AppRoutePath.home),
         ),
+      ),
+
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -51,6 +50,7 @@ class ScheduleScreen extends StatelessWidget {
             ],
           ),
         ),
+
         bottomNavigationBar: const BottomNavigation(currentIndex: 1),
       ),
     );

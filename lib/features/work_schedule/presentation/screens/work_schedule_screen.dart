@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
@@ -67,6 +68,10 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
         ),
         elevation: 2,
         backgroundColor: theme.primaryColor,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.go('/home'),
+        ),
         actions: [
           FFIconButton(
             icon: const Icon(Icons.refresh_rounded, color: Colors.white),

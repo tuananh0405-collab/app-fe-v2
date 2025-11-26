@@ -3,6 +3,7 @@ import '../../../../core/error/exceptions.dart';
 import '../models/leave_api_response_model.dart';
 import '../models/leave_balance_model.dart';
 import '../models/leave_model.dart';
+import '../models/leave_type_model.dart';
 import 'package:flutter/foundation.dart';
 
 
@@ -48,6 +49,8 @@ abstract class LeaveRemoteDataSource {
     required int leaveId,
     required String cancellationReason,
   });
+
+  Future<List<LeaveTypeModel>> getLeaveTypes();
 }
 
 class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
@@ -130,7 +133,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
   @override
   Future<List<LeaveModel>> getLeaveRecords() async {
     try {
-      final response = await dio.get('/leave/leave-records');
+      final response = await dio.get('/leave/leave-records/me');
 
       final apiResponse = LeaveApiResponseModel.fromJson(
         response.data,
@@ -432,6 +435,53 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
       }
     } catch (e) {
       debugPrint(' Unexpected error: $e');
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<LeaveTypeModel>> getLeaveTypes() async {
+    try {
+      final response = await dio.get('/leave/leave-types');
+
+      final apiResponse = LeaveApiResponseModel.fromJson(
+        response.data,
+        (data) => (data as List)
+            .map((item) =>
+                LeaveTypeModel.fromJson(item as Map<String, dynamic>))
+            .toList(),
+      );
+
+      if (response.statusCode == 200) {
+        if (apiResponse.data == null) {
+          throw const ServerException('Leave types data is null');
+        }
+        return apiResponse.data!;
+      } else if (response.statusCode == 401) {
+        throw UnauthorizedException(apiResponse.message);
+      } else {
+        throw ServerException(apiResponse.message);
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
+        );
+      } else {
+        throw const ServerException('Failed to connect to server');
+      }
+    } catch (e) {
       if (e is UnauthorizedException ||
           e is ServerException ||
           e is NetworkException) {

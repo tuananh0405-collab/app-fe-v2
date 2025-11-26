@@ -126,6 +126,48 @@ class SettingsScreen extends ConsumerWidget {
                   },
                   activeColor: theme.primaryColor,
                 ),
+                Divider(
+                  height: 1,
+                  color: theme.secondaryText.withValues(alpha: 0.2),
+                ),
+                SwitchListTile(
+                  title: Text(
+                    settings.notificationSound,
+                    style: theme.bodyText1,
+                  ),
+                  subtitle: Text(
+                    settings.notificationSoundSubtitle,
+                    style: theme.bodyText2.override(color: theme.secondaryText),
+                  ),
+                  value: ref.watch(notificationSoundEnabledProvider),
+                  onChanged: (value) {
+                    ref
+                        .read(notificationSoundEnabledProvider.notifier)
+                        .setEnabled(value);
+                  },
+                  activeColor: theme.primaryColor,
+                ),
+                Divider(
+                  height: 1,
+                  color: theme.secondaryText.withValues(alpha: 0.2),
+                ),
+                SwitchListTile(
+                  title: Text(
+                    settings.notificationVibration,
+                    style: theme.bodyText1,
+                  ),
+                  subtitle: Text(
+                    settings.notificationVibrationSubtitle,
+                    style: theme.bodyText2.override(color: theme.secondaryText),
+                  ),
+                  value: ref.watch(notificationVibrationEnabledProvider),
+                  onChanged: (value) {
+                    ref
+                        .read(notificationVibrationEnabledProvider.notifier)
+                        .setEnabled(value);
+                  },
+                  activeColor: theme.primaryColor,
+                ),
               ],
             ),
           ),

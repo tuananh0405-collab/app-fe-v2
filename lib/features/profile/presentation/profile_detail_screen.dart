@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../flutter_flow/flutter_flow_theme.dart';
 import '../providers/profile_providers.dart';
 import 'state/profile_state.dart';
 
@@ -24,13 +25,14 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileControllerProvider);
+    final theme = FlutterFlowTheme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile Details'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: theme.primaryColor,
         foregroundColor: Colors.white,
       ),
       body: _buildBody(profileState),
@@ -55,15 +57,24 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
   }
 
   Widget _buildProfileContent(profile) {
+    final theme = FlutterFlowTheme.of(context);
+    
     // Safely extract profile data
     final String fullName = profile.fullName ?? 'Unknown';
     final String email = profile.email ?? 'N/A';
-    final String employeeId = '#${profile.id.toString().padLeft(6, '0')}';
+    final String employeeId = profile.employeeCode ?? 
+        (profile.employeeId != null ? '#${profile.employeeId}' : '#${profile.id.toString().padLeft(6, '0')}');
     final String role = profile.role ?? 'N/A';
     final String status = profile.status ?? 'N/A';
+    final String departmentName = profile.departmentName ?? 'N/A';
+    final String positionName = profile.positionName ?? 'N/A';
+    final String lastLoginIp = profile.lastLoginIp ?? 'N/A';
     final String lastLogin = profile.lastLoginAt != null
         ? DateFormat('dd/MM/yyyy HH:mm').format(profile.lastLoginAt!)
         : 'Never';
+    final String createdAt = profile.createdAt != null
+        ? DateFormat('dd/MM/yyyy').format(profile.createdAt!)
+        : 'N/A';
 
     // Helper to get initials from full name
     String getInitials() {
@@ -90,8 +101,8 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withValues(alpha: 0.8),
+                    theme.primaryColor,
+                    theme.primaryColor.withValues(alpha: 0.8),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -125,7 +136,7 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
                         style: TextStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
+                          color: theme.primaryColor,
                         ),
                       ),
                     ),
@@ -202,7 +213,7 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
                         children: [
                           Icon(
                             Icons.person_outline,
-                            color: Theme.of(context).primaryColor,
+                            color: theme.primaryColor,
                           ),
                           const SizedBox(width: 8),
                           const Text(
@@ -225,19 +236,25 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
                     _buildInfoTile(
                       icon: Icons.phone_outlined,
                       label: 'Phone',
-                      value: 'Coming soon',
+                      value: 'N/A',
                     ),
                     const Divider(height: 1, indent: 56),
                     _buildInfoTile(
                       icon: Icons.cake_outlined,
                       label: 'Date of Birth',
-                      value: 'Coming soon',
+                      value: 'N/A',
                     ),
                     const Divider(height: 1, indent: 56),
                     _buildInfoTile(
                       icon: Icons.location_on_outlined,
                       label: 'Address',
-                      value: 'Coming soon',
+                      value: 'N/A',
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    _buildInfoTile(
+                      icon: Icons.calendar_today_outlined,
+                      label: 'Member Since',
+                      value: createdAt,
                     ),
                   ],
                 ),
@@ -263,7 +280,7 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
                         children: [
                           Icon(
                             Icons.work_outline,
-                            color: Theme.of(context).primaryColor,
+                            color: theme.primaryColor,
                           ),
                           const SizedBox(width: 8),
                           const Text(
@@ -286,13 +303,13 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
                     _buildInfoTile(
                       icon: Icons.business_center_outlined,
                       label: 'Position',
-                      value: 'Coming soon',
+                      value: positionName,
                     ),
                     const Divider(height: 1, indent: 56),
                     _buildInfoTile(
                       icon: Icons.domain_outlined,
                       label: 'Department',
-                      value: 'Coming soon',
+                      value: departmentName,
                     ),
                     const Divider(height: 1, indent: 56),
                     _buildInfoTile(
@@ -305,6 +322,12 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
                       icon: Icons.access_time,
                       label: 'Last Login',
                       value: lastLogin,
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    _buildInfoTile(
+                      icon: Icons.public_outlined,
+                      label: 'Last Login IP',
+                      value: lastLoginIp,
                     ),
                   ],
                 ),
@@ -363,7 +386,7 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
         children: [
           Icon(
             icon,
-            color: Theme.of(context).primaryColor,
+            color: FlutterFlowTheme.of(context).primaryColor,
             size: 24,
           ),
           const SizedBox(width: 16),

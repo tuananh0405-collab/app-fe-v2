@@ -42,31 +42,34 @@ abstract class FlutterFlowTheme {
 
 class LightModeTheme extends FlutterFlowTheme {
   @override
-  Color get primaryColor => const Color(0xFF4B39EF);
+  Color get primaryColor => const Color(0xFF3B82F6); // Blue 500
   @override
-  Color get secondaryColor => const Color(0xFF39D2C0);
+  Color get secondaryColor => const Color(0xFF6366F1); // Indigo 500
   @override
-  Color get tertiaryColor => const Color(0xFFEE8B60);
+  Color get tertiaryColor => const Color(0xFF0EA5E9); // Sky 500
   @override
-  Color get alternate => const Color(0xFFE0E3E7);
-  @override
-  Color get primaryBackground => const Color(0xFFF1F4F8);
-  @override
-  Color get secondaryBackground => const Color(0xFFFFFFFF);
-  @override
-  Color get primaryText => const Color(0xFF14181B);
-  @override
-  Color get secondaryText => const Color(0xFF57636C);
+  Color get alternate => const Color(0xFFE5E7EB); // Gray 200
 
   @override
-  Color get error => const Color(0xFFFF5963);
+  Color get primaryBackground => const Color(0xFFF9FAFB); // Gray 50
   @override
-  Color get success => const Color(0xFF249689);
+  Color get secondaryBackground => const Color(0xFFFFFFFF);
+
   @override
-  Color get warning => const Color(0xFFF9CF58);
+  Color get primaryText => const Color(0xFF111827); // Gray 900
   @override
-  Color get info => const Color(0xFFFFFFFF);
+  Color get secondaryText => const Color(0xFF6B7280); // Gray 500
+
+  @override
+  Color get error => const Color(0xFFEF4444);
+  @override
+  Color get success => const Color(0xFF10B981);
+  @override
+  Color get warning => const Color(0xFFF59E0B);
+  @override
+  Color get info => const Color(0xFF3B82F6);
 }
+
 
 class DarkModeTheme extends FlutterFlowTheme {
   @override

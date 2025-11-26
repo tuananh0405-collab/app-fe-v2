@@ -6,6 +6,7 @@ import '../../domain/usecases/get_leave_record_by_id_usecase.dart';
 import '../../domain/usecases/get_leave_records_usecase.dart';
 import '../../domain/usecases/update_leave_request_usecase.dart';
 import '../../domain/usecases/cancel_leave_request_usecase.dart';
+import '../../domain/usecases/get_leave_types_usecase.dart';
 import '../../providers/leave_providers.dart';
 import '../state/leave_state.dart';
 
@@ -16,6 +17,7 @@ class LeaveController extends Notifier<LeaveState> {
   late final UpdateLeaveRequestUseCase _updateLeaveRequestUseCase;
   late final GetLeaveRecordByIdUseCase _getLeaveRecordByIdUseCase;
   late final CancelLeaveRequestUseCase _cancelLeaveRequestUseCase;
+  late final GetLeaveTypesUseCase _getLeaveTypesUseCase;
 
   @override
   LeaveState build() {
@@ -25,6 +27,7 @@ class LeaveController extends Notifier<LeaveState> {
     _updateLeaveRequestUseCase = ref.read(updateLeaveRequestUseCaseProvider);
     _getLeaveRecordByIdUseCase = ref.read(getLeaveRecordByIdUseCaseProvider);
     _cancelLeaveRequestUseCase = ref.read(cancelLeaveRequestUseCaseProvider);
+    _getLeaveTypesUseCase = ref.read(getLeaveTypesUseCaseProvider);
     return const LeaveState();
   }
 
@@ -232,6 +235,27 @@ class LeaveController extends Notifier<LeaveState> {
         );
         // Refresh leave records after canceling
         getLeaveRecords();
+      },
+    );
+  }
+
+  Future<void> getLeaveTypes() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    final result = await _getLeaveTypesUseCase(const NoParams());
+
+    result.fold(
+      (failure) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: failure.message,
+        );
+      },
+      (types) {
+        state = state.copyWith(
+          isLoading: false,
+          leaveTypes: types,
+        );
       },
     );
   }

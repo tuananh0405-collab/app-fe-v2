@@ -106,7 +106,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen>
                   ).animateOnPageLoad(animationsMap['logoOnPageLoad']!),
                   const SizedBox(height: 24),
                   Text(
-                    'Đăng nhập',
+                    'Sign in',
                     style: theme.title1,
                     textAlign: TextAlign.center,
                   ),
@@ -196,7 +196,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen>
                   // Login Button
                   FFButton(
                     onPressed: loginState.isLoading ? null : _handleLogin,
-                    text: 'Đăng nhập',
+                    text: 'Sign in',
                     options: FFButtonOptions(
                       width: double.infinity,
                       height: 56,

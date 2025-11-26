@@ -68,23 +68,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         backgroundColor: theme.primaryColor,
         elevation: 2,
         actions: [
-          FFIconButton(
-            icon: Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () => context.push(AppRoutePath.notifications),
-            buttonSize: 48,
-          ),
-          FFIconButton(
-            icon: Icon(Icons.settings_outlined, color: Colors.white),
-            onPressed: () => context.push(AppRoutePath.settings),
-            buttonSize: 48,
-          ),
-          FFIconButton(
-            icon: Icon(Icons.logout, color: Colors.white),
-            onPressed: () {
-              ref.read(authControllerProvider.notifier).signOut();
-            },
-            buttonSize: 48,
-          ),
+          // FFIconButton(
+          //   icon: Icon(Icons.notifications_outlined, color: Colors.white),
+          //   onPressed: () => context.push(AppRoutePath.notifications),
+          //   buttonSize: 48,
+          // ),
+          // FFIconButton(
+          //   icon: Icon(Icons.settings_outlined, color: Colors.white),
+          //   onPressed: () => context.push(AppRoutePath.settings),
+          //   buttonSize: 48,
+          // ),
+          // FFIconButton(
+          //   icon: Icon(Icons.logout, color: Colors.white),
+          //   onPressed: () {
+          //     ref.read(authControllerProvider.notifier).signOut();
+          //   },
+          //   buttonSize: 48,
+          // ),
         ],
       ),
       body: RefreshIndicator(
@@ -105,22 +105,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   .animateOnPageLoad(animationsMap['headerOnPageLoad']!),
               const SizedBox(height: 24),
 
+              
+              // Location Status
+              _LocationStatusCard(locationStatus: locationStatus)
+                  .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
+              const SizedBox(height: 16),
+
+              
+              // Current Shift
+              _CurrentShiftCard(shift: currentShift)
+                  .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
+              const SizedBox(height: 24),
+
+
               // Latest Notifications
               _LatestNotificationsSection(
                 notifications: notificationState.notifications.take(3).toList(),
               ).animateOnPageLoad(animationsMap['cardOnPageLoad']!),
               const SizedBox(height: 24),
 
-
-              // Location Status
-              _LocationStatusCard(locationStatus: locationStatus)
-                  .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
-              const SizedBox(height: 16),
-
-              // Current Shift
-              _CurrentShiftCard(shift: currentShift)
-                  .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
-              const SizedBox(height: 24),
 
 
               // Quick Actions
@@ -548,101 +551,196 @@ class _NotificationItem extends StatelessWidget {
         iconColor = theme.primaryColor;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            iconColor.withValues(alpha: 0.1),
-            iconColor.withValues(alpha: 0.05),
+    return GestureDetector(
+      onTap: () => _showNotificationDialog(context, theme, icon, iconColor),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.secondaryBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.grey.withOpacity(0.2),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.05),
+            ),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: iconColor.withValues(alpha: 0.3),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-            color: iconColor.withValues(alpha: 0.1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: iconColor, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  notification.title,
-                  style: theme.bodyText1.override(
-                    color: iconColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            notification.message,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: theme.bodyText2.override(
-              color: theme.primaryText.withValues(alpha: 0.8),
-            ).copyWith(height: 1.4),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Icon(
-                Icons.access_time,
-                size: 14,
-                color: theme.secondaryText,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                timeAgo,
-                style: theme.bodyText2.override(
-                  fontSize: 12,
-                  color: theme.secondaryText,
-                ),
-              ),
-              if (!notification.isRead) ...[
-                const Spacer(),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: theme.error,
-                    shape: BoxShape.circle,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: iconColor, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    notification.title,
+                    style: theme.bodyText1.override(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  Icons.access_time,
+                  size: 14,
+                  color: theme.secondaryText,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  timeAgo,
+                  style: theme.bodyText2.override(
+                    fontSize: 12,
+                    color: theme.secondaryText,
+                  ),
+                ),
+                if (!notification.isRead) ...[
+                  const Spacer(),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: theme.error,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
+  void _showNotificationDialog(
+    BuildContext context,
+    FlutterFlowTheme theme,
+    IconData icon,
+    Color iconColor,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: theme.secondaryBackground,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: iconColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(icon, color: iconColor, size: 28),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          notification.title,
+                          style: theme.title3.override(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: theme.secondaryText),
+                        onPressed: () => Navigator.of(context).pop(),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(
+                      maxHeight: 400,
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.primaryBackground,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        notification.message,
+                        style: theme.bodyText1.override(
+                          color: theme.primaryText,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 16,
+                        color: theme.secondaryText,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _getTimeAgo(notification.createdAt),
+                        style: theme.bodyText2.override(
+                          color: theme.secondaryText,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (!notification.isRead)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Unread',
+                            style: theme.bodyText2.override(
+                              color: theme.error,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   String _getTimeAgo(DateTime timestamp) {
     final now = DateTime.now();
@@ -694,74 +792,76 @@ class _QuickActionsSection extends StatelessWidget {
       },
     ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Quick Actions',
-          style: theme.subtitle1.override(
-            fontWeight: FontWeight.bold,
-          ),
+    final Color accent = theme.primaryColor;
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'Quick Actions',
+        style: theme.subtitle1.override(
+          fontWeight: FontWeight.bold,
         ),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.5,
-          ),
-          itemCount: actions.length,
-          itemBuilder: (context, index) {
-            final action = actions[index];
-            final actionColor = action['color'] as Color;
-            
-            return InkWell(
-              onTap: () => context.push(action['path'] as String),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: actionColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: actionColor.withValues(alpha: 0.3),
-                    width: 1.5,
+      ),
+      const SizedBox(height: 12),
+      GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.5,
+        ),
+        itemCount: actions.length,
+        itemBuilder: (context, index) {
+          final action = actions[index];
+
+          return InkWell(
+            onTap: () => context.push(action['path'] as String),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white, // <— NỀN TRẮNG TINH
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.2), // Viền siêu mỏng + neutral
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04), // Shadow nhẹ nhất
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: actionColor.withValues(alpha: 0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      action['icon'] as IconData,
-                      color: actionColor,
-                      size: 32,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      action['label'] as String,
-                      style: theme.bodyText2.override(
-                        color: actionColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                ],
               ),
-            );
-          },
-        ),
-      ],
-    );
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    action['icon'] as IconData,
+                    color: accent, // Chỉ icon dùng primary
+                    size: 28,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    action['label'] as String,
+                    style: theme.bodyText2.override(
+                      color: theme.primaryText, // text đen xám = chuyên nghiệp
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    ],
+  );
+
   }
 }
 

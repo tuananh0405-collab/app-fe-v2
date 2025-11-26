@@ -17,7 +17,7 @@ class BottomNavigation extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
-      height: 100,
+      height: 56,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.bottomCenter,
@@ -71,32 +71,66 @@ class BottomNavigation extends ConsumerWidget {
           ),
 
           // Floating Center Button
-          Positioned(
-            bottom: 20,
-            child: GestureDetector(
-              onTap: () => _onVerifyTapped(context, ref),
-              child: Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+          // Positioned(
+          //   bottom: 30,
+          //   child: GestureDetector(
+          //     onTap: () => _onVerifyTapped(context, ref),
+          //     child: Container(
+          //       width: 64,
+          //       height: 64,
+          //       decoration: BoxDecoration(
+          //         color: Theme.of(context).primaryColor,
+          //         shape: BoxShape.circle,
+          //         border: Border.all(
+          //           color: Colors.white.withOpacity(0.15),
+          //           width: 1.5,
+          //         ),
+          //         boxShadow: [
+          //           BoxShadow(
+          //             color: Theme.of(context).primaryColor.withOpacity(0.30),
+          //             blurRadius: 14,
+          //             offset: const Offset(0, 6),
+          //           ),
+          //         ],
+          //       ),
+          //       child: const Icon(
+          //         Icons.camera_front_rounded, 
+          //         color: Colors.white,
+          //         size: 30,
+          //       ),
+          //     ),
+          //   ),
+          // ),
+
+          // Floating Center Button (Modern Square FAB)
+      Positioned(
+        bottom: 28,
+        child: GestureDetector(
+          onTap: () => _onVerifyTapped(context, ref),
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).primaryColor.withOpacity(0.25),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
                 ),
-                child: const Icon(
-                  Icons.face,
-                  color: Colors.white,
-                  size: 32,
-                ),
-              ),
+              ],
+            ),
+            child: const Icon(
+              Icons.document_scanner_outlined, // icon đẹp & chuyên nghiệp hơn
+              color: Colors.white,
+              size: 30,
             ),
           ),
+        ),
+      ),
+
+
         ],
       ),
     );

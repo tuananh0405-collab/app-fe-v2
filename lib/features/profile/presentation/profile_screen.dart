@@ -115,6 +115,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               subtitle: 'Update your password',
               onTap: () => context.push(AppRoutePath.changePassword),
             ),
+            _buildMenuItem(
+              context: context,
+              theme: theme,
+              icon: Icons.lock_outline,
+              title: 'Settings',
+              subtitle: 'Vibration, Sound, etc',
+              onTap: () => context.push(AppRoutePath.settings),
+            ),
             const SizedBox(height: 8),
             _buildMenuItem(
               context: context,

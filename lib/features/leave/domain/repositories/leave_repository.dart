@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/leave_balance_entity.dart';
 import '../entities/leave_entity.dart';
+import '../entities/leave_type_entity.dart';
 
 abstract class LeaveRepository {
   Future<Either<Failure, LeaveEntity>> createLeaveRequest({
@@ -45,4 +46,6 @@ abstract class LeaveRepository {
     required int leaveId,
     required String cancellationReason,
   });
+
+  Future<Either<Failure, List<LeaveTypeEntity>>> getLeaveTypes();
 }

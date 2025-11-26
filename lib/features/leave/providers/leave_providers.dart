@@ -10,6 +10,7 @@ import '../domain/usecases/get_leave_record_by_id_usecase.dart';
 import '../domain/usecases/get_leave_records_usecase.dart';
 import '../domain/usecases/update_leave_request_usecase.dart';
 import '../domain/usecases/cancel_leave_request_usecase.dart';
+import '../domain/usecases/get_leave_types_usecase.dart';
 import '../presentation/controllers/leave_controller.dart';
 import '../presentation/state/leave_state.dart';
 
@@ -54,6 +55,10 @@ final getLeaveRecordByIdUseCaseProvider =
 final cancelLeaveRequestUseCaseProvider =
     Provider<CancelLeaveRequestUseCase>((ref) {
   return CancelLeaveRequestUseCase(ref.read(leaveRepositoryProvider));
+});
+
+final getLeaveTypesUseCaseProvider = Provider<GetLeaveTypesUseCase>((ref) {
+  return GetLeaveTypesUseCase(ref.read(leaveRepositoryProvider));
 });
 
 // Leave Controller Provider

@@ -16,6 +16,10 @@ class SettingsLocalizations {
       'notificationPreferencesSubtitle': 'Manage notification settings',
       'pushNotifications': 'Push Notifications',
       'pushNotificationsSubtitle': 'Receive push notifications for updates',
+      'notificationSound': 'Notification Sound',
+      'notificationSoundSubtitle': 'Play sound when receiving notifications',
+      'notificationVibration': 'Vibration',
+      'notificationVibrationSubtitle': 'Vibrate when receiving notifications',
       'general': 'General',
       'devices': 'Devices & Sessions',
       'devicesSubtitle': 'View and manage signed-in devices',
@@ -33,6 +37,10 @@ class SettingsLocalizations {
       'notificationPreferencesSubtitle': 'Quản lý cài đặt thông báo',
       'pushNotifications': 'Thông báo đẩy',
       'pushNotificationsSubtitle': 'Nhận thông báo đẩy cho các cập nhật',
+      'notificationSound': 'Âm thanh thông báo',
+      'notificationSoundSubtitle': 'Phát âm thanh khi nhận thông báo',
+      'notificationVibration': 'Rung',
+      'notificationVibrationSubtitle': 'Rung khi nhận thông báo',
       'general': 'Chung',
       'devices': 'Thiết bị & Phiên đăng nhập',
       'devicesSubtitle': 'Xem và quản lý các thiết bị đã đăng nhập',
@@ -57,6 +65,10 @@ class SettingsLocalizations {
   String get pushNotifications => translate('pushNotifications');
   String get pushNotificationsSubtitle =>
       translate('pushNotificationsSubtitle');
+  String get notificationSound => translate('notificationSound');
+  String get notificationSoundSubtitle => translate('notificationSoundSubtitle');
+  String get notificationVibration => translate('notificationVibration');
+  String get notificationVibrationSubtitle => translate('notificationVibrationSubtitle');
   String get general => translate('general');
   String get devices => translate('devices');
   String get devicesSubtitle => translate('devicesSubtitle');

@@ -36,9 +36,52 @@ class PushNotificationEnabledNotifier extends Notifier<bool> {
   }
 }
 
+/// Provider for notification sound setting
+final notificationSoundEnabledProvider = NotifierProvider<NotificationSoundEnabledNotifier, bool>(NotificationSoundEnabledNotifier.new);
+
+class NotificationSoundEnabledNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    return prefs?.getBool('notification_sound_enabled') ?? true;
+  }
+
+  Future<void> setEnabled(bool enabled) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (prefs != null) {
+      await prefs.setBool('notification_sound_enabled', enabled);
+    }
+    state = enabled;
+  }
+}
+
+/// Provider for notification vibration setting
+final notificationVibrationEnabledProvider = NotifierProvider<NotificationVibrationEnabledNotifier, bool>(NotificationVibrationEnabledNotifier.new);
+
+class NotificationVibrationEnabledNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    return prefs?.getBool('notification_vibration_enabled') ?? true;
+  }
+
+  Future<void> setEnabled(bool enabled) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (prefs != null) {
+      await prefs.setBool('notification_vibration_enabled', enabled);
+    }
+    state = enabled;
+  }
+}
+
 /// Provider for PushNotificationService
 final pushNotificationServiceProvider = Provider<PushNotificationService>((ref) {
-  return PushNotificationService();
+  final soundEnabled = ref.watch(notificationSoundEnabledProvider);
+  final vibrationEnabled = ref.watch(notificationVibrationEnabledProvider);
+  return PushNotificationService(
+    soundEnabled: soundEnabled,
+    vibrationEnabled: vibrationEnabled,
+  );
 });
 
 /// Provider for PushNotificationApi

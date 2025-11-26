@@ -23,7 +23,7 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
   final int  _employeeId = 7;
   final String _employeeCode = 'EMP001';
   final int _departmentId = 1;
-  int _leaveTypeId = 1;
+  int? _leaveTypeId;
 
   DateTime? _startDate;
   DateTime? _endDate;
@@ -33,6 +33,11 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
   @override
   void initState() {
     super.initState();
+
+    // Fetch leave types when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(leaveControllerProvider.notifier).getLeaveTypes();
+    });
 
     // Setup animations
     setupAnimations({
@@ -93,13 +98,77 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
         return;
       }
 
+      if (_leaveTypeId == null) {
+        showSnackbar(context, leave.pleaseSelectLeaveType);
+        return;
+      }
+
+      // Additional validation based on selected leave type attributes
+      final leaveState = ref.read(leaveControllerProvider);
+      final selectedList = leaveState.leaveTypes
+          .where((lt) => lt.id == _leaveTypeId)
+          .toList();
+      if (selectedList.isNotEmpty) {
+        final selected = selectedList.first;
+
+        // helper to calculate requested days (inclusive). If excludeWeekends is true,
+        // weekend days (Sat, Sun) are not counted.
+        int _calculateRequestedDays(DateTime start, DateTime end, bool excludeWeekends) {
+          var days = 0;
+          var current = DateTime(start.year, start.month, start.day);
+          final last = DateTime(end.year, end.month, end.day);
+          while (!current.isAfter(last)) {
+            if (excludeWeekends) {
+              if (current.weekday != DateTime.saturday && current.weekday != DateTime.sunday) {
+                days++;
+              }
+            } else {
+              days++;
+            }
+            current = current.add(const Duration(days: 1));
+          }
+          return days;
+        }
+
+        final requestedDays = _calculateRequestedDays(_startDate!, _endDate!, selected.excludeWeekends);
+
+        // Check max consecutive days
+        if (selected.maxConsecutiveDays != null && requestedDays > selected.maxConsecutiveDays!) {
+          showSnackbar(context,
+              'Yêu cầu: $requestedDays ngày. Giới hạn tối đa liên tiếp: ${selected.maxConsecutiveDays} ngày.');
+          return;
+        }
+
+        // Check max days per year (basic check using requested days only)
+        if (selected.maxDaysPerYear != null && requestedDays > selected.maxDaysPerYear!) {
+          showSnackbar(context,
+              'Yêu cầu: $requestedDays ngày. Giới hạn mỗi năm: ${selected.maxDaysPerYear} ngày.');
+          return;
+        }
+
+        // Check minimum notice days
+        final nowDate = DateTime.now();
+        final daysUntilStart = _startDate!.difference(DateTime(nowDate.year, nowDate.month, nowDate.day)).inDays;
+        if (selected.minNoticeDays > 0 && daysUntilStart < selected.minNoticeDays) {
+          showSnackbar(context,
+              'Cần thông báo trước ít nhất ${selected.minNoticeDays} ngày.');
+          return;
+        }
+
+        // Check requires document
+        if (selected.requiresDocument && _supportingDocUrlController.text.trim().isEmpty) {
+          showSnackbar(context, 'Loại nghỉ này yêu cầu tài liệu hỗ trợ. Vui lòng cung cấp URL tài liệu.');
+          return;
+        }
+      }
+
       ref
           .read(leaveControllerProvider.notifier)
           .createLeaveRequest(
             employeeId: _employeeId,
             employeeCode: _employeeCode,
             departmentId: _departmentId,
-            leaveTypeId: _leaveTypeId,
+            leaveTypeId: _leaveTypeId!,
             startDate: _startDate!,
             endDate: _endDate!,
             isHalfDayStart: _isHalfDayStart,
@@ -164,44 +233,45 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Header Card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      theme.primaryColor,
-                      Color.lerp(theme.primaryColor, Colors.black, 0.2)!,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.primaryColor.withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      leave.newLeaveRequest,
-                      style: theme.title2.override(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      leave.fillDetailsBelow,
-                      style: theme.bodyText2.override(color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ).animateOnPageLoad(animationsMap['headerAnimation']!),
+              // Container(
+              //   padding: const EdgeInsets.all(20),
+              //   decoration: BoxDecoration(
+              //     gradient: LinearGradient(
+              //       colors: [
+              //         theme.primaryColor,
+              //         Color.lerp(theme.primaryColor, Colors.black, 0.2)!,
+              //       ],
+              //       begin: Alignment.topLeft,
+              //       end: Alignment.bottomRight,
+              //     ),
+              //     borderRadius: BorderRadius.circular(16),
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: theme.primaryColor.withValues(alpha: 0.3),
+              //         blurRadius: 10,
+              //         offset: const Offset(0, 4),
+              //       ),
+              //     ],
+              //   ),
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       Text(
+              //         leave.newLeaveRequest,
+              //         style: theme.title2.override(
+              //           color: Colors.white,
+              //           fontWeight: FontWeight.bold,
+              //         ),
+              //       ),
+              //       const SizedBox(height: 4),
+              //       Text(
+              //         leave.fillDetailsBelow,
+              //         style: theme.bodyText2.override(color: Colors.white70),
+              //       ),
+              //     ],
+              //   ),
+              // ).animateOnPageLoad(animationsMap['headerAnimation']!),
+
               const SizedBox(height: 24),
 
               // Leave Type Dropdown
@@ -217,47 +287,69 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                     ),
                   ],
                 ),
-                child: DropdownButtonFormField<int>(
-                  value: _leaveTypeId,
-                  decoration: InputDecoration(
-                    labelText: leave.leaveType,
-                    labelStyle: theme.bodyText2.override(
-                      color: theme.secondaryText,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: theme.secondaryBackground,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                  ),
-                  items: [
-                    DropdownMenuItem(value: 1, child: Text(leave.annualLeave)),
-                    DropdownMenuItem(value: 2, child: Text(leave.sickLeave)),
-                    DropdownMenuItem(
-                      value: 3,
-                      child: Text(leave.personalLeave),
-                    ),
-                    DropdownMenuItem(value: 4, child: Text(leave.unpaidLeave)),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _leaveTypeId = value;
-                      });
-                    }
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return leave.pleaseSelectLeaveType;
-                    }
-                    return null;
-                  },
-                ),
+                child: leaveState.leaveTypes.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  theme.primaryColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Loading leave types...',
+                              style: theme.bodyText2.override(
+                                color: theme.secondaryText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : DropdownButtonFormField<int>(
+                        value: _leaveTypeId,
+                        decoration: InputDecoration(
+                          labelText: leave.leaveType,
+                          labelStyle: theme.bodyText2.override(
+                            color: theme.secondaryText,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: theme.secondaryBackground,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                        items: leaveState.leaveTypes
+                            .map((leaveType) => DropdownMenuItem(
+                                  value: leaveType.id,
+                                  child: Text(leaveType.leaveTypeName),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _leaveTypeId = value;
+                            });
+                          }
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return leave.pleaseSelectLeaveType;
+                          }
+                          return null;
+                        },
+                      ),
               ).animateOnPageLoad(animationsMap['formAnimation']!),
               const SizedBox(height: 20),
 

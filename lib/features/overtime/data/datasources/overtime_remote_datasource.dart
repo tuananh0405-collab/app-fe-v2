@@ -59,7 +59,7 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
           'overtime_date': overtimeDate.toIso8601String().split('T')[0],
           'start_time': startTime.toIso8601String(),
           'end_time': endTime.toIso8601String(),
-          'estimated_hours': estimatedHours.toString(),
+          'estimated_hours': estimatedHours.toDouble(),
           'reason': reason,
         },
       );
@@ -242,7 +242,7 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
         data: {
           'start_time': startTime.toIso8601String(),
           'end_time': endTime.toIso8601String(),
-          'estimated_hours': estimatedHours.toString(),
+          'estimated_hours': estimatedHours.toDouble(),
           'reason': reason,
         },
       );

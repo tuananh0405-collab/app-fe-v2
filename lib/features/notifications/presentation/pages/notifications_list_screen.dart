@@ -267,15 +267,115 @@ class _NotificationsListScreenState
           .markAsRead(notification.id);
     }
 
-    // Navigate based on related entity type
-    if (notification.relatedEntityType != null && 
-        notification.relatedEntityId != null) {
-      // You can implement navigation based on entity type
-      // For example:
-      // if (notification.relatedEntityType == 'LEAVE_REQUEST') {
-      //   context.push('/leave-requests/${notification.relatedEntityId}');
-      // }
+    // Show notification detail dialog
+    _showNotificationDetailDialog(notification);
+  }
+
+  void _showNotificationDetailDialog(NotificationEntity notification) {
+    final theme = FlutterFlowTheme.of(context);
+    
+    // Get icon and color based on notification type
+    IconData icon;
+    Color iconColor;
+
+    switch (notification.notificationType) {
+      case NotificationType.leaveApproval:
+        icon = Icons.check_circle_outline;
+        iconColor = theme.success;
+        break;
+      case NotificationType.leaveRejection:
+        icon = Icons.cancel_outlined;
+        iconColor = theme.error;
+        break;
+      case NotificationType.attendanceReminder:
+      case NotificationType.checkInReminder:
+      case NotificationType.checkOutReminder:
+        icon = Icons.access_time;
+        iconColor = theme.warning;
+        break;
+      case NotificationType.leaveRequest:
+        icon = Icons.event_note;
+        iconColor = theme.primaryColor;
+        break;
+      case NotificationType.systemAnnouncement:
+        icon = Icons.campaign;
+        iconColor = theme.tertiaryColor;
+        break;
+      default:
+        icon = Icons.info_outline;
+        iconColor = theme.secondaryText;
     }
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: theme.secondaryBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                notification.title,
+                style: theme.title3,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                notification.message,
+                style: theme.bodyText1,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    size: 14,
+                    color: theme.secondaryText,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    DateFormat('dd/MM/yyyy HH:mm').format(notification.createdAt),
+                    style: theme.bodyText2.override(
+                      fontSize: 12,
+                      color: theme.secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              'Close',
+              style: theme.bodyText2.override(
+                color: theme.primaryColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showMarkAllAsReadDialog() {
@@ -471,13 +571,13 @@ class _NotificationCard extends StatelessWidget {
                           ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      notification.message,
-                      style: theme.bodyText2.override(
-                        color: theme.secondaryText,
-                      ),
-                    ),
+                    // const SizedBox(height: 6),
+                    // Text(
+                    //   notification.message,
+                    //   style: theme.bodyText2.override(
+                    //     color: theme.secondaryText,
+                    //   ),
+                    // ),
                     const SizedBox(height: 8),
                     Row(
                       children: [

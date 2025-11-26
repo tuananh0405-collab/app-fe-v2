@@ -4,6 +4,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
 import '../../domain/entities/leave_balance_entity.dart';
 import '../../domain/entities/leave_entity.dart';
+import '../../domain/entities/leave_type_entity.dart';
 import '../../domain/repositories/leave_repository.dart';
 import '../datasources/leave_remote_datasource.dart';
 
@@ -181,6 +182,26 @@ class LeaveRepositoryImpl implements LeaveRepository {
           leaveId: leaveId,
           cancellationReason: cancellationReason,
         );
+        return Right(result);
+      } on UnauthorizedException catch (e) {
+        return Left(AuthFailure(e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(e.message));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } catch (e) {
+        return Left(ServerFailure('Unexpected error: ${e.toString()}'));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<LeaveTypeEntity>>> getLeaveTypes() async {
+    if (await networkInfo.isConnected) {
+      try {
+        final result = await remoteDataSource.getLeaveTypes();
         return Right(result);
       } on UnauthorizedException catch (e) {
         return Left(AuthFailure(e.message));
