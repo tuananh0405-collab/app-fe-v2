@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
 import '../../providers/overtime_providers.dart';
 
@@ -98,13 +99,16 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
   }
 
   void _handleSubmit() {
+    final l10n = AppLocalizations.of(context);
+    final overtime = l10n.overtime;
+
     if (_formKey.currentState!.validate()) {
       if (_overtimeDate == null) {
-        showSnackbar(context, 'Vui lòng chọn ngày làm thêm');
+        showSnackbar(context, overtime.pleaseSelectDate);
         return;
       }
       if (_startTime == null || _endTime == null) {
-        showSnackbar(context, 'Vui lòng chọn thời gian bắt đầu và kết thúc');
+        showSnackbar(context, overtime.pleaseSelectTimes);
         return;
       }
 
@@ -139,6 +143,8 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final overtime = l10n.overtime;
     final overtimeState = ref.watch(overtimeControllerProvider);
     final dateFormat = DateFormat('dd/MM/yyyy');
 
@@ -163,7 +169,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
       backgroundColor: theme.primaryBackground,
       appBar: AppBar(
         title: Text(
-          'Tạo đơn làm thêm giờ',
+          overtime.createOvertimeRequest,
           style: theme.title2.override(color: Colors.white),
         ),
         elevation: 2,
@@ -181,44 +187,44 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Header Card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      theme.primaryColor,
-                      Color.lerp(theme.primaryColor, Colors.black, 0.2)!,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.primaryColor.withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Đơn làm thêm giờ mới',
-                      style: theme.title2.override(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Điền thông tin bên dưới',
-                      style: theme.bodyText2.override(color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ).animateOnPageLoad(animationsMap['headerAnimation']!),
+              // Container(
+              //   padding: const EdgeInsets.all(20),
+              //   decoration: BoxDecoration(
+              //     gradient: LinearGradient(
+              //       colors: [
+              //         theme.primaryColor,
+              //         Color.lerp(theme.primaryColor, Colors.black, 0.2)!,
+              //       ],
+              //       begin: Alignment.topLeft,
+              //       end: Alignment.bottomRight,
+              //     ),
+              //     borderRadius: BorderRadius.circular(16),
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: theme.primaryColor.withValues(alpha: 0.3),
+              //         blurRadius: 10,
+              //         offset: const Offset(0, 4),
+              //       ),
+              //     ],
+              //   ),
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       Text(
+              //         'Đơn làm thêm giờ mới',
+              //         style: theme.title2.override(
+              //           color: Colors.white,
+              //           fontWeight: FontWeight.bold,
+              //         ),
+              //       ),
+              //       const SizedBox(height: 4),
+              //       Text(
+              //         'Điền thông tin bên dưới',
+              //         style: theme.bodyText2.override(color: Colors.white70),
+              //       ),
+              //     ],
+              //   ),
+              // ).animateOnPageLoad(animationsMap['headerAnimation']!),
               const SizedBox(height: 24),
 
               // Shift ID Dropdown
@@ -237,7 +243,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                 child: DropdownButtonFormField<int>(
                   value: _shiftId,
                   decoration: InputDecoration(
-                    labelText: 'Ca làm việc',
+                    labelText: overtime.shift,
                     labelStyle: theme.bodyText2.override(
                       color: theme.secondaryText,
                     ),
@@ -252,10 +258,10 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                       vertical: 16,
                     ),
                   ),
-                  items: const [
-                    DropdownMenuItem(value: 1, child: Text('Ca 1')),
-                    DropdownMenuItem(value: 2, child: Text('Ca 2')),
-                    DropdownMenuItem(value: 3, child: Text('Ca 3')),
+                  items: [
+                    DropdownMenuItem(value: 1, child: Text(overtime.shift1)),
+                    DropdownMenuItem(value: 2, child: Text(overtime.shift2)),
+                    DropdownMenuItem(value: 3, child: Text(overtime.shift3)),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -266,7 +272,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                   },
                   validator: (value) {
                     if (value == null) {
-                      return 'Vui lòng chọn ca làm việc';
+                      return overtime.pleaseSelectShift;
                     }
                     return null;
                   },
@@ -299,7 +305,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Ngày làm thêm',
+                                overtime.overtimeDate,
                                 style: theme.bodyText2.override(
                                   color: theme.secondaryText,
                                   fontSize: 13,
@@ -309,7 +315,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                               Text(
                                 _overtimeDate != null
                                     ? dateFormat.format(_overtimeDate!)
-                                    : 'Chọn ngày',
+                                    : overtime.selectDate,
                                 style: theme.subtitle1.override(
                                   color: _overtimeDate != null
                                       ? theme.primaryText
@@ -355,7 +361,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Giờ bắt đầu',
+                                overtime.startTime,
                                 style: theme.bodyText2.override(
                                   color: theme.secondaryText,
                                   fontSize: 13,
@@ -369,7 +375,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                                   Text(
                                     _startTime != null
                                         ? _startTime!.format(context)
-                                        : 'Chọn giờ',
+                                        : overtime.selectTime,
                                     style: theme.subtitle1.override(
                                       color: _startTime != null
                                           ? theme.primaryText
@@ -412,7 +418,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Giờ kết thúc',
+                                overtime.endTime,
                                 style: theme.bodyText2.override(
                                   color: theme.secondaryText,
                                   fontSize: 13,
@@ -426,7 +432,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                                   Text(
                                     _endTime != null
                                         ? _endTime!.format(context)
-                                        : 'Chọn giờ',
+                                        : overtime.selectTime,
                                     style: theme.subtitle1.override(
                                       color: _endTime != null
                                           ? theme.primaryText
@@ -473,7 +479,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Số giờ dự kiến',
+                            overtime.estimatedHours,
                             style: theme.bodyText1.override(
                               fontWeight: FontWeight.w500,
                             ),
@@ -481,7 +487,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                         ],
                       ),
                       Text(
-                        '${_estimatedHours.toStringAsFixed(1)} giờ',
+                        '${_estimatedHours.toStringAsFixed(1)} ${overtime.hours}',
                         style: theme.subtitle1.override(
                           color: theme.primaryColor,
                           fontWeight: FontWeight.bold,
@@ -508,7 +514,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                 child: TextFormField(
                   controller: _reasonController,
                   decoration: InputDecoration(
-                    labelText: 'Lý do làm thêm',
+                    labelText: overtime.reason,
                     labelStyle: theme.bodyText2.override(
                       color: theme.secondaryText,
                     ),
@@ -523,7 +529,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
                   maxLines: 4,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Vui lòng nhập lý do làm thêm';
+                      return overtime.enterReason;
                     }
                     return null;
                   },
@@ -535,8 +541,8 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
               FFButton(
                 onPressed: overtimeState.isSubmitting ? null : _handleSubmit,
                 text: overtimeState.isSubmitting
-                    ? 'Đang tạo đơn...'
-                    : 'Tạo đơn làm thêm',
+                    ? overtime.creatingRequest
+                    : overtime.createRequest,
                 options: FFButtonOptions(
                   height: 56,
                   color: theme.primaryColor,
