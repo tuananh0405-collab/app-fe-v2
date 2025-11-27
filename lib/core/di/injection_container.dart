@@ -9,6 +9,8 @@ import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/change_temporary_password_usecase.dart';
 import '../../features/auth/domain/usecases/change_password_usecase.dart';
 import '../network/network_info.dart';
+import '../services/gps_tracking_service.dart';
+import '../services/push_notification_service.dart';
 
 final sl = GetIt.instance;
 
@@ -32,6 +34,14 @@ Future<void> init() async {
 
   // ========== Core ==========
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
+  
+  // Services
+  sl.registerLazySingleton(() => GpsTrackingService(sl()));
+  sl.registerLazySingleton(
+    () => PushNotificationService(
+      gpsTrackingService: sl(),
+    ),
+  );
 
   // ========== External ==========
   sl.registerLazySingleton(

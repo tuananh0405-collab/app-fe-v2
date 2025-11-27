@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../firebase_options.dart';
+import 'gps_tracking_service.dart';
 
 /// Background message handler - MUST be a top-level function
 @pragma('vm:entry-point')
@@ -12,7 +14,27 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    
+    debugPrint('📩 [BACKGROUND] Received message: ${message.messageId}');
+    debugPrint('   Data: ${message.data}');
+    
+    // Check if this is a GPS check request (silent push)
+    final messageType = message.data['type'] as String?;
+    final silent = message.data['silent'] as bool?;
+    
+    if (messageType == 'GPS_CHECK_REQUEST' && silent == true) {
+      debugPrint('📍 [BACKGROUND] GPS check request detected - processing...');
+      
+      // TODO: Create GpsTrackingService instance with proper Dio client
+      // For now, just log - full implementation needs dependency injection
+      // await GpsTrackingService(dio).handleGpsCheckRequest(message.data);
+      
+      debugPrint('⚠️ GPS tracking service not initialized in background handler');
+      debugPrint('   ShiftId: ${message.data['shiftId']}');
+      debugPrint('   Action: ${message.data['action']}');
+    }
   } catch (e) {
+    debugPrint('❌ [BACKGROUND] Error: $e');
     if (!e.toString().contains('already exists')) {
       rethrow;
     }
@@ -26,6 +48,7 @@ class PushNotificationService {
   
   final bool soundEnabled;
   final bool vibrationEnabled;
+  final GpsTrackingService? gpsTrackingService;
   
   String? _fcmToken;
   String? _deviceId;
@@ -42,6 +65,7 @@ class PushNotificationService {
   PushNotificationService({
     this.soundEnabled = true,
     this.vibrationEnabled = true,
+    this.gpsTrackingService,
   });
 
   String? get fcmToken => _fcmToken;
@@ -162,10 +186,31 @@ class PushNotificationService {
 
   /// Handle foreground messages
   void _handleForegroundMessage(RemoteMessage message) {
-    // Call callback
+    debugPrint('📩 [FOREGROUND] Received message: ${message.messageId}');
+    debugPrint('   Data: ${message.data}');
+    
+    // Check if this is a GPS check request (silent push)
+    final messageType = message.data['type'] as String?;
+    final silent = message.data['silent'] as bool?;
+    
+    if (messageType == 'GPS_CHECK_REQUEST' && silent == true) {
+      debugPrint('📍 [FOREGROUND] GPS check request detected - processing...');
+      
+      // Handle GPS check in foreground
+      if (gpsTrackingService != null) {
+        gpsTrackingService!.handleGpsCheckRequest(message.data);
+      } else {
+        debugPrint('⚠️ GPS tracking service not available');
+      }
+      
+      // Don't show notification for silent GPS requests
+      return;
+    }
+    
+    // Call callback for normal notifications
     onForegroundMessage?.call(message);
     
-    // Show local notification
+    // Show local notification for normal messages
     _showLocalNotification(message);
   }
 
