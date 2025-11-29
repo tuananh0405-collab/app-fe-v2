@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_constants.dart';
+import '../../../../core/error/exceptions.dart';
 import '../models/notification_preference_model.dart';
 import '../models/update_notification_preference_dto.dart';
 
@@ -18,7 +19,7 @@ class NotificationPreferenceRemoteDataSourceImpl
   Future<List<NotificationPreferenceModel>> getPreferences(int employeeId) async {
     try {
       final response = await dio.get(
-        '${ApiConstants.notificationBaseUrl}/notification/notification-preferences',
+        '/notification/notification-preferences',
         queryParameters: {'employeeId': employeeId},
       );
 
@@ -33,11 +34,36 @@ class NotificationPreferenceRemoteDataSourceImpl
         return preferencesJson
             .map((json) => NotificationPreferenceModel.fromJson(json as Map<String, dynamic>))
             .toList();
+      } else if (response.statusCode == 401) {
+        throw UnauthorizedException(
+          response.data['message'] ?? 'Unauthorized',
+        );
       } else {
-        throw Exception('Failed to load notification preferences: ${response.statusCode}');
+        throw ServerException(
+          response.data['message'] ?? 'Failed to load notification preferences',
+        );
       }
     } on DioException catch (e) {
-      throw Exception('Network error: ${e.message}');
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
+        );
+      } else {
+        throw const ServerException('Failed to connect to server');
+      }
+    } catch (e) {
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
     }
   }
 
@@ -47,7 +73,7 @@ class NotificationPreferenceRemoteDataSourceImpl
   ) async {
     try {
       final response = await dio.put(
-        '${ApiConstants.notificationBaseUrl}/notification/notification-preferences',
+        '/notification/notification-preferences',
         data: dto.toJson(),
       );
 
@@ -60,11 +86,36 @@ class NotificationPreferenceRemoteDataSourceImpl
             : data;
 
         return NotificationPreferenceModel.fromJson(preferenceJson as Map<String, dynamic>);
+      } else if (response.statusCode == 401) {
+        throw UnauthorizedException(
+          response.data['message'] ?? 'Unauthorized',
+        );
       } else {
-        throw Exception('Failed to update notification preference: ${response.statusCode}');
+        throw ServerException(
+          response.data['message'] ?? 'Failed to update notification preference',
+        );
       }
     } on DioException catch (e) {
-      throw Exception('Network error: ${e.message}');
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
+        );
+      } else {
+        throw const ServerException('Failed to connect to server');
+      }
+    } catch (e) {
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
     }
   }
 }

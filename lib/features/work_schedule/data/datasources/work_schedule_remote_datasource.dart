@@ -27,15 +27,11 @@ class WorkScheduleRemoteDataSourceImpl
       final toDateStr = toDate.toIso8601String().split('T')[0];
 
       final response = await dio.get(
-        '${ApiConstants.baseUrl}/attendance/employee-shifts/my',
+        '/attendance/employee-shifts/my',
         queryParameters: {
           'from_date': fromDateStr,
           'to_date': toDateStr,
         },
-        options: Options(
-          headers: ApiConstants.defaultHeaders,
-          validateStatus: (status) => status != null && status < 500,
-        ),
       );
 
       final apiResponse = EmployeeShiftApiResponseModel.fromJson(

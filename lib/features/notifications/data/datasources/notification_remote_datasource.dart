@@ -30,17 +30,13 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   }) async {
     try {
       final response = await dio.get(
-        '${ApiConstants.notificationBaseUrl}/notification',
+        '/notification',
         queryParameters: {
           'limit': limit,
           'offset': offset,
           'unreadOnly': unreadOnly,
           'channelFilter': channelFilter,
         },
-        options: Options(
-          headers: ApiConstants.defaultHeaders,
-          validateStatus: (status) => status! < 500,
-        ),
       );
 
       if (response.statusCode == 200) {
@@ -55,7 +51,26 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      throw NetworkException(e.message ?? 'Network error occurred');
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
+        );
+      } else {
+        throw const ServerException('Failed to connect to server');
+      }
+    } catch (e) {
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
     }
   }
 
@@ -63,11 +78,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   Future<void> markAsRead(int notificationId) async {
     try {
       final response = await dio.put(
-        '${ApiConstants.notificationBaseUrl}/notification/$notificationId/read',
-        options: Options(
-          headers: ApiConstants.defaultHeaders,
-          validateStatus: (status) => status! < 500,
-        ),
+        '/notification/$notificationId/read',
       );
 
       if (response.statusCode == 401) {
@@ -80,7 +91,26 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      throw NetworkException(e.message ?? 'Network error occurred');
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
+        );
+      } else {
+        throw const ServerException('Failed to connect to server');
+      }
+    } catch (e) {
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
     }
   }
 
@@ -88,11 +118,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   Future<void> markAllAsRead() async {
     try {
       final response = await dio.put(
-        '${ApiConstants.notificationBaseUrl}/notification/read-all',
-        options: Options(
-          headers: ApiConstants.defaultHeaders,
-          validateStatus: (status) => status! < 500,
-        ),
+        '/notification/read-all',
       );
 
       if (response.statusCode == 401) {
@@ -105,7 +131,26 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      throw NetworkException(e.message ?? 'Network error occurred');
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
+        );
+      } else {
+        throw const ServerException('Failed to connect to server');
+      }
+    } catch (e) {
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
     }
   }
 }

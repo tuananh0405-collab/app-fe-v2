@@ -80,18 +80,26 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
         throw ServerException(apiResponse.message);
       }
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw UnauthorizedException(
-          e.response?.data['message'] ?? 'Unauthorized',
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
         );
+      } else {
+        throw const ServerException('Failed to connect to server');
       }
-      throw ServerException(
-        e.response != null && e.response!.data != null && e.response!.data['message'] != null
-            ? e.response!.data['message']
-            : 'Failed to create overtime request',
-      );
     } catch (e) {
-      throw ServerException('An unexpected error occurred: ${e.toString()}');
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
     }
   }
 
@@ -115,18 +123,26 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw UnauthorizedException(
-          e.response?.data['message'] ?? 'Unauthorized',
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
         );
+      } else {
+        throw const ServerException('Failed to connect to server');
       }
-      throw ServerException(
-        e.response != null && e.response!.data != null && e.response!.data['message'] != null
-            ? e.response!.data['message']
-            : 'Failed to cancel overtime request',
-      );
     } catch (e) {
-      throw ServerException('An unexpected error occurred: ${e.toString()}');
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
     }
   }
 
@@ -175,16 +191,26 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
         throw ServerException(apiResponse.message);
       }
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw UnauthorizedException(
-          e.response?.data['message'] ?? 'Unauthorized',
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
         );
+      } else {
+        throw const ServerException('Failed to connect to server');
       }
-      throw ServerException(
-        e.response?.data['message'] ?? 'Failed to fetch overtime requests',
-      );
     } catch (e) {
-      throw ServerException('An unexpected error occurred: ${e.toString()}');
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
     }
   }
 
@@ -213,16 +239,26 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
         throw ServerException(apiResponse.message);
       }
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw UnauthorizedException(
-          e.response?.data['message'] ?? 'Unauthorized',
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
         );
+      } else {
+        throw const ServerException('Failed to connect to server');
       }
-      throw ServerException(
-        e.response?.data['message'] ?? 'Failed to fetch overtime request',
-      );
     } catch (e) {
-      throw ServerException('An unexpected error occurred: ${e.toString()}');
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
     }
   }
 
@@ -259,16 +295,26 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw UnauthorizedException(
-          e.response?.data['message'] ?? 'Unauthorized',
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
         );
+      } else {
+        throw const ServerException('Failed to connect to server');
       }
-      throw ServerException(
-        e.response?.data['message'] ?? 'Failed to update overtime request',
-      );
     } catch (e) {
-      throw ServerException('An unexpected error occurred: ${e.toString()}');
+      if (e is UnauthorizedException ||
+          e is ServerException ||
+          e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
     }
   }
 }
