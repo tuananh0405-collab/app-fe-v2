@@ -2,9 +2,22 @@ $root = "D:\projects\prompt\app-fe-v2"
 $out = Join-Path $root 'full-tree.txt'
 if (Test-Path $out) { Remove-Item $out -Force }
 
+# Directory names to exclude everywhere in the tree
+$excludedDirNames = @(
+    'node_modules',
+    '.git',
+    'cxx',
+    'desugar_graph',
+    'dex',
+    '.gradle',
+    'build',
+    '.idea',
+    '.dart_tool'
+)
+
 function Write-Tree($path, $indent) {
     $items = Get-ChildItem -LiteralPath $path -Force -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -ne 'node_modules' -and $_.Name -ne '.git' } |
+        Where-Object { -not ($excludedDirNames -contains $_.Name) } |
         Sort-Object @{Expression={$_.PSIsContainer};Descending=$true}, Name
 
     foreach ($it in $items) {

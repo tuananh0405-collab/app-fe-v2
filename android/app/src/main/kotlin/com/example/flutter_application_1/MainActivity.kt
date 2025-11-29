@@ -67,7 +67,7 @@ class MainActivity : FlutterActivity() {
 
     private fun registerFaceId(userId: String) {
         try {
-            val intent = Intent(this, Class.forName("com.example.flutter_application_1.faceid.ui.setting.StudentSettingRegisterFaceIdActivity"))
+            val intent = Intent(this, Class.forName("com.example.flutter_application_1.faceid.ui.setting.FaceRegisterActivity"))
             intent.putExtra("userId", userId)
             startActivityForResult(intent, FACE_ID_REGISTER_REQUEST)
         } catch (e: ClassNotFoundException) {
@@ -77,7 +77,7 @@ class MainActivity : FlutterActivity() {
 
     private fun verifyFaceId(userId: String) {
         try {
-            val intent = Intent(this, Class.forName("com.example.flutter_application_1.faceid.ui.setting.StudentSettingVerifyFaceIdActivity"))
+            val intent = Intent(this, Class.forName("com.example.flutter_application_1.faceid.ui.setting.FaceVerifyActivity"))
             intent.putExtra("userId", userId)
             // We don't necessarily need a result for verification in this flow, but we can add it if needed
             startActivity(intent)
