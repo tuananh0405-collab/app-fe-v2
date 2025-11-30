@@ -470,22 +470,22 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (state.selectedStatus != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(state.selectedStatus!).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _getStatusLabel(state.selectedStatus!),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: _getStatusColor(state.selectedStatus!),
-                      ),
-                    ),
-                  ),
+                // if (state.selectedStatus != null)
+                //   Container(
+                //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                //     decoration: BoxDecoration(
+                //       color: _getStatusColor(state.selectedStatus!).withOpacity(0.2),
+                //       borderRadius: BorderRadius.circular(12),
+                //     ),
+                //     child: Text(
+                //       _getStatusLabel(state.selectedStatus!),
+                //       style: TextStyle(
+                //         fontSize: 12,
+                //         fontWeight: FontWeight.bold,
+                //         color: _getStatusColor(state.selectedStatus!),
+                //       ),
+                //     ),
+                //   ),
               ],
             ),
           ),

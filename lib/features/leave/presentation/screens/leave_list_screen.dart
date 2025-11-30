@@ -353,24 +353,40 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                       ),
                     ),
                   ),
+
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: statusColor, width: 1.5),
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       statusText,
-                      style: theme.bodyText2.override(
+                      style: TextStyle(
                         color: statusColor,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
                   ),
+                  // Container(
+                  //   padding: const EdgeInsets.symmetric(
+                  //     horizontal: 12,
+                  //     vertical: 6,
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     color: statusColor.withValues(alpha: 0.15),
+                  //     borderRadius: BorderRadius.circular(12),
+                  //     border: Border.all(color: statusColor, width: 1.5),
+                  //   ),
+                  //   child: Text(
+                  //     statusText,
+                  //     style: theme.bodyText2.override(
+                  //       color: statusColor,
+                  //       fontWeight: FontWeight.w600,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
               const SizedBox(height: 12),
