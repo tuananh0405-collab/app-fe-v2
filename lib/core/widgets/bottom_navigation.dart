@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../routing/routes.dart';
 import '../../faceid_channel.dart';
 import '../../features/auth/providers/auth_providers.dart';
+import '../../flutter_flow/flutter_flow.dart';
 import '../../flutter_flow/flutter_flow_util.dart';
 
 class BottomNavigation extends ConsumerWidget {
@@ -16,122 +17,141 @@ class BottomNavigation extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = FlutterFlowTheme.of(context);
+    
     return SizedBox(
-      height: 56,
+      height: 54,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.bottomCenter,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
+          // Custom Shape with Notch
+          CustomPaint(
+            size: Size(MediaQuery.of(context).size.width, 70),
+            painter: BottomNavBarPainter(
+              backgroundColor: theme.secondaryBackground,
+              shadowColor: Colors.black.withValues(alpha: 0.08),
             ),
-            child: BottomNavigationBar(
-              currentIndex: currentIndex,
-              onTap: (index) => _onItemTapped(context, ref, index),
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor: Theme.of(context).primaryColor,
-              unselectedItemColor: Colors.grey,
-              selectedFontSize: 12,
-              unselectedFontSize: 12,
-              elevation: 0,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_today_outlined),
-                  activeIcon: Icon(Icons.calendar_today),
-                  label: 'Schedule',
-                ),
-                BottomNavigationBarItem(
-                  icon: SizedBox(width: 40),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.event_note_outlined),
-                  activeIcon: Icon(Icons.event_note),
-                  label: 'Attendance',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Profile',
-                ),
-              ],
+          ),
+          
+          // Navigation Items
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 56,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    context,
+                    theme,
+                    icon: Icons.home_outlined,
+                    activeIcon: Icons.home,
+                    label: 'Home',
+                    index: 0,
+                    onTap: () => _onItemTapped(context, ref, 0),
+                  ),
+                  _buildNavItem(
+                    context,
+                    theme,
+                    icon: Icons.calendar_today_outlined,
+                    activeIcon: Icons.calendar_today,
+                    label: 'Schedule',
+                    index: 1,
+                    onTap: () => _onItemTapped(context, ref, 1),
+                  ),
+                  const SizedBox(width: 70), // Space for floating button
+                  _buildNavItem(
+                    context,
+                    theme,
+                    icon: Icons.event_note_outlined,
+                    activeIcon: Icons.event_note,
+                    label: 'Attendance',
+                    index: 3,
+                    onTap: () => _onItemTapped(context, ref, 3),
+                  ),
+                  _buildNavItem(
+                    context,
+                    theme,
+                    icon: Icons.person_outline,
+                    activeIcon: Icons.person,
+                    label: 'Profile',
+                    index: 4,
+                    onTap: () => _onItemTapped(context, ref, 4),
+                  ),
+                ],
+              ),
             ),
           ),
 
           // Floating Center Button
-          // Positioned(
-          //   bottom: 30,
-          //   child: GestureDetector(
-          //     onTap: () => _onVerifyTapped(context, ref),
-          //     child: Container(
-          //       width: 64,
-          //       height: 64,
-          //       decoration: BoxDecoration(
-          //         color: Theme.of(context).primaryColor,
-          //         shape: BoxShape.circle,
-          //         border: Border.all(
-          //           color: Colors.white.withOpacity(0.15),
-          //           width: 1.5,
-          //         ),
-          //         boxShadow: [
-          //           BoxShadow(
-          //             color: Theme.of(context).primaryColor.withOpacity(0.30),
-          //             blurRadius: 14,
-          //             offset: const Offset(0, 6),
-          //           ),
-          //         ],
-          //       ),
-          //       child: const Icon(
-          //         Icons.camera_front_rounded, 
-          //         color: Colors.white,
-          //         size: 30,
-          //       ),
-          //     ),
-          //   ),
-          // ),
-
-          // Floating Center Button (Modern Square FAB)
-      Positioned(
-        bottom: 28,
-        child: GestureDetector(
-          onTap: () => _onVerifyTapped(context, ref),
-          child: Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).primaryColor.withOpacity(0.25),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
+          Positioned(
+            bottom: 25,
+            child: GestureDetector(
+              onTap: () => _onVerifyTapped(context, ref),
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: theme.primaryColor,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.primaryColor.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: const Icon(
-              Icons.document_scanner_outlined, // icon đẹp & chuyên nghiệp hơn
-              color: Colors.white,
-              size: 30,
+                child: Icon(
+                  Icons.face_retouching_natural,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-
-
         ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(
+    BuildContext context,
+    FlutterFlowTheme theme, {
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required int index,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = currentIndex == index;
+    
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? activeIcon : icon,
+              color: isSelected ? theme.primaryColor : theme.secondaryText,
+              size: 24,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: theme.bodyText2.override(
+                color: isSelected ? theme.primaryColor : theme.secondaryText,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -168,5 +188,89 @@ class BottomNavigation extends ConsumerWidget {
       default:
         break;
     }
+  }
+}
+
+// Custom Painter for Bottom Navigation Bar with Notch
+class BottomNavBarPainter extends CustomPainter {
+  final Color backgroundColor;
+  final Color shadowColor;
+
+  BottomNavBarPainter({
+    required this.backgroundColor,
+    required this.shadowColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = backgroundColor
+      ..style = PaintingStyle.fill;
+
+    final shadowPaint = Paint()
+      ..color = shadowColor
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+
+    final path = Path();
+    
+    final notchRadius = 32.0;
+    final notchMargin = 6.0;
+    
+    // Start from bottom left
+    path.moveTo(0, 20);
+    
+    // Left curve up
+    path.lineTo(0, 0);
+    
+    // Calculate perfectly centered notch
+    final notchCenterX = size.width / 2;
+    final notchWidth = (notchRadius + notchMargin) * 2;
+    final notchStartX = notchCenterX - notchWidth / 2;
+    final notchEndX = notchCenterX + notchWidth / 2;
+    
+    // Top left to notch start
+    path.lineTo(notchStartX, 0);
+    
+    // Small curve down to notch
+    path.quadraticBezierTo(
+      notchStartX + notchMargin / 2, 0,
+      notchStartX + notchMargin, notchMargin / 2,
+    );
+    
+    // Main circular arc (centered)
+    path.arcToPoint(
+      Offset(notchEndX - notchMargin, notchMargin / 2),
+      radius: Radius.circular(notchRadius),
+      clockwise: false,
+    );
+    
+    // Small curve back up to top
+    path.quadraticBezierTo(
+      notchEndX - notchMargin / 2, 0,
+      notchEndX, 0,
+    );
+    
+    // Top right
+    path.lineTo(size.width, 0);
+    
+    // Right side down
+    path.lineTo(size.width, 15);
+    path.lineTo(size.width, size.height);
+    
+    // Bottom
+    path.lineTo(0, size.height);
+    path.close();
+
+    // Draw shadow
+    canvas.drawPath(path, shadowPaint);
+    
+    // Draw main shape
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(BottomNavBarPainter oldDelegate) {
+    return oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.shadowColor != shadowColor;
   }
 }

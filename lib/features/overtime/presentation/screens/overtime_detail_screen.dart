@@ -73,26 +73,7 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
         onPressed: () => Navigator.of(context).pop(),
       ),
       actions: [
-        if (canUpdate && overtime != null)
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white),
-            tooltip: l10n.edit,
-            onPressed: () async {
-              final result = await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => UpdateOvertimeScreen(
-                    overtime: overtime,
-                  ),
-                ),
-              );
-              // Reload data if update was successful
-              if (result == true && mounted) {
-                ref
-                    .read(overtimeControllerProvider.notifier)
-                    .getOvertimeRequestById(widget.overtimeId);
-              }
-            },
-          ),
+        // Removed edit button from AppBar
       ],
     ),
     body: overtimeState.isLoading
@@ -124,30 +105,72 @@ class _OvertimeDetailScreenState extends ConsumerState<OvertimeDetailScreen>
         ? SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: FFButton(
-                onPressed: () {
-                  _showCancelDialog(context, ref, l10n);
-                },
-                text: l10n.cancelRequest,
-                icon: Icon(
-                  Icons.cancel_outlined,
-                  size: 20,
-                  color: Colors.white,
-                ),
-                options: FFButtonOptions(
-                  height: 52,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  // Visible primary background so the button stands out
-                  color: theme.primaryColor,
-                  textStyle: theme.subtitle1.override(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FFButton(
+                      onPressed: () {
+                        _showCancelDialog(context, ref, l10n);
+                      },
+                      text: l10n.cancelRequest,
+                      icon: const Icon(
+                        Icons.cancel_outlined,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      options: FFButtonOptions(
+                        height: 42,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        color: theme.error,
+                        textStyle: theme.bodyText1.override(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        elevation: 2,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
-                  // small elevation to separate from background
-                  elevation: 2,
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: FFButton(
+                      onPressed: () async {
+                        final result = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => UpdateOvertimeScreen(
+                              overtime: overtime,
+                            ),
+                          ),
+                        );
+                        // Reload data if update was successful
+                        if (result == true && mounted) {
+                          ref
+                              .read(overtimeControllerProvider.notifier)
+                              .getOvertimeRequestById(widget.overtimeId);
+                        }
+                      },
+                      text: l10n.edit,
+                      icon: const Icon(
+                        Icons.edit_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      options: FFButtonOptions(
+                        height: 42,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        color: theme.primaryColor,
+                        textStyle: theme.bodyText1.override(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        elevation: 2,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           )

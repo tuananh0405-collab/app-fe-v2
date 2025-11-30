@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
 import '../../domain/entities/overtime_entity.dart';
 import '../../providers/overtime_providers.dart';
@@ -140,6 +141,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context).overtime;
     final overtimeState = ref.watch(overtimeControllerProvider);
     final dateFormat = DateFormat('dd/MM/yyyy');
 
@@ -167,7 +169,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
       backgroundColor: theme.primaryBackground,
       appBar: AppBar(
         title: Text(
-          'Cập nhật đơn làm thêm giờ',
+          l10n.updateOvertimeRequest,
           style: theme.title2.override(color: Colors.white),
         ),
         elevation: 2,
@@ -209,7 +211,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cập nhật đơn #${widget.overtime.id}',
+                      '${l10n.updateRequestNumber}${widget.overtime.id}',
                       style: theme.title2.override(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -217,7 +219,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Chỉnh sửa thông tin bên dưới',
+                      l10n.editDetailsBelow,
                       style: theme.bodyText2.override(color: Colors.white70),
                     ),
                   ],
@@ -248,7 +250,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Ngày làm thêm',
+                            l10n.overtimeDate,
                             style: theme.bodyText2.override(
                               color: theme.secondaryText,
                               fontSize: 12,
@@ -266,7 +268,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                       ),
                     ),
                     Text(
-                      '(Không thể sửa)',
+                      l10n.cannotEdit,
                       style: theme.bodyText2.override(
                         color: theme.secondaryText,
                         fontSize: 11,
@@ -311,7 +313,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Bắt đầu',
+                                    l10n.start,
                                     style: theme.bodyText2.override(
                                       color: theme.secondaryText,
                                       fontSize: 12,
@@ -363,7 +365,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Kết thúc',
+                                    l10n.end,
                                     style: theme.bodyText2.override(
                                       color: theme.secondaryText,
                                       fontSize: 12,
@@ -410,7 +412,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Số giờ dự kiến',
+                          l10n.estimatedHours,
                           style: theme.bodyText1.override(
                             fontWeight: FontWeight.w500,
                           ),
@@ -418,7 +420,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                       ],
                     ),
                     Text(
-                      '${_estimatedHours.toStringAsFixed(1)} giờ',
+                      '${_estimatedHours.toStringAsFixed(1)} ${l10n.hours}',
                       style: theme.title3.override(
                         color: theme.primaryColor,
                         fontWeight: FontWeight.bold,
@@ -446,8 +448,8 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                   controller: _reasonController,
                   maxLines: 4,
                   decoration: InputDecoration(
-                    labelText: 'Lý do',
-                    hintText: 'Nhập lý do làm thêm giờ...',
+                    labelText: l10n.reason,
+                    hintText: l10n.enterReasonPlaceholder,
                     hintStyle: theme.bodyText2.override(
                       color: theme.secondaryText.withValues(alpha: 0.5),
                     ),
@@ -471,10 +473,10 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Vui lòng nhập lý do';
+                      return l10n.pleaseEnterReason;
                     }
                     if (value.trim().length < 10) {
-                      return 'Lý do phải có ít nhất 10 ký tự';
+                      return l10n.reasonMinLength;
                     }
                     return null;
                   },
@@ -514,7 +516,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            'Đang cập nhật...',
+                            l10n.updatingRequest,
                             style: theme.subtitle1.override(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -523,7 +525,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                         ],
                       )
                     : Text(
-                        'Cập nhật đơn',
+                        l10n.updateRequest,
                         style: theme.subtitle1.override(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,

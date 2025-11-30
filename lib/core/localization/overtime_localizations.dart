@@ -44,6 +44,17 @@ class OvertimeLocalizations {
       'shift_1': 'Shift 1',
       'shift_2': 'Shift 2',
       'shift_3': 'Shift 3',
+      // Update screen
+      'update_request_number': 'Update Request #',
+      'edit_details_below': 'Edit the details below',
+      'cannot_edit': '(Cannot edit)',
+      'start': 'Start',
+      'end': 'End',
+      'enter_reason_placeholder': 'Enter reason for overtime...',
+      'please_enter_reason': 'Please enter a reason',
+      'reason_min_length': 'Reason must be at least 10 characters',
+      'updating_request': 'Updating...',
+      'update_request': 'Update Request',
       // Detail screen
       'overtime_detail': 'Overtime Detail',
       'general_info': 'General Information',
@@ -99,6 +110,17 @@ class OvertimeLocalizations {
       'shift_1': 'Ca 1',
       'shift_2': 'Ca 2',
       'shift_3': 'Ca 3',
+      // Update screen
+      'update_request_number': 'Cập nhật đơn #',
+      'edit_details_below': 'Chỉnh sửa thông tin bên dưới',
+      'cannot_edit': '(Không thể sửa)',
+      'start': 'Bắt đầu',
+      'end': 'Kết thúc',
+      'enter_reason_placeholder': 'Nhập lý do làm thêm giờ...',
+      'please_enter_reason': 'Vui lòng nhập lý do',
+      'reason_min_length': 'Lý do phải có ít nhất 10 ký tự',
+      'updating_request': 'Đang cập nhật...',
+      'update_request': 'Cập nhật đơn',
       // Detail screen
       'overtime_detail': 'Chi tiết đơn làm thêm',
       'general_info': 'Thông tin chung',
@@ -159,6 +181,17 @@ class OvertimeLocalizations {
   String get shift1 => translate('shift_1');
   String get shift2 => translate('shift_2');
   String get shift3 => translate('shift_3');
+  // Update screen getters
+  String get updateRequestNumber => translate('update_request_number');
+  String get editDetailsBelow => translate('edit_details_below');
+  String get cannotEdit => translate('cannot_edit');
+  String get start => translate('start');
+  String get end => translate('end');
+  String get enterReasonPlaceholder => translate('enter_reason_placeholder');
+  String get pleaseEnterReason => translate('please_enter_reason');
+  String get reasonMinLength => translate('reason_min_length');
+  String get updatingRequest => translate('updating_request');
+  String get updateRequest => translate('update_request');
   // Detail screen getters
   String get overtimeDetail => translate('overtime_detail');
   String get generalInfo => translate('general_info');
