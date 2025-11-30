@@ -16,13 +16,7 @@ class DeviceRemoteDataSourceImpl implements DeviceRemoteDataSource {
   @override
   Future<List<DeviceSessionModel>> getMyDevices() async {
     try {
-      final response = await dio.get(
-        ApiConstants.myDevicesEndpoint,
-        options: Options(
-          headers: ApiConstants.defaultHeaders,
-          validateStatus: (status) => status != null && status < 500,
-        ),
-      );
+      final response = await dio.get(ApiConstants.myDevicesEndpoint);
 
       if (response.statusCode == 200) {
         final payload = response.data;

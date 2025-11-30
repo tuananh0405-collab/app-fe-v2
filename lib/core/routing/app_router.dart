@@ -13,6 +13,8 @@ import 'package:flutter_application_1/features/settings/presentation/settings_sc
 import 'package:flutter_application_1/features/face_id/face_id_success_page.dart';
 import 'package:flutter_application_1/features/devices/presentation/screens/device_list_screen.dart';
 import 'package:flutter_application_1/features/work_schedule/presentation/screens/work_schedule_screen.dart';
+import 'package:flutter_application_1/features/attendance/presentation/screens/attendance_screen.dart';
+import 'package:flutter_application_1/features/splash/presentation/splash_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -31,11 +33,16 @@ final routerProvider = Provider<GoRouter>((ref) {
   final loginState = ref.watch(loginControllerProvider);
 
   return GoRouter(
-    initialLocation: AppRoutePath.signIn,
+    initialLocation: AppRoutePath.splash,
     redirect: (context, state) {
       final currentPath = state.uri.path;
       final loggingIn = currentPath == AppRoutePath.signIn;
       final changingPassword = currentPath == AppRoutePath.changePassword;
+      final isSplash = currentPath == AppRoutePath.splash;
+
+      if (isSplash) {
+        return null;
+      }
 
       if (changingPassword) {
         return null;
@@ -56,6 +63,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: AppRoutePath.splash,
+        name: AppRouteName.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
+
       GoRoute(
         path: AppRoutePath.signIn,
         name: AppRouteName.signIn,
@@ -86,8 +99,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutePath.attendanceReport,
         name: AppRouteName.attendanceReport,
-        builder: (c, s) =>
-            const StubScreen(title: 'Personal Attendance Report'),
+        builder: (c, s) => const AttendanceScreen(),
       ),
 
       GoRoute(

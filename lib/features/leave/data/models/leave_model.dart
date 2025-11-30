@@ -30,25 +30,37 @@ class LeaveModel extends LeaveEntity {
 
   factory LeaveModel.fromJson(Map<String, dynamic> json) {
     return LeaveModel(
-      id: (json['id'] as num?)?.toInt(),
-      employeeId: (json['employee_id'] as num).toInt(),
+      id: json['id'] == null ? null : num.tryParse(json['id'].toString())?.toInt(),
+      employeeId: num.parse(json['employee_id'].toString()).toInt(),
       employeeCode: json['employee_code'] as String,
-      departmentId: (json['department_id'] as num).toInt(),
-      leaveTypeId: (json['leave_type_id'] as num).toInt(),
+      departmentId: num.parse(json['department_id'].toString()).toInt(),
+      leaveTypeId: num.parse(json['leave_type_id'].toString()).toInt(),
       startDate: DateTime.parse(json['start_date'] as String),
       endDate: DateTime.parse(json['end_date'] as String),
-      totalCalendarDays: (json['total_calendar_days'] as num?)?.toInt(),
-      totalWorkingDays: (json['total_working_days'] as num?)?.toInt(),
-      totalLeaveDays: (json['total_leave_days'] as num?)?.toDouble(),
-      isHalfDayStart: json['is_half_day_start'] as bool? ?? false,
-      isHalfDayEnd: json['is_half_day_end'] as bool? ?? false,
+      totalCalendarDays: json['total_calendar_days'] == null
+          ? null
+          : num.tryParse(json['total_calendar_days'].toString())?.toInt(),
+      totalWorkingDays: json['total_working_days'] == null
+          ? null
+          : num.tryParse(json['total_working_days'].toString())?.toInt(),
+      totalLeaveDays: json['total_leave_days'] == null
+          ? null
+          : num.tryParse(json['total_leave_days'].toString())?.toDouble(),
+      isHalfDayStart: json['is_half_day_start'] is bool
+          ? json['is_half_day_start']
+          : (json['is_half_day_start'] == 1 || json['is_half_day_start'] == '1' || json['is_half_day_start'] == 'true'),
+      isHalfDayEnd: json['is_half_day_end'] is bool
+          ? json['is_half_day_end']
+          : (json['is_half_day_end'] == 1 || json['is_half_day_end'] == '1' || json['is_half_day_end'] == 'true'),
       reason: json['reason'] as String,
       supportingDocumentUrl: json['supporting_document_url'] as String?,
       status: json['status'] as String?,
       requestedAt: json['requested_at'] != null
           ? DateTime.parse(json['requested_at'] as String)
           : null,
-      approvalLevel: (json['approval_level'] as num?)?.toInt(),
+      approvalLevel: json['approval_level'] == null
+          ? null
+          : num.tryParse(json['approval_level'].toString())?.toInt(),
       approvedAt: json['approved_at'] != null
           ? DateTime.parse(json['approved_at'] as String)
           : null,

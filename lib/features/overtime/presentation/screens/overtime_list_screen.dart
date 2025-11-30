@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
 import '../../providers/overtime_providers.dart';
 import 'overtime_detail_screen.dart';
@@ -47,6 +48,8 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final overtime = l10n.overtime;
     final overtimeState = ref.watch(overtimeControllerProvider);
 
     // Listen for error messages
@@ -61,7 +64,7 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
       backgroundColor: theme.primaryBackground,
       appBar: AppBar(
         title: Text(
-          'Quản lý làm thêm giờ',
+          overtime.manageOvertime,
           style: theme.title2.override(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -100,7 +103,7 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
                         padding: const EdgeInsets.all(32.0),
                         child: Center(
                           child: Text(
-                            'Chưa có đơn làm thêm giờ nào',
+                            overtime.noOvertimeRequests,
                             style: theme.bodyText1.override(
                               color: theme.secondaryText,
                             ),
@@ -137,7 +140,7 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
         },
         icon: const Icon(Icons.add),
         label: Text(
-          'Tạo đơn làm thêm',
+          overtime.createOvertime,
           style: theme.subtitle1.override(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -154,6 +157,8 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
     overtimeRequest,
     int index,
   ) {
+    final l10n = AppLocalizations.of(context);
+    final overtime = l10n.overtime;
     final dateFormat = DateFormat('dd/MM/yyyy');
     final timeFormat = DateFormat('HH:mm');
 
@@ -202,7 +207,7 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
                 children: [
                   Expanded(
                     child: Text(
-                      'Đơn làm thêm #${overtimeRequest.id}',
+                      '${overtime.overtimeRequestNumber}${overtimeRequest.id}',
                       style: theme.subtitle1.override(
                         color: theme.primaryText,
                         fontWeight: FontWeight.bold,
@@ -254,7 +259,7 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${overtimeRequest.estimatedHours} giờ',
+                    '${overtimeRequest.estimatedHours} ${overtime.hours}',
                     style: theme.bodyText2.override(
                       color: theme.primaryText,
                       fontWeight: FontWeight.w500,
@@ -330,17 +335,20 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
   }
 
   String _getStatusText(String? status) {
+    final l10n = AppLocalizations.of(context);
+    final overtime = l10n.overtime;
+    
     switch (status?.toUpperCase()) {
       case 'PENDING':
-        return 'Chờ duyệt';
+        return overtime.statusPending;
       case 'CANCELED':
-        return 'Đã hủy';
+        return overtime.statusCanceled;
       case 'APPROVED':
-        return 'Đã duyệt';
+        return overtime.statusApproved;
       case 'REJECTED':
-        return 'Từ chối';
+        return overtime.statusRejected;
       default:
-        return 'Không xác định';
+        return overtime.statusUnknown;
     }
   }
 }

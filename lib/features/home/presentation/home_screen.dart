@@ -68,11 +68,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         backgroundColor: theme.primaryColor,
         elevation: 2,
         actions: [
-          // FFIconButton(
-          //   icon: Icon(Icons.notifications_outlined, color: Colors.white),
-          //   onPressed: () => context.push(AppRoutePath.notifications),
-          //   buttonSize: 48,
-          // ),
+          FFIconButton(
+            icon: Icon(Icons.notifications_outlined, color: Colors.white),
+            onPressed: () => context.push(AppRoutePath.notifications),
+            buttonSize: 48,
+          ),
           // FFIconButton(
           //   icon: Icon(Icons.settings_outlined, color: Colors.white),
           //   onPressed: () => context.push(AppRoutePath.settings),

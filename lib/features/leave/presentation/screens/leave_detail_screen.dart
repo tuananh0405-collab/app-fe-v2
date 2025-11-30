@@ -123,14 +123,14 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
           buttonSize: 48,
         ),
         actions: [
-          if (leave.status?.toUpperCase() == 'PENDING')
-            FFIconButton(
-              icon: const Icon(Icons.edit_rounded, color: Colors.white),
-              onPressed: () {
-                context.push(AppRoutePath.leaveEdit(widget.leaveId));
-              },
-              buttonSize: 48,
-            ),
+          // if (leave.status?.toUpperCase() == 'PENDING')
+            // FFIconButton(
+            //   icon: const Icon(Icons.edit_rounded, color: Colors.white),
+            //   onPressed: () {
+            //     context.push(AppRoutePath.leaveEdit(widget.leaveId));
+            //   },
+            //   buttonSize: 48,
+            // ),
         ],
       ),
       body: RefreshIndicator(
@@ -150,61 +150,32 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
             children: [
               // Leave Balance Card
               if (leaveState.leaveBalances.isNotEmpty)
-                _buildLeaveBalanceCard(theme, leaveState),
+                _buildLeaveBalanceCard(theme, leaveState, l10n),
               const SizedBox(height: 16),
 
-              // Status Card
+              // Status Card (minimal design)
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [statusColor.withValues(alpha: 0.8), statusColor],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: statusColor.withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.25)),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        _getStatusIcon(leave.status),
-                        color: Colors.white,
-                        size: 32,
-                      ),
+                    Icon(
+                      _getStatusIcon(leave.status),
+                      color: statusColor,
+                      size: 18,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.leave.status,
-                            style: theme.bodyText2.override(
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            statusText,
-                            style: theme.title1.override(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                    const SizedBox(width: 8),
+                    Text(
+                      statusText,
+                      style: theme.bodyText1.override(
+                        color: statusColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -241,7 +212,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                         height: 24,
                         color: theme.secondaryText.withValues(alpha: 0.2),
                       ),
-                      // Leave ID and Leave Name on same row
+                      // Leave ID and Employee Code on same row
                       Row(
                         children: [
                           Expanded(
@@ -513,7 +484,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                             Icon(Icons.cancel, color: theme.error),
                             const SizedBox(width: 8),
                             Text(
-                              'Lý do từ chối',
+                              l10n.leave.rejectionReason,
                               style: theme.title3.override(
                                 color: theme.error,
                                 fontWeight: FontWeight.bold,
@@ -523,7 +494,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          leave.rejectionReason ?? 'Không có lý do',
+                          leave.rejectionReason ?? l10n.leave.noReasonProvided,
                           style: theme.bodyText1.override(
                             color: theme.primaryText,
                           ),
@@ -534,75 +505,65 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                 ).animateOnPageLoad(animationsMap['rejectionCard']!),
               ],
 
-              // Edit and Cancel Buttons (only for PENDING status)
+              // Action Buttons (only for PENDING status)
               if (leave.status?.toUpperCase() == 'PENDING') ...[
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    // Cancel Button
                     Expanded(
                       child: FFButton(
                         onPressed: () {
                           _showCancelDialog(context, ref);
                         },
-                        text: 'Hủy đơn',
-                        icon: Icon(
+                        text: l10n.leave.cancelRequest,
+                        icon: const Icon(
                           Icons.cancel_outlined,
-                          size: 22,
+                          size: 18,
                           color: Colors.white,
                         ),
                         options: FFButtonOptions(
-                          height: 50,
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          height: 42,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
                           color: theme.error,
-                          textStyle: theme.subtitle1.override(
+                          textStyle: theme.bodyText1.override(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
                           ),
-                          elevation: 4,
-                          borderRadius: BorderRadius.circular(12),
+                          elevation: 2,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    // Edit Button
+                    const SizedBox(width: 16),
+                    
                     Expanded(
                       child: FFButton(
                         onPressed: () {
                           context.push(AppRoutePath.leaveEdit(widget.leaveId));
                         },
-                        text: 'Chỉnh sửa',
-                        icon: Icon(
+                        text: l10n.leave.edit,
+                        icon: const Icon(
                           Icons.edit_rounded,
-                          size: 22,
+                          size: 18,
                           color: Colors.white,
                         ),
                         options: FFButtonOptions(
-                          height: 50,
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          color: theme.warning,
-                          textStyle: theme.subtitle1.override(
+                          height: 42,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          color: theme.primaryColor,
+                          textStyle: theme.bodyText1.override(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
                           ),
-                          elevation: 4,
-                          borderRadius: BorderRadius.circular(12),
+                          elevation: 2,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
-                  
                   ],
                 ).animateOnPageLoad(animationsMap['actionButtons']!),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text(
-                    'Chỉ có thể chỉnh sửa hoặc hủy khi trạng thái là "Chờ duyệt"',
-                    style: theme.bodyText2.override(
-                      color: theme.secondaryText,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
               ],
 
               // Info for non-PENDING status
@@ -625,7 +586,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Cannot edit leave request with status "${statusText}"',
+                          '${l10n.leave.cannotEditStatus} "${statusText}"',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey[700],
@@ -645,21 +606,22 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
     );
   }
 
-  Widget _buildLeaveBalanceCard(FlutterFlowTheme theme, dynamic leaveState) {
+  Widget _buildLeaveBalanceCard(
+      FlutterFlowTheme theme, dynamic leaveState, AppLocalizations l10n) {
   return Container(
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(14),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.05),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
         ),
       ],
     ),
     child: Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -667,38 +629,38 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: theme.primaryColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  color: theme.primaryColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   Icons.account_balance_wallet,
                   color: theme.primaryColor,
-                  size: 26,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Text(
-                'Leave Balance',
-                style: theme.title2.override(
+                l10n.leave.leaveBalance,
+                style: theme.title3.override(
                   color: Colors.black87,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
 
           /// Danh sách leave
           ...leaveState.leaveBalances.map<Widget>((b) {
             return Container(
-              margin: const EdgeInsets.only(bottom: 14),
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: Colors.black.withValues(alpha: 0.05),
                 ),
@@ -730,16 +692,17 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                   /// Remaining dạng chip
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
-                      color: theme.primaryColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(20),
+                      color: theme.primaryColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      '${b.remainingDays.toStringAsFixed(1)} left',
-                      style: theme.bodyText1.override(
+                      '${b.remainingDays.toStringAsFixed(1)} ${l10n.leave.daysLeft}',
+                      style: theme.bodyText2.override(
                         color: theme.primaryColor,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
                       ),
                     ),
                   ),
@@ -840,6 +803,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
 
   void _showCancelDialog(BuildContext context, WidgetRef ref) {
     final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
     final reasonController = TextEditingController();
 
     showDialog(
@@ -848,7 +812,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
         backgroundColor: theme.secondaryBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Hủy đơn nghỉ',
+          l10n.leave.cancelDialogTitle,
           style: theme.title2.override(
             color: theme.primaryText,
             fontWeight: FontWeight.bold,
@@ -859,7 +823,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Vui lòng cung cấp lý do hủy đơn:',
+              l10n.leave.cancelDialogMessage,
               style: theme.bodyText2.override(color: theme.secondaryText),
             ),
             const SizedBox(height: 12),
@@ -868,7 +832,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
               maxLines: 3,
               style: theme.bodyText1.override(color: theme.primaryText),
               decoration: InputDecoration(
-                hintText: 'Nhập lý do hủy đơn...',
+                hintText: l10n.leave.cancelReasonPlaceholder,
                 hintStyle: theme.bodyText2.override(color: theme.secondaryText),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -887,7 +851,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
         actions: [
           FFButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            text: 'Đóng',
+            text: l10n.leave.close,
             options: FFButtonOptions(
               height: 40,
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -906,7 +870,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'Vui lòng nhập lý do hủy',
+                      l10n.leave.pleaseEnterCancelReason,
                       style: theme.bodyText1.override(color: Colors.white),
                     ),
                     backgroundColor: theme.error,
@@ -970,7 +934,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                 }
               }
             },
-            text: 'Xác nhận hủy',
+            text: l10n.leave.confirmCancel,
             options: FFButtonOptions(
               height: 40,
               padding: const EdgeInsets.symmetric(horizontal: 20),

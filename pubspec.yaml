@@ -42,6 +42,8 @@ dependencies:
   go_router: ^16.3.0
   flutter_riverpod: ^3.0.3
   dio: ^5.9.0
+  equatable: ^2.0.5
+  state_notifier: ^1.0.0
   pretty_dio_logger: ^1.4.0
   freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0

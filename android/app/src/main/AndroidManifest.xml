@@ -72,19 +72,19 @@
             android:theme="@style/AppCompatTheme" />
             
         <activity
-            android:name=".faceid.ui.setting.StudentSettingRegisterFaceIdActivity"
+            android:name=".faceid.ui.setting.FaceRegisterActivity"
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/AppCompatTheme" />
         
         <activity
-            android:name=".faceid.ui.setting.StudentSettingUpdateFaceIdActivity"
+            android:name=".faceid.ui.setting.FaceUpdateActivity"
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/AppCompatTheme" />
         
         <activity
-            android:name=".faceid.ui.setting.StudentSettingVerifyFaceIdActivity"
+            android:name=".faceid.ui.setting.FaceVerifyActivity"
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/AppCompatTheme" />

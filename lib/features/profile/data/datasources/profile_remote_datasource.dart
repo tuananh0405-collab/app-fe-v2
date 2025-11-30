@@ -16,13 +16,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<ProfileModel> getProfile() async {
     try {
-      final response = await dio.get(
-        '${ApiConstants.baseUrl}/auth/me',
-        options: Options(
-          headers: ApiConstants.defaultHeaders,
-          validateStatus: (status) => status! < 500,
-        ),
-      );
+      final response = await dio.get('/auth/me');
 
       final apiResponse = ApiResponseModel.fromJson(
         response.data,

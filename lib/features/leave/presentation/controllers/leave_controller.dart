@@ -80,10 +80,26 @@ class LeaveController extends Notifier<LeaveState> {
     );
   }
 
-  Future<void> getLeaveRecords() async {
+  Future<void> getLeaveRecords({
+    int? employeeId,
+    String? status,
+    int? leaveTypeId,
+    String? startDate,
+    String? endDate,
+    int? departmentId,
+  }) async {
     state = state.copyWith(isLoading: true, clearError: true);
 
-    final result = await _getLeaveRecordsUseCase(const NoParams());
+    final result = await _getLeaveRecordsUseCase(
+      GetLeaveRecordsParams(
+        employeeId: employeeId,
+        status: status,
+        leaveTypeId: leaveTypeId,
+        startDate: startDate,
+        endDate: endDate,
+        departmentId: departmentId,
+      ),
+    );
 
     result.fold(
       (failure) {

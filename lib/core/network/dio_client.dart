@@ -16,7 +16,7 @@ class DioClient {
         receiveTimeout: const Duration(seconds: 30),
         sendTimeout: const Duration(seconds: 30),
         headers: ApiConstants.defaultHeaders,
-        validateStatus: (status) => status != null && status < 500,
+        validateStatus: (status) => status != null && status >= 200 && status < 300,
       ),
     );
 

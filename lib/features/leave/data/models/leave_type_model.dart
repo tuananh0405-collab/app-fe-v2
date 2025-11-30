@@ -33,58 +33,56 @@ class LeaveTypeModel extends LeaveTypeEntity {
 
   factory LeaveTypeModel.fromJson(Map<String, dynamic> json) {
     return LeaveTypeModel(
-      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+      id: num.parse(json['id'].toString()).toInt(),
       leaveTypeCode: json['leave_type_code'] as String,
       leaveTypeName: json['leave_type_name'] as String,
       description: json['description'] as String?,
-      isPaid: json['is_paid'] as bool,
-      requiresApproval: json['requires_approval'] as bool,
-      requiresDocument: json['requires_document'] as bool,
-      deductsFromBalance: json['deducts_from_balance'] as bool,
-      maxDaysPerYear: json['max_days_per_year'] != null
-          ? (json['max_days_per_year'] is int
-              ? json['max_days_per_year']
-              : int.parse(json['max_days_per_year'].toString()))
-          : null,
-      maxConsecutiveDays: json['max_consecutive_days'] != null
-          ? (json['max_consecutive_days'] is int
-              ? json['max_consecutive_days']
-              : int.parse(json['max_consecutive_days'].toString()))
-          : null,
-      minNoticeDays: json['min_notice_days'] is int
-          ? json['min_notice_days']
-          : int.parse(json['min_notice_days'].toString()),
-      excludeHolidays: json['exclude_holidays'] as bool,
-      excludeWeekends: json['exclude_weekends'] as bool,
-      allowCarryOver: json['allow_carry_over'] as bool,
-      maxCarryOverDays: json['max_carry_over_days'] != null
-          ? (json['max_carry_over_days'] is int
-              ? json['max_carry_over_days']
-              : int.parse(
-                  double.parse(json['max_carry_over_days'].toString())
-                      .toInt()
-                      .toString()))
-          : null,
-      carryOverExpiryMonths: json['carry_over_expiry_months'] is int
-          ? json['carry_over_expiry_months']
-          : int.parse(json['carry_over_expiry_months'].toString()),
-      isProrated: json['is_prorated'] as bool,
+      isPaid: json['is_paid'] is bool
+          ? json['is_paid']
+          : (json['is_paid'] == 1 || json['is_paid'] == '1' || json['is_paid'] == 'true'),
+      requiresApproval: json['requires_approval'] is bool
+          ? json['requires_approval']
+          : (json['requires_approval'] == 1 || json['requires_approval'] == '1' || json['requires_approval'] == 'true'),
+      requiresDocument: json['requires_document'] is bool
+          ? json['requires_document']
+          : (json['requires_document'] == 1 || json['requires_document'] == '1' || json['requires_document'] == 'true'),
+      deductsFromBalance: json['deducts_from_balance'] is bool
+          ? json['deducts_from_balance']
+          : (json['deducts_from_balance'] == 1 || json['deducts_from_balance'] == '1' || json['deducts_from_balance'] == 'true'),
+      maxDaysPerYear: json['max_days_per_year'] == null
+          ? null
+          : num.tryParse(json['max_days_per_year'].toString())?.toInt(),
+      maxConsecutiveDays: json['max_consecutive_days'] == null
+          ? null
+          : num.tryParse(json['max_consecutive_days'].toString())?.toInt(),
+      minNoticeDays: num.parse(json['min_notice_days'].toString()).toInt(),
+      excludeHolidays: json['exclude_holidays'] is bool
+          ? json['exclude_holidays']
+          : (json['exclude_holidays'] == 1 || json['exclude_holidays'] == '1' || json['exclude_holidays'] == 'true'),
+      excludeWeekends: json['exclude_weekends'] is bool
+          ? json['exclude_weekends']
+          : (json['exclude_weekends'] == 1 || json['exclude_weekends'] == '1' || json['exclude_weekends'] == 'true'),
+      allowCarryOver: json['allow_carry_over'] is bool
+          ? json['allow_carry_over']
+          : (json['allow_carry_over'] == 1 || json['allow_carry_over'] == '1' || json['allow_carry_over'] == 'true'),
+      maxCarryOverDays: json['max_carry_over_days'] == null
+          ? null
+          : num.tryParse(json['max_carry_over_days'].toString())?.toInt(),
+      carryOverExpiryMonths: num.parse(json['carry_over_expiry_months'].toString()).toInt(),
+      isProrated: json['is_prorated'] is bool
+          ? json['is_prorated']
+          : (json['is_prorated'] == 1 || json['is_prorated'] == '1' || json['is_prorated'] == 'true'),
       prorationBasis: json['proration_basis'] as String,
-      isAccrued: json['is_accrued'] as bool,
-      accrualRate: json['accrual_rate'] != null
-          ? (json['accrual_rate'] is int
-              ? json['accrual_rate']
-              : int.parse(
-                  double.parse(json['accrual_rate'].toString()).toInt().toString()))
-          : null,
-      accrualStartMonth: json['accrual_start_month'] is int
-          ? json['accrual_start_month']
-          : int.parse(json['accrual_start_month'].toString()),
+      isAccrued: json['is_accrued'] is bool
+          ? json['is_accrued']
+          : (json['is_accrued'] == 1 || json['is_accrued'] == '1' || json['is_accrued'] == 'true'),
+      accrualRate: json['accrual_rate'] == null
+          ? null
+          : num.tryParse(json['accrual_rate'].toString())?.toInt(),
+      accrualStartMonth: num.parse(json['accrual_start_month'].toString()).toInt(),
       colorHex: json['color_hex'] as String,
       icon: json['icon'] as String?,
-      sortOrder: json['sort_order'] is int
-          ? json['sort_order']
-          : int.parse(json['sort_order'].toString()),
+      sortOrder: num.parse(json['sort_order'].toString()).toInt(),
       status: json['status'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/application/auth_controller.dart';
+import '../../auth/providers/auth_providers.dart';
 import '../../../core/widgets/bottom_navigation.dart';
 import '../../../core/routing/routes.dart';
 import '../../../flutter_flow/flutter_flow.dart';
+import '../../../flutter_flow/flutter_flow_util.dart';
+import '../../../faceid_channel.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -100,7 +103,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               icon: Icons.face,
               title: 'Face ID Registration',
               subtitle: 'Register or update your Face ID',
-              onTap: () => context.push(AppRoutePath.faceIdRegister),
+              onTap: () => _onFaceIdRegisterTapped(context),
             ),
 
             const SizedBox(height: 24),
@@ -208,6 +211,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         trailing: Icon(Icons.chevron_right, color: theme.secondaryText),
       ),
     );
+  }
+
+  void _onFaceIdRegisterTapped(BuildContext context) {
+    final loginState = ref.read(loginControllerProvider);
+    final userId = loginState.user?.id;
+    
+    if (userId == null || userId.isEmpty) {
+      showSnackbar(context, 'Please login first');
+      return;
+    }
+
+    FaceIdChannel.registerFace(userId: userId);
   }
 
   void _showLogoutDialog(BuildContext context) {
