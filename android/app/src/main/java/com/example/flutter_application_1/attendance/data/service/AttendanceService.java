@@ -138,9 +138,12 @@ public class AttendanceService {
         
         // Validate session token
         if (currentSessionToken == null || currentSessionToken.isEmpty()) {
+            Log.e(TAG, "❌ No session token available! currentSessionToken is null or empty");
             callback.onFailure("No valid session token. Please validate beacon first.");
             return;
         }
+        
+        Log.d(TAG, "📝 Using session token: " + currentSessionToken);
         
         // Get JWT token
         String token = AuthManager.getInstance(context).getAuthToken();
