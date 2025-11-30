@@ -1512,7 +1512,8 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                                 }
                             });
                         }
-                        
+                        }
+
                         @Override
                         public void onFailure(String error) {
                             if (!isAdded()) return;
