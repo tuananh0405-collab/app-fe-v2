@@ -1,5 +1,5 @@
 class AppRouteName {
-  static const splash = 'splash';
+
   static const signIn = 'sign-in';
   static const changePassword = 'change-password';
   static const home = 'home';
@@ -45,7 +45,7 @@ class AppRouteName {
 }
 
 class AppRoutePath {
-  static const splash = '/splash';
+
   static const signIn = '/sign-in';
   static const changePassword = '/change-password';
   static const home = '/home';

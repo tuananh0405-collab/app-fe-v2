@@ -80,6 +80,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private String lastDetailedErrorMessage = ""; // Store detailed error information
     private boolean hasDetailedError = false;
     private AlertDialog currentErrorDialog; // Track current error dialog to dismiss when needed
+    private String lastStateMessage = ""; // Store the last state message for error display
 
     // 📷 CAMERA COMPONENTS
     private CameraView cameraView;
@@ -390,6 +391,9 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             Log.w(TAG, "⚠️ Fragment not valid for state change: " + state);
             return;
         }
+
+        // Store the message for error display
+        lastStateMessage = message;
 
         // Update UI
         uiController.updateForState(state, message);
@@ -1656,7 +1660,11 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         } else if (state == FaceRegistrationState.FAILED_SPOOF) {
             message = "Spoof detection triggered. Please ensure you're using a real face and not a photo or video.\n\nWould you like to try again?";
         } else {
-            message = state.getDefaultMessage() + "\n\nWould you like to try again?";
+            // Use the actual message from state transition instead of default message
+            // This ensures specific error messages like "Beacon data not available" are displayed
+            message = (lastStateMessage != null && !lastStateMessage.isEmpty()) 
+                    ? lastStateMessage + "\n\nWould you like to try again?"
+                    : state.getDefaultMessage() + "\n\nWould you like to try again?";
         }
 
         // Add detailed error information if available
@@ -1680,6 +1688,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                     // Reset error tracking
                     hasDetailedError = false;
                     lastDetailedErrorMessage = "";
+                    lastStateMessage = "";
                     
                     // Dismiss dialog
                     currentErrorDialog = null;
@@ -1707,6 +1716,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                     // Reset error tracking
                     hasDetailedError = false;
                     lastDetailedErrorMessage = "";
+                    lastStateMessage = "";
                     
                     // Dismiss dialog
                     currentErrorDialog = null;
