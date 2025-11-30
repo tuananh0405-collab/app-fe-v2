@@ -1445,14 +1445,24 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 if (!isAdded()) return;
                 Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
 
-                        String requestId = getRequestIdFromArgs();
-                        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Verifying face...");
+                // Step 2: Request Face Verification (tạo attendance_check record)
+                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Creating attendance check record...");
+                attendanceService.requestFaceVerification("check_in", latitude, longitude, accuracy, deviceId,
+                    new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse>() {
+                        @Override
+                        public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse verifyResult) {
+                            if (!isAdded()) return;
+                            Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
+                            Log.d(TAG, "Step 2 ✅ - ShiftId: " + verifyResult.getShift_id());
 
-                        // Lấy IP address (có thể để null nếu không cần)
-                        String ipAddress = null; // TODO: Implement IP address retrieval if needed
+                            // Step 3: Local Face Verification
+                            String requestId = getRequestIdFromArgs();
+                            stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Verifying face...");
 
-                        if (requestId != null) {
-                            faceIdService.verifyFaceIdForRequest(faceImage, 
+                            String ipAddress = null; // Optional
+
+                            if (requestId != null) {
+                                faceIdService.verifyFaceIdForRequest(faceImage, 
                                 AuthManager.getInstance(requireContext()).getCurrentUserId(), 
                                 requestId, 
                                 null, // threshold
@@ -1498,12 +1508,22 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                                 }
                             });
                         }
-                    }
-                    
+                        
+                        @Override
+                        public void onFailure(String error) {
+                            if (!isAdded()) return;
+                            Log.e(TAG, "❌ Step 2 failed: " + error);
+                            lastDetailedErrorMessage = "Request face verification failed:\n" + error;
+                            hasDetailedError = true;
+                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 2 failed: " + error);
+                        }
+                    });
+            }
+            
             @Override
             public void onFailure(String error) {
                 if (!isAdded()) return;
-                Log.e(TAG, "Step 1 failed: " + error);
+                Log.e(TAG, "❌ Step 1 failed: " + error);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 1 failed: " + error);
             }
         });
