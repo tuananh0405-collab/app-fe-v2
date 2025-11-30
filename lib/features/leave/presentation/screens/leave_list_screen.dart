@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../providers/leave_providers.dart';
 import 'leave_detail_screen.dart';
 
@@ -16,6 +17,12 @@ class LeaveListScreen extends ConsumerStatefulWidget {
 
 class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
     with TickerProviderStateMixin, AnimationControllerMixin {
+  // Filter state
+  String? _selectedStatus;
+  int? _selectedLeaveTypeId;
+  DateTime? _startDate;
+  DateTime? _endDate;
+
   @override
   void initState() {
     super.initState();
@@ -42,12 +49,14 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
     Future.microtask(() {
       ref.read(leaveControllerProvider.notifier).getLeaveRecords();
       ref.read(leaveControllerProvider.notifier).getLeaveBalance();
+      ref.read(leaveControllerProvider.notifier).getLeaveTypes();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
     final leaveState = ref.watch(leaveControllerProvider);
 
     // Listen for error messages
@@ -62,7 +71,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
       backgroundColor: theme.primaryBackground,
       appBar: AppBar(
         title: Text(
-          'Quản lý nghỉ phép',
+          l10n.leave.leaveManagement,
           style: theme.title2.override(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -78,6 +87,13 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
               ref
                   .read(leaveControllerProvider.notifier)
                   .getLeaveBalance();
+            },
+            buttonSize: 48,
+          ),
+          FFIconButton(
+            icon: const Icon(Icons.filter_list, color: Colors.white),
+            onPressed: () {
+              _showFilterBottomSheet(context);
             },
             buttonSize: 48,
           ),
@@ -102,7 +118,14 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                       _buildLeaveBalanceCard(
                         theme,
                         leaveState,
+                        l10n,
                       ).animateOnPageLoad(animationsMap['headerAnimation']!),
+
+                    // Quick Filter Bar
+                    _buildQuickFilterBar(context, theme, l10n, leaveState),
+
+                    // Active Filters
+                    _buildActiveFilters(context, theme, l10n, leaveState),
 
                     // Leave Records List
                     if (leaveState.leaveRecords.isEmpty)
@@ -110,7 +133,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                         padding: const EdgeInsets.all(32.0),
                         child: Center(
                           child: Text(
-                            'Chưa có đơn xin nghỉ nào',
+                            l10n.leave.noLeaveRequests,
                             style: theme.bodyText1.override(
                               color: theme.secondaryText,
                             ),
@@ -129,6 +152,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                             theme,
                             leaveRecord,
                             index,
+                            l10n,
                           );
                         },
                       ),
@@ -142,7 +166,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
         },
         icon: const Icon(Icons.add),
         label: Text(
-          'Tạo đơn nghỉ',
+          l10n.leave.createLeaveRequest,
           style: theme.subtitle1.override(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -154,7 +178,8 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
     );
   }
 
-  Widget _buildLeaveBalanceCard(FlutterFlowTheme theme, dynamic leaveState) {
+  Widget _buildLeaveBalanceCard(
+      FlutterFlowTheme theme, dynamic leaveState, AppLocalizations l10n) {
   return Container(
     decoration: BoxDecoration(
       color: Colors.white,
@@ -189,7 +214,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
               ),
               const SizedBox(width: 12),
               Text(
-                'Leave Balance',
+                l10n.leave.leaveBalance,
                 style: theme.title2.override(
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
@@ -245,7 +270,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      '${b.remainingDays.toStringAsFixed(1)} left',
+                      '${b.remainingDays.toStringAsFixed(1)} ${l10n.leave.daysLeft}',
                       style: theme.bodyText1.override(
                         color: theme.primaryColor,
                         fontWeight: FontWeight.bold,
@@ -267,10 +292,11 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
     FlutterFlowTheme theme,
     dynamic leave,
     int index,
+    AppLocalizations l10n,
   ) {
     final dateFormat = DateFormat('dd/MM/yyyy');
     final statusColor = _getStatusColor(leave.status, theme);
-    final statusText = _getStatusText(leave.status);
+    final statusText = _getStatusText(leave.status, l10n);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -320,7 +346,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                 children: [
                   Expanded(
                     child: Text(
-                      'Đơn nghỉ #${leave.id}',
+                      '${l10n.leave.leaveId} #${leave.id}',
                       style: theme.subtitle1.override(
                         color: theme.primaryText,
                         fontWeight: FontWeight.bold,
@@ -372,7 +398,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${leave.totalLeaveDays?.toStringAsFixed(1) ?? 0} ngày nghỉ',
+                    '${leave.totalLeaveDays?.toStringAsFixed(1) ?? 0} ${l10n.leave.days}',
                     style: theme.bodyText2.override(
                       color: theme.primaryText,
                       fontWeight: FontWeight.w500,
@@ -441,18 +467,516 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
     }
   }
 
-  String _getStatusText(String? status) {
+  String _getStatusText(String? status, AppLocalizations l10n) {
     switch (status?.toUpperCase()) {
       case 'PENDING':
-        return 'Chờ duyệt';
+        return l10n.leave.statusPending;
       case 'APPROVED':
-        return 'Đã duyệt';
+        return l10n.leave.statusApproved;
       case 'REJECTED':
-        return 'Từ chối';
+        return l10n.leave.statusRejected;
       case 'CANCELLED':
-        return 'Đã hủy';
+        return l10n.leave.statusCancelled;
       default:
-        return 'Không rõ';
+        return l10n.leave.statusUnknown;
     }
+  }
+  void _showFilterBottomSheet(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final leaveState = ref.read(leaveControllerProvider);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.7,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.leave.filterTitle,
+                        style: theme.title2.override(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Status Filter
+                          Text(
+                            l10n.leave.filterStatus,
+                            style: theme.subtitle2.override(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              'PENDING',
+                              'APPROVED',
+                              'REJECTED',
+                              'CANCELLED'
+                            ].map((status) {
+                              final isSelected = _selectedStatus == status;
+                              return ChoiceChip(
+                                label: Text(_getStatusText(status, l10n)),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    _selectedStatus = selected ? status : null;
+                                  });
+                                },
+                                selectedColor: theme.primaryColor,
+                                labelStyle: theme.bodyText2.override(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : theme.primaryText,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Leave Type Filter
+                          Text(
+                            l10n.leave.filterLeaveType,
+                            style: theme.subtitle2.override(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<int>(
+                            value: _selectedLeaveTypeId,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                            ),
+                            items: leaveState.leaveTypes.map((type) {
+                              return DropdownMenuItem<int>(
+                                value: type.id,
+                                child: Text(type.leaveTypeName),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedLeaveTypeId = value;
+                              });
+                            },
+                            hint: Text(l10n.leave.filterSelectLeaveType),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Date Range Filter
+                          Text(
+                            l10n.leave.filterTime,
+                            style: theme.subtitle2.override(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: _startDate ?? DateTime.now(),
+                                      firstDate: DateTime(2000),
+                                      lastDate: DateTime(2100),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        _startDate = picked;
+                                      });
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      _startDate != null
+                                          ? DateFormat('dd/MM/yyyy')
+                                              .format(_startDate!)
+                                          : l10n.leave.filterFromDate,
+                                      style: theme.bodyText2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: _endDate ?? DateTime.now(),
+                                      firstDate: DateTime(2000),
+                                      lastDate: DateTime(2100),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        _endDate = picked;
+                                      });
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      _endDate != null
+                                          ? DateFormat('dd/MM/yyyy')
+                                              .format(_endDate!)
+                                          : l10n.leave.filterToDate,
+                                      style: theme.bodyText2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedStatus = null;
+                              _selectedLeaveTypeId = null;
+                              _startDate = null;
+                              _endDate = null;
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: BorderSide(color: theme.primaryColor),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            l10n.leave.filterReset,
+                            style: TextStyle(color: theme.primaryColor),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            // Apply filters
+                            _refreshList();
+                            
+                            // Update local state to reflect changes if needed
+                            this.setState(() {});
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            l10n.leave.filterApply,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickFilterBar(BuildContext context, FlutterFlowTheme theme,
+      AppLocalizations l10n, dynamic leaveState) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.primaryColor.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          // Status Dropdown
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: theme.primaryBackground,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: DropdownButton<String>(
+                value: _selectedStatus,
+                isExpanded: true,
+                underline: const SizedBox(),
+                hint: Text(
+                  l10n.leave.filterStatus,
+                  style: theme.bodyText2.override(
+                    color: theme.secondaryText,
+                    fontSize: 13,
+                  ),
+                ),
+                items: [
+                  DropdownMenuItem<String>(
+                    value: null,
+                    child: Text(
+                      l10n.leave.status,
+                      style: theme.bodyText2.override(fontSize: 13),
+                    ),
+                  ),
+                  ...['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'].map(
+                    (status) => DropdownMenuItem<String>(
+                      value: status,
+                      child: Text(
+                        _getStatusText(status, l10n),
+                        style: theme.bodyText2.override(fontSize: 13),
+                      ),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedStatus = value;
+                  });
+                  _refreshList();
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Leave Type Dropdown
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: theme.primaryBackground,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: DropdownButton<int>(
+                value: _selectedLeaveTypeId,
+                isExpanded: true,
+                underline: const SizedBox(),
+                hint: Text(
+                  l10n.leave.leaveType,
+                  style: theme.bodyText2.override(
+                    color: theme.secondaryText,
+                    fontSize: 13,
+                  ),
+                ),
+                items: [
+                  DropdownMenuItem<int>(
+                    value: null,
+                    child: Text(
+                      l10n.leave.leaveType,
+                      style: theme.bodyText2.override(fontSize: 13),
+                    ),
+                  ),
+                  ...leaveState.leaveTypes.map(
+                    (type) => DropdownMenuItem<int>(
+                      value: type.id,
+                      child: Text(
+                        type.leaveTypeName,
+                        style: theme.bodyText2.override(fontSize: 13),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedLeaveTypeId = value;
+                  });
+                  _refreshList();
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // More Filters Button
+          IconButton(
+            icon: Icon(
+              Icons.tune,
+              color: theme.primaryColor,
+              size: 20,
+            ),
+            onPressed: () => _showFilterBottomSheet(context),
+            tooltip: l10n.leave.filterTitle,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveFilters(BuildContext context, FlutterFlowTheme theme,
+      AppLocalizations l10n, dynamic leaveState) {
+    if (_selectedStatus == null &&
+        _selectedLeaveTypeId == null &&
+        _startDate == null &&
+        _endDate == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      height: 50,
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          if (_selectedStatus != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Chip(
+                label: Text(
+                    '${l10n.leave.filterStatus}: ${_getStatusText(_selectedStatus, l10n)}'),
+                backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
+                labelStyle: theme.bodyText2.override(color: theme.primaryColor),
+                onDeleted: () {
+                  setState(() {
+                    _selectedStatus = null;
+                  });
+                  _refreshList();
+                },
+                deleteIconColor: theme.primaryColor,
+              ),
+            ),
+          if (_selectedLeaveTypeId != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Chip(
+                label: Text(
+                    '${l10n.leave.filterLeaveType}: ${leaveState.leaveTypes.where((t) => t.id == _selectedLeaveTypeId).isNotEmpty ? leaveState.leaveTypes.where((t) => t.id == _selectedLeaveTypeId).first.leaveTypeName : ''}'),
+                backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
+                labelStyle: theme.bodyText2.override(color: theme.primaryColor),
+                onDeleted: () {
+                  setState(() {
+                    _selectedLeaveTypeId = null;
+                  });
+                  _refreshList();
+                },
+                deleteIconColor: theme.primaryColor,
+              ),
+            ),
+          if (_startDate != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Chip(
+                label: Text(
+                    '${l10n.leave.filterFromDate}: ${DateFormat('dd/MM/yyyy').format(_startDate!)}'),
+                backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
+                labelStyle: theme.bodyText2.override(color: theme.primaryColor),
+                onDeleted: () {
+                  setState(() {
+                    _startDate = null;
+                  });
+                  _refreshList();
+                },
+                deleteIconColor: theme.primaryColor,
+              ),
+            ),
+          if (_endDate != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Chip(
+                label: Text(
+                    '${l10n.leave.filterToDate}: ${DateFormat('dd/MM/yyyy').format(_endDate!)}'),
+                backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
+                labelStyle: theme.bodyText2.override(color: theme.primaryColor),
+                onDeleted: () {
+                  setState(() {
+                    _endDate = null;
+                  });
+                  _refreshList();
+                },
+                deleteIconColor: theme.primaryColor,
+              ),
+            ),
+          Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedStatus = null;
+                      _selectedLeaveTypeId = null;
+                      _startDate = null;
+                      _endDate = null;
+                    });
+                    _refreshList();
+                  },
+                  child: Chip(
+                    label: Text(l10n.leave.filterReset),
+                    backgroundColor: theme.secondaryBackground,
+                    labelStyle: theme.bodyText2,
+                  )))
+        ],
+      ),
+    );
+  }
+
+  void _refreshList() {
+    ref.read(leaveControllerProvider.notifier).getLeaveRecords(
+          status: _selectedStatus,
+          leaveTypeId: _selectedLeaveTypeId,
+          startDate: _startDate?.toIso8601String().split('T')[0],
+          endDate: _endDate?.toIso8601String().split('T')[0],
+        );
   }
 }

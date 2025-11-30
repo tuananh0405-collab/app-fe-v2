@@ -22,7 +22,14 @@ abstract class LeaveRemoteDataSource {
     Map<String, dynamic>? metadata,
   });
 
-  Future<List<LeaveModel>> getLeaveRecords();
+  Future<List<LeaveModel>> getLeaveRecords({
+    int? employeeId,
+    String? status,
+    int? leaveTypeId,
+    String? startDate,
+    String? endDate,
+    int? departmentId,
+  });
 
   Future<LeaveModel> getLeaveRecordById({
     required int leaveId,
@@ -131,9 +138,28 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
   }
 
   @override
-  Future<List<LeaveModel>> getLeaveRecords() async {
+  Future<List<LeaveModel>> getLeaveRecords({
+    int? employeeId,
+    String? status,
+    int? leaveTypeId,
+    String? startDate,
+    String? endDate,
+    int? departmentId,
+  }) async {
     try {
-      final response = await dio.get('/leave/leave-records/me');
+      final queryParameters = <String, dynamic>{
+        if (employeeId != null) 'employee_id': employeeId,
+        if (status != null) 'status': status,
+        if (leaveTypeId != null) 'leave_type_id': leaveTypeId,
+        if (startDate != null) 'start_date': startDate,
+        if (endDate != null) 'end_date': endDate,
+        if (departmentId != null) 'department_id': departmentId,
+      };
+
+      final response = await dio.get(
+        '/leave/leave-records/me',
+        queryParameters: queryParameters,
+      );
 
       final apiResponse = LeaveApiResponseModel.fromJson(
         response.data,

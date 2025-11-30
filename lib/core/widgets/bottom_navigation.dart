@@ -57,9 +57,9 @@ class BottomNavigation extends ConsumerWidget {
                   label: '',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.notifications_outlined),
-                  activeIcon: Icon(Icons.notifications),
-                  label: 'Notifications',
+                  icon: Icon(Icons.event_note_outlined),
+                  activeIcon: Icon(Icons.event_note),
+                  label: 'Attendance',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),
@@ -160,7 +160,7 @@ class BottomNavigation extends ConsumerWidget {
         _onVerifyTapped(context, ref);
         break;
       case 3:
-        context.go(AppRoutePath.notifications);
+        context.go(AppRoutePath.attendanceReport);
         break;
       case 4:
         context.go(AppRoutePath.profile);

@@ -62,10 +62,24 @@ class LeaveRepositoryImpl implements LeaveRepository {
   }
 
   @override
-  Future<Either<Failure, List<LeaveEntity>>> getLeaveRecords() async {
+  Future<Either<Failure, List<LeaveEntity>>> getLeaveRecords({
+    int? employeeId,
+    String? status,
+    int? leaveTypeId,
+    String? startDate,
+    String? endDate,
+    int? departmentId,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
-        final result = await remoteDataSource.getLeaveRecords();
+        final result = await remoteDataSource.getLeaveRecords(
+          employeeId: employeeId,
+          status: status,
+          leaveTypeId: leaveTypeId,
+          startDate: startDate,
+          endDate: endDate,
+          departmentId: departmentId,
+        );
         return Right(result);
       } on UnauthorizedException catch (e) {
         return Left(AuthFailure(e.message));

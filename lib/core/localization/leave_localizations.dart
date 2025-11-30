@@ -61,6 +61,20 @@ class LeaveLocalizations {
       'close': 'Close',
       'confirm_cancel': 'Confirm Cancel',
       'please_enter_cancel_reason': 'Please enter a cancellation reason',
+      'leave_balance': 'Leave Balance',
+      'days_left': 'left',
+      'cannot_edit_status': 'Cannot edit leave request with status',
+      'leave_management': 'Leave Management',
+      'no_leave_requests': 'No leave requests yet',
+      'filter_title': 'Filter',
+      'filter_status': 'Status',
+      'filter_leave_type': 'Leave Type',
+      'filter_select_leave_type': 'Select Leave Type',
+      'filter_time': 'Time',
+      'filter_from_date': 'From Date',
+      'filter_to_date': 'To Date',
+      'filter_reset': 'Reset',
+      'filter_apply': 'Apply',
       // Status texts
       'status_pending': 'Pending',
       'status_approved': 'Approved',
@@ -123,6 +137,20 @@ class LeaveLocalizations {
       'close': 'Đóng',
       'confirm_cancel': 'Xác nhận hủy',
       'please_enter_cancel_reason': 'Vui lòng nhập lý do hủy',
+      'leave_balance': 'Số dư phép',
+      'days_left': 'còn lại',
+      'cannot_edit_status': 'Không thể chỉnh sửa đơn nghỉ với trạng thái',
+      'leave_management': 'Quản lý nghỉ phép',
+      'no_leave_requests': 'Chưa có đơn xin nghỉ nào',
+      'filter_title': 'Bộ lọc',
+      'filter_status': 'Trạng thái',
+      'filter_leave_type': 'Loại nghỉ',
+      'filter_select_leave_type': 'Chọn loại nghỉ',
+      'filter_time': 'Thời gian',
+      'filter_from_date': 'Từ ngày',
+      'filter_to_date': 'Đến ngày',
+      'filter_reset': 'Đặt lại',
+      'filter_apply': 'Áp dụng',
       // Status texts
       'status_pending': 'Chờ duyệt',
       'status_approved': 'Đã duyệt',
@@ -191,6 +219,20 @@ class LeaveLocalizations {
   String get close => translate('close');
   String get confirmCancel => translate('confirm_cancel');
   String get pleaseEnterCancelReason => translate('please_enter_cancel_reason');
+  String get leaveBalance => translate('leave_balance');
+  String get daysLeft => translate('days_left');
+  String get cannotEditStatus => translate('cannot_edit_status');
+  String get leaveManagement => translate('leave_management');
+  String get noLeaveRequests => translate('no_leave_requests');
+  String get filterTitle => translate('filter_title');
+  String get filterStatus => translate('filter_status');
+  String get filterLeaveType => translate('filter_leave_type');
+  String get filterSelectLeaveType => translate('filter_select_leave_type');
+  String get filterTime => translate('filter_time');
+  String get filterFromDate => translate('filter_from_date');
+  String get filterToDate => translate('filter_to_date');
+  String get filterReset => translate('filter_reset');
+  String get filterApply => translate('filter_apply');
   
   // Status texts
   String get statusPending => translate('status_pending');

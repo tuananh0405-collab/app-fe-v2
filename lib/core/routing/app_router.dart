@@ -13,6 +13,7 @@ import 'package:flutter_application_1/features/settings/presentation/settings_sc
 import 'package:flutter_application_1/features/face_id/face_id_success_page.dart';
 import 'package:flutter_application_1/features/devices/presentation/screens/device_list_screen.dart';
 import 'package:flutter_application_1/features/work_schedule/presentation/screens/work_schedule_screen.dart';
+import 'package:flutter_application_1/features/attendance/presentation/screens/attendance_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -86,8 +87,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutePath.attendanceReport,
         name: AppRouteName.attendanceReport,
-        builder: (c, s) =>
-            const StubScreen(title: 'Personal Attendance Report'),
+        builder: (c, s) => const AttendanceScreen(),
       ),
 
       GoRoute(

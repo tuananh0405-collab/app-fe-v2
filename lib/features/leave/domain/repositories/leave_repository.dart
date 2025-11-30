@@ -19,7 +19,14 @@ abstract class LeaveRepository {
     Map<String, dynamic>? metadata,
   });
 
-  Future<Either<Failure, List<LeaveEntity>>> getLeaveRecords();
+  Future<Either<Failure, List<LeaveEntity>>> getLeaveRecords({
+    int? employeeId,
+    String? status,
+    int? leaveTypeId,
+    String? startDate,
+    String? endDate,
+    int? departmentId,
+  });
 
   Future<Either<Failure, LeaveEntity>> getLeaveRecordById({
     required int leaveId,
