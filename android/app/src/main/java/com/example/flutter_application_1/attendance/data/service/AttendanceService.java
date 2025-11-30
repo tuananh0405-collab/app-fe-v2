@@ -241,57 +241,39 @@ public class AttendanceService {
         
         Log.d(TAG, " Starting complete check-in flow (production API)");
 
-        // Step 1: Validate Beacon (only JWT in header)
+        // Step 1: Validate Beacon
         validateBeacon(beaconUuid, beaconMajor, beaconMinor, rssi,
             new AttendanceCallback<ValidateBeaconResponse>() {
                 @Override
                 public void onSuccess(ValidateBeaconResponse beaconResult) {
-                     uploadFaceImage(faceImage, "check_in",
-                                    new AttendanceCallback<FaceIdVerifyResponse>() {
-                                        @Override
-                                        public void onSuccess(FaceIdVerifyResponse faceResult) {
-                                            Log.d(TAG, "Step 3  - Face verified: " + faceResult.getMessage());
-                                            callback.onSuccess("Check-in successful! " + faceResult.getMessage());
-                                        }
-                                        @Override
-                                        public void onFailure(String error) {
-                                            callback.onFailure("Step 3 failed: " + error);
-                                        }
-                                    });
+                    Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
+                    
+                    // Step 2: Request Face Verification (tạo attendance_check record)
+                    requestFaceVerification("check_in", latitude, longitude, locationAccuracy, deviceId,
+                        new AttendanceCallback<RequestFaceVerificationResponse>() {
+                            @Override
+                            public void onSuccess(RequestFaceVerificationResponse verifyResult) {
+                                Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
+                                Log.d(TAG, "Step 2 ✅ - ShiftId: " + verifyResult.getShift_id());
+                                
+                                // Step 3: Caller (Fragment) sẽ tự động verify face bằng local AI
+                                // và call FaceIdService.verifyFaceIdForRequest() để gửi embedding
+                                // Backend sẽ nhận event face_verification_completed và update shift
+                                callback.onSuccess("Attendance check created (ID: " + verifyResult.getAttendance_check_id() + 
+                                                 "). Please proceed with face verification.");
+                            }
                             
-
-                    Log.d(TAG, "Step 1  - Beacon validated, session_token: " + beaconResult.getSession_token());
-                    // Step 2: Request Face Verification (only JWT in header)
-                    // requestFaceVerification("check_in", latitude, longitude, locationAccuracy, deviceId,
-                    //     new AttendanceCallback<RequestFaceVerificationResponse>() {
-                    //         @Override
-                    //         public void onSuccess(RequestFaceVerificationResponse verifyResult) {
-                    //             Log.d(TAG, "Step 2  - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
-                    //             // Step 3: Upload Face Image
-                    //             uploadFaceImage(faceImage, "check_in",
-                    //                 new AttendanceCallback<FaceIdVerifyResponse>() {
-                    //                     @Override
-                    //                     public void onSuccess(FaceIdVerifyResponse faceResult) {
-                    //                         Log.d(TAG, "Step 3  - Face verified: " + faceResult.getMessage());
-                    //                         callback.onSuccess("Check-in successful! " + faceResult.getMessage());
-                    //                     }
-                    //                     @Override
-                    //                     public void onFailure(String error) {
-                    //                         callback.onFailure("Step 3 failed: " + error);
-                    //                     }
-                    //                 });
-                    //         }
-                    //         @Override
-                    //         public void onFailure(String error) {
-                    //             // Handle session token expiry
-                    //             if (error != null && error.contains("Session token expired")) {
-                    //                 callback.onFailure("Step 2 failed: Session token expired. Please scan beacon again.");
-                    //             } else {
-                    //                 callback.onFailure("Step 2 failed: " + error);
-                    //             }
-                    //         }
-                    //     });
+                            @Override
+                            public void onFailure(String error) {
+                                if (error != null && error.contains("Session token expired")) {
+                                    callback.onFailure("Step 2 failed: Session token expired. Please scan beacon again.");
+                                } else {
+                                    callback.onFailure("Step 2 failed: " + error);
+                                }
+                            }
+                        });
                 }
+                
                 @Override
                 public void onFailure(String error) {
                     callback.onFailure("Step 1 failed: " + error);
