@@ -26,6 +26,11 @@ class AuthInterceptor extends Interceptor {
   }
 
   @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) async {
+    super.onResponse(response, handler);
+  }
+
+  @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     // Handle 401 Unauthorized - token expired
     if (err.response?.statusCode == 401) {
@@ -49,7 +54,7 @@ class AuthInterceptor extends Interceptor {
         try {
           // Try to refresh token
           final newTokens = await _refreshToken(refreshToken);
-          
+                    
           // Update tokens in state
           ref.read(loginControllerProvider.notifier).updateTokens(
             accessToken: newTokens['access_token'] as String,
@@ -163,9 +168,12 @@ class AuthInterceptor extends Interceptor {
       }
 
       if (tokenData != null && tokenData['access_token'] != null) {
+        final newAccessToken = tokenData['access_token'] as String;
+        final newRefreshToken = tokenData['refresh_token'] as String? ?? refreshToken;
+        
         return {
-          'access_token': tokenData['access_token'] as String,
-          'refresh_token': tokenData['refresh_token'] as String? ?? refreshToken,
+          'access_token': newAccessToken,
+          'refresh_token': newRefreshToken,
         };
       }
     }
