@@ -4,8 +4,8 @@ import '../models/attendance_model.dart';
 
 abstract class AttendanceRemoteDataSource {
   Future<AttendanceResponseModel> getMyAttendance({
-    required String referenceDate,
-    required String period,
+    required String startDate,
+    required String endDate,
     String? status,
     int page = 1,
     int limit = 20,
@@ -19,20 +19,19 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
 
   @override
   Future<AttendanceResponseModel> getMyAttendance({
-    required String referenceDate,
-    required String period,
+    required String startDate,
+    required String endDate,
     String? status,
     int page = 1,
     int limit = 20,
   }) async {
     try {
       final queryParams = {
-        'period': period,
-        'reference_date': DateTime.parse(referenceDate).toIso8601String().split('T').first,
+        'start_date': startDate,
+        'end_date': endDate,
         'page': page,
         'limit': limit,
       };
-
 
       if (status != null) {
         queryParams['status'] = status;
@@ -44,8 +43,15 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'];
-        return AttendanceResponseModel.fromJson(data);
+        try {
+          final data = response.data['data'];
+          print('📊 Parsing attendance data: $data');
+          return AttendanceResponseModel.fromJson(data);
+        } catch (e, stackTrace) {
+          print('❌ Error parsing attendance response: $e');
+          print('Stack trace: $stackTrace');
+          throw ServerException('Failed to parse attendance data: ${e.toString()}');
+        }
       } else if (response.statusCode == 401) {
         throw UnauthorizedException(
             response.data['message'] ?? 'Unauthorized');
@@ -73,6 +79,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
           e is NetworkException) {
         rethrow;
       }
+      print('❌ Unexpected error in getMyAttendance: $e');
       throw ServerException('Unexpected error: ${e.toString()}');
     }
   }

@@ -9,14 +9,16 @@ class AttendanceShiftItem extends StatelessWidget {
 
   Color _getStatusColor(ShiftStatus status) {
     switch (status) {
+      case ShiftStatus.SCHEDULED:
+        return Colors.blue;
+      case ShiftStatus.IN_PROGRESS:
+        return Colors.orange;
       case ShiftStatus.COMPLETED:
         return Colors.green;
-      case ShiftStatus.IN_PROGRESS:
-        return Colors.blue;
       case ShiftStatus.ABSENT:
         return Colors.red;
       case ShiftStatus.ON_LEAVE:
-        return Colors.orange;
+        return Colors.purple;
       default:
         return Colors.grey;
     }

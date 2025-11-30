@@ -35,7 +35,7 @@ class AttendanceShiftModel extends Equatable {
 
   factory AttendanceShiftModel.fromJson(Map<String, dynamic> json) {
     return AttendanceShiftModel(
-      id: json['id'],
+      id: json['id'].toString(),
       shiftDate: json['shift_date'],
       dayOfWeek: json['day_of_week'],
       scheduledStartTime: json['scheduled_start_time'],
@@ -44,8 +44,8 @@ class AttendanceShiftModel extends Equatable {
       checkOutTime: json['check_out_time'],
       workHours: (json['work_hours'] as num).toDouble(),
       overtimeHours: (json['overtime_hours'] as num).toDouble(),
-      lateMinutes: json['late_minutes'],
-      earlyLeaveMinutes: json['early_leave_minutes'],
+      lateMinutes: json['late_minutes'] as int,
+      earlyLeaveMinutes: json['early_leave_minutes'] as int,
       status: _parseStatus(json['status']),
       notes: json['notes'],
     );

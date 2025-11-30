@@ -14,16 +14,16 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
 
   @override
   Future<AttendanceResponse> getMyAttendance({
-    required String referenceDate,
-    required String period,
+    required String startDate,
+    required String endDate,
     String? status,
     int page = 1,
     int limit = 20,
   }) async {
     if (await networkInfo.isConnected) {
       final model = await remoteDataSource.getMyAttendance(
-        referenceDate: referenceDate,
-        period: period,
+        startDate: startDate,
+        endDate: endDate,
         status: status,
         page: page,
         limit: limit,

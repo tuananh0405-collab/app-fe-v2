@@ -7,15 +7,15 @@ class GetMyAttendanceUseCase {
   GetMyAttendanceUseCase(this.repository);
 
   Future<AttendanceResponse> call({
-    required String referenceDate,
-    required String period,
+    required String startDate,
+    required String endDate,
     String? status,
     int page = 1,
     int limit = 20,
   }) {
     return repository.getMyAttendance(
-      referenceDate: referenceDate,
-      period: period,
+      startDate: startDate,
+      endDate: endDate,
       status: status,
       page: page,
       limit: limit,
