@@ -31,6 +31,9 @@ public class RequestFaceVerificationRequest {
     @SerializedName("ip_address")
     private String ip_address;
 
+    @SerializedName("face_embedding_base64")
+    private String face_embedding_base64;  // 🆕 Face embedding for verification
+
     public RequestFaceVerificationRequest(String sessionToken, String checkType, String shiftDate) {
         this.session_token = sessionToken;
         this.check_type = checkType;
@@ -100,5 +103,13 @@ public class RequestFaceVerificationRequest {
 
     public void setIp_address(String ip_address) {
         this.ip_address = ip_address;
+    }
+
+    public String getFace_embedding_base64() {
+        return face_embedding_base64;
+    }
+
+    public void setFace_embedding_base64(String face_embedding_base64) {
+        this.face_embedding_base64 = face_embedding_base64;
     }
 }

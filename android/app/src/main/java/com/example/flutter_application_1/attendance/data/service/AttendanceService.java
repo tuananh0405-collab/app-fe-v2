@@ -130,11 +130,13 @@ public class AttendanceService {
             Double longitude,
             Double locationAccuracy,
             String deviceId,
+            String faceEmbeddingBase64, // 🆕 Face embedding from MediaPipe
             AttendanceCallback<RequestFaceVerificationResponse> callback) {
         
         Log.d(TAG, "🎯 Step 2: Requesting face verification");
         Log.d(TAG, "Check type: " + checkType);
         Log.d(TAG, "GPS: " + latitude + ", " + longitude + " (accuracy: " + locationAccuracy + "m)");
+        Log.d(TAG, "Face embedding: " + (faceEmbeddingBase64 != null ? faceEmbeddingBase64.length() + " chars" : "null"));
         
         // Validate session token
         if (currentSessionToken == null || currentSessionToken.isEmpty()) {
@@ -162,6 +164,7 @@ public class AttendanceService {
         request.setLongitude(longitude);
         request.setLocation_accuracy(locationAccuracy);
         request.setDevice_id(deviceId);
+        request.setFace_embedding_base64(faceEmbeddingBase64); // 🆕 Set face embedding
         
     // Call API
     Call<RequestFaceVerificationResponse> call = attendanceApi.requestFaceVerification(request);

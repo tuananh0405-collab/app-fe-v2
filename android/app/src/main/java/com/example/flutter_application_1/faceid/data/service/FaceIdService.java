@@ -1473,4 +1473,40 @@ public class FaceIdService {
             return null;
         }
     }
+
+    /**
+     * Extract face embedding from bitmap and convert to Base64 string
+     * 🆕 For new event-driven attendance flow
+     * 
+     * @param bitmap Face image bitmap
+     * @return Base64-encoded embedding (512 float32 = 2048 bytes), or null if failed
+     */
+    public String extractFaceEmbeddingBase64(Bitmap bitmap) {
+        try {
+            // Extract embedding using existing method
+            float[] embedding = extractFaceEmbedding(bitmap, null);
+            if (embedding == null || embedding.length == 0) {
+                android.util.Log.e(TAG, "Failed to extract face embedding");
+                return null;
+            }
+
+            // Convert float[] to byte[] (little-endian)
+            java.nio.ByteBuffer byteBuffer = java.nio.ByteBuffer.allocate(embedding.length * 4);
+            byteBuffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);
+            for (float value : embedding) {
+                byteBuffer.putFloat(value);
+            }
+            byte[] embeddingBytes = byteBuffer.array();
+
+            // Encode to Base64
+            String base64 = android.util.Base64.encodeToString(embeddingBytes, android.util.Base64.NO_WRAP);
+            android.util.Log.d(TAG, "✅ Face embedding encoded to Base64: " + base64.length() + " chars (" + embeddingBytes.length + " bytes)");
+            
+            return base64;
+            
+        } catch (Exception e) {
+            android.util.Log.e(TAG, "❌ Error converting embedding to Base64", e);
+            return null;
+        }
+    }
 }

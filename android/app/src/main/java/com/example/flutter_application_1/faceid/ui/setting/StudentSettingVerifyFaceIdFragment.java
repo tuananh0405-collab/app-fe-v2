@@ -1449,69 +1449,34 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 if (!isAdded()) return;
                 Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
 
-                // Step 2: Request Face Verification (tạo attendance_check record)
-                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Creating attendance check record...");
-                attendanceService.requestFaceVerification("check_in", latitude, longitude, accuracy, deviceId,
+                // 🔍 Generate face embedding from captured image
+                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Generating face embedding...");
+                
+                String faceEmbeddingBase64 = faceIdService.extractFaceEmbeddingBase64(faceImage);
+                if (faceEmbeddingBase64 == null) {
+                    Log.e(TAG, "❌ Failed to generate face embedding");
+                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Failed to generate face embedding");
+                    return;
+                }
+                
+                Log.d(TAG, "✅ Face embedding generated: " + faceEmbeddingBase64.length() + " chars");
+
+                // Step 2: Request Face Verification WITH face embedding
+                // Backend will verify face via RabbitMQ event → Face Service
+                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Submitting face verification...");
+                attendanceService.requestFaceVerification("check_in", latitude, longitude, accuracy, deviceId, faceEmbeddingBase64,
                     new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse>() {
                         @Override
                         public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse verifyResult) {
                             if (!isAdded()) return;
                             Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
                             Log.d(TAG, "Step 2 ✅ - ShiftId: " + verifyResult.getShift_id());
+                            Log.d(TAG, "✅ Face verification submitted! Waiting for backend processing via RabbitMQ...");
 
-                            // Step 3: Local Face Verification
-                            String requestId = getRequestIdFromArgs();
-                            stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Verifying face...");
-
-                            String ipAddress = null; // Optional
-
-                            if (requestId != null) {
-                                faceIdService.verifyFaceIdForRequest(faceImage, 
-                                AuthManager.getInstance(requireContext()).getCurrentUserId(), 
-                                requestId, 
-                                null, // threshold
-                                latitude, 
-                                longitude, 
-                                accuracy,
-                                deviceId,
-                                ipAddress,
-                                new com.example.flutter_application_1.faceid.data.service.FaceIdService.FaceIdCallback() {
-                                @Override
-                                public void onSuccess(String message) {
-                                    if (!isAdded()) return;
-                                    Log.d(TAG, "✅ Verification successful: " + message);
-                                    stateManager.transitionTo(FaceRegistrationState.SUCCESS, message);
-                                }
-
-                                @Override
-                                public void onFailure(String errorMessage) {
-                                    if (!isAdded()) return;
-                                    Log.e(TAG, "❌ Verification failed: " + errorMessage);
-                                    lastDetailedErrorMessage = "Verification failure details:\n" + errorMessage;
-                                    hasDetailedError = true;
-                                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Verification failed: " + errorMessage);
-                                }
-                            });
-                        } else {
-                            // Fallback to ad-hoc verification
-                            faceIdService.verifyFaceId(faceImage, AuthManager.getInstance(requireContext()).getCurrentUserId(), new com.example.flutter_application_1.faceid.data.service.FaceIdService.FaceIdCallback() {
-                                @Override
-                                public void onSuccess(String message) {
-                                    if (!isAdded()) return;
-                                    Log.d(TAG, "✅ Ad-hoc verification successful: " + message);
-                                    stateManager.transitionTo(FaceRegistrationState.SUCCESS, message);
-                                }
-
-                                @Override
-                                public void onFailure(String errorMessage) {
-                                    if (!isAdded()) return;
-                                    Log.e(TAG, "❌ Ad-hoc verification failed: " + errorMessage);
-                                    lastDetailedErrorMessage = "Verification failure details:\n" + errorMessage;
-                                    hasDetailedError = true;
-                                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Verification failed: " + errorMessage);
-                                }
-                            });
-                        }
+                            // ✅ DONE! Backend will handle verification via event-driven flow:
+                            // Attendance Service → RabbitMQ → Face Service → Verify → Publish event → Update check_in_time
+                            stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
+                                "Face verification submitted successfully! Check-in time will be updated shortly.");
                         }
 
                         @Override
