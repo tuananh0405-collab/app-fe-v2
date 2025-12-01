@@ -76,24 +76,26 @@ class GpsTrackingService {
   /// - Extract employee_id từ JWT token
   /// - Tìm shift hiện tại của employee
   /// - Validate GPS trong phạm vi geofence
+  /// - Tăng presence_verification_rounds_completed counter
   /// 
-  /// Payload example (simplified):
-  /// ```json
-  /// {
-  ///   "latitude": 10.762622,
-  ///   "longitude": 106.660172,
-  ///   "location_accuracy": 5.0
-  /// }
-  /// ```
+  /// 🔧 FIX: Đổi endpoint thành đúng path của attendance service
   Future<bool> sendGpsToAttendanceService({
     required Position position,
   }) async {
     try {
       debugPrint('📤 Sending GPS to attendance service...');
       debugPrint('   Position: ${position.latitude}, ${position.longitude}');
+      debugPrint('   Accuracy: ${position.accuracy}m');
 
+      // 🔧 FIX: Gọi đúng endpoint của attendance service
+      // Backend sẽ tự động:
+      // 1. Extract employee_id từ JWT token
+      // 2. Tìm shift đang active của employee
+      // 3. Validate GPS có trong office radius không
+      // 4. Tăng presence_verification_rounds_completed
+      // 5. Gửi notification nếu GPS ngoài vùng
       final response = await _dio.post(
-        '/gps/check',
+        '/attendance/gps-webhook/verify',
         data: {
           'latitude': position.latitude,
           'longitude': position.longitude,
@@ -101,12 +103,21 @@ class GpsTrackingService {
         },
       );
 
-      if (response.statusCode == 200) {
-        debugPrint('✅ GPS sent successfully');
-        debugPrint('   Response: ${response.data}');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final result = response.data;
+        debugPrint('✅ GPS verification completed');
+        debugPrint('   Valid: ${result['is_valid']}');
+        debugPrint('   Distance: ${result['distance_from_office_meters']}m');
+        
+        if (result['is_valid'] == true) {
+          debugPrint('   ✅ GPS within office geofence');
+        } else {
+          debugPrint('   ⚠️ GPS outside office geofence: ${result['message']}');
+        }
+        
         return true;
       } else {
-        debugPrint('⚠️ GPS send failed with status: ${response.statusCode}');
+        debugPrint('⚠️ GPS verification failed with status: ${response.statusCode}');
         return false;
       }
     } on DioException catch (e) {
