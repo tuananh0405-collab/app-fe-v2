@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../firebase_options.dart';
+import '../constants/api_constants.dart';
 import 'gps_tracking_service.dart';
 
 /// Background message handler - MUST be a top-level function
@@ -20,18 +23,43 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     
     // Check if this is a GPS check request (silent push)
     final messageType = message.data['type'] as String?;
-    final silent = message.data['silent'] as bool?;
+    final silent = message.data['silent'] as String?; // Note: silent comes as String from FCM metadata
     
-    if (messageType == 'GPS_CHECK_REQUEST' && silent == true) {
+    if (messageType == 'GPS_CHECK_REQUEST' && silent == 'true') {
       debugPrint('📍 [BACKGROUND] GPS check request detected - processing...');
       
-      // TODO: Create GpsTrackingService instance with proper Dio client
-      // For now, just log - full implementation needs dependency injection
-      // await GpsTrackingService(dio).handleGpsCheckRequest(message.data);
+      // Initialize Hive to get access token
+      if (!Hive.isBoxOpen('auth')) {
+        await Hive.initFlutter();
+        await Hive.openBox('auth');
+      }
       
-      debugPrint('⚠️ GPS tracking service not initialized in background handler');
-      debugPrint('   ShiftId: ${message.data['shiftId']}');
-      debugPrint('   Action: ${message.data['action']}');
+      final authBox = Hive.box('auth');
+      final accessToken = authBox.get('accessToken') as String?;
+      
+      if (accessToken == null || accessToken.isEmpty) {
+        debugPrint('⚠️ [BACKGROUND] No access token found - skipping GPS check');
+        return;
+      }
+      
+      // Create standalone Dio instance for background handler
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: ApiConstants.baseUrl,
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+          headers: {
+            ...ApiConstants.defaultHeaders,
+            'Authorization': 'Bearer $accessToken',
+          },
+        ),
+      );
+      
+      // Handle GPS check request
+      final gpsTrackingService = GpsTrackingService(dio);
+      await gpsTrackingService.handleGpsCheckRequest(message.data);
+      
+      debugPrint('✅ [BACKGROUND] GPS check request processed');
     }
   } catch (e) {
     debugPrint('❌ [BACKGROUND] Error: $e');
@@ -191,9 +219,9 @@ class PushNotificationService {
     
     // Check if this is a GPS check request (silent push)
     final messageType = message.data['type'] as String?;
-    final silent = message.data['silent'] as bool?;
+    final silent = message.data['silent'] as String?; // Note: silent comes as String from FCM metadata
     
-    if (messageType == 'GPS_CHECK_REQUEST' && silent == true) {
+    if (messageType == 'GPS_CHECK_REQUEST' && silent == 'true') {
       debugPrint('📍 [FOREGROUND] GPS check request detected - processing...');
       
       // Handle GPS check in foreground
