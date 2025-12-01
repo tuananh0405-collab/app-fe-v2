@@ -23,9 +23,17 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     
     // Check if this is a GPS check request (silent push)
     final messageType = message.data['type'] as String?;
-    final silent = message.data['silent'] as String?; // Note: silent comes as String from FCM metadata
+    final silent = message.data['silent']?.toString(); // Convert to string for comparison
+    final action = message.data['action'] as String?; // New: check action field
     
-    if (messageType == 'GPS_CHECK_REQUEST' && silent == 'true') {
+    debugPrint('📩 [BACKGROUND] Type: $messageType, Silent: $silent, Action: $action');
+    
+    // Check both old and new format
+    final isGpsCheck = messageType == 'GPS_CHECK_REQUEST' && 
+                       (silent == 'true' || silent == 'TRUE') &&
+                       action == 'BACKGROUND_GPS_SYNC';
+    
+    if (isGpsCheck) {
       debugPrint('📍 [BACKGROUND] GPS check request detected - processing...');
       
       // Initialize Hive to get access token
