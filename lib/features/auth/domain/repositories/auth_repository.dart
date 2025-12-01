@@ -23,4 +23,6 @@ abstract class AuthRepository {
     required String currentPassword,
     required String newPassword,
   });
+
+  Future<Either<Failure, void>> forgotPassword({required String email});
 }

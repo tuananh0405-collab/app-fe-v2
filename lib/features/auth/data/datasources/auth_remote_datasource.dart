@@ -22,6 +22,8 @@ abstract class AuthRemoteDataSource {
     required String currentPassword,
     required String newPassword,
   });
+
+  Future<void> forgotPassword({required String email});
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -193,6 +195,43 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'current_password': currentPassword,
           'new_password': newPassword,
         },
+      );
+
+      if (response.statusCode != 200) {
+        final apiResponse = ApiResponseModel.fromJson(
+          response.data,
+          (data) => data,
+        );
+        throw ServerException(apiResponse.message);
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw const NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw const NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          e.response?.data['message'] ?? 'Server error occurred',
+        );
+      } else {
+        throw const ServerException('Failed to connect to server');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> forgotPassword({required String email}) async {
+    try {
+      final response = await dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
       );
 
       if (response.statusCode != 200) {

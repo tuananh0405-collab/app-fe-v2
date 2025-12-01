@@ -1,6 +1,7 @@
 class AppRouteName {
 
   static const signIn = 'sign-in';
+  static const forgotPassword = 'forgot-password';
   static const changePassword = 'change-password';
   static const home = 'home';
 
@@ -47,6 +48,7 @@ class AppRouteName {
 class AppRoutePath {
 
   static const signIn = '/sign-in';
+  static const forgotPassword = '/forgot-password';
   static const changePassword = '/change-password';
   static const home = '/home';
 

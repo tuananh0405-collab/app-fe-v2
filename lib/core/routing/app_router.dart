@@ -20,6 +20,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/change_password_screen.dart';
 import '../../features/auth/providers/auth_providers.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -37,6 +38,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final currentPath = state.uri.path;
       final loggingIn = currentPath == AppRoutePath.signIn;
+      final forgotPassword = currentPath == AppRoutePath.forgotPassword;
       final changingPassword = currentPath == AppRoutePath.changePassword;
 
       if (changingPassword) {
@@ -48,7 +50,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (!auth.isAuthenticated) {
-        return loggingIn ? null : AppRoutePath.signIn;
+        // Allow access to sign-in and forgot-password screens when unauthenticated
+        return (loggingIn || forgotPassword) ? null : AppRoutePath.signIn;
       }
 
       if (loggingIn) {
@@ -64,6 +67,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutePath.signIn,
         name: AppRouteName.signIn,
         builder: (context, state) => const SignInScreen(),
+      ),
+
+      GoRoute(
+        path: AppRoutePath.forgotPassword,
+        name: AppRouteName.forgotPassword,
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
 
       GoRoute(

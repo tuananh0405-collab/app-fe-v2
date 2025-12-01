@@ -137,11 +137,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen>
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Vui lòng nhập email';
+                        return 'Please enter your email';
                       }
                       if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                           .hasMatch(value)) {
-                        return 'Email không hợp lệ';
+                        return 'Please enter a valid email';
                       }
                       return null;
                     },
@@ -154,7 +154,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen>
                     obscureText: _obscurePassword,
                     style: theme.bodyText1,
                     decoration: InputDecoration(
-                      labelText: 'Mật khẩu',
+                      labelText: 'Password',
                       labelStyle: theme.bodyText2,
                       prefixIcon: Icon(Icons.lock_outline, color: theme.secondaryText),
                       border: OutlineInputBorder(
@@ -186,12 +186,31 @@ class _SignInScreenState extends ConsumerState<SignInScreen>
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Vui lòng nhập mật khẩu';
+                        return 'Please enter your password';
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
+                  
+                  // Forgot Password
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        context.push(AppRoutePath.forgotPassword);
+                      },
+                      child: Text(
+                        'Forgot password?',
+                        style: theme.bodyText2.override(
+                          color: theme.primaryColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
 
                   // Login Button
                   FFButton(

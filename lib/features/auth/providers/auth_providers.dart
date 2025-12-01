@@ -11,6 +11,9 @@ import '../presentation/controllers/login_controller.dart';
 import '../presentation/controllers/change_password_controller.dart';
 import '../presentation/state/login_state.dart';
 import '../presentation/state/change_password_state.dart';
+import '../domain/usecases/forgot_password_usecase.dart';
+import '../presentation/controllers/forgot_password_controller.dart';
+import '../presentation/state/forgot_password_state.dart';
 
 // Data Source Provider
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
@@ -48,5 +51,16 @@ final loginControllerProvider = NotifierProvider<LoginController, LoginState>(
 // Change Password Controller Provider
 final changePasswordControllerProvider =
     NotifierProvider<ChangePasswordController, ChangePasswordState>(
-      () => ChangePasswordController(),
-    );
+  () => ChangePasswordController(),
+);
+
+// Forgot Password Controller Provider
+final forgotPasswordControllerProvider =
+    NotifierProvider<ForgotPasswordController, ForgotPasswordState>(
+  () => ForgotPasswordController(),
+);
+
+// Use Case Provider
+final forgotPasswordUseCaseProvider = Provider<ForgotPasswordUseCase>((ref) {
+  return ForgotPasswordUseCase(ref.read(authRepositoryProvider));
+});
