@@ -152,7 +152,8 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
     ref.listen(overtimeControllerProvider, (previous, next) {
       if (next.successMessage != null &&
           next.successMessage != previous?.successMessage) {
-        showSnackbar(context, next.successMessage!);
+        // successMessage contains a localization key; translate before showing
+        showSnackbar(context, AppLocalizations.of(context).overtime.translate(next.successMessage!));
         // Navigate back after successful update
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {

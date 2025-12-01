@@ -348,7 +348,7 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
       case 'REJECTED':
         return overtime.statusRejected;
       default:
-        return overtime.statusUnknown;
+        return overtime.statusCanceled;
     }
   }
 }

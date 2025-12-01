@@ -4,8 +4,15 @@ import '../../domain/entities/attendance_entity.dart';
 
 class AttendanceShiftItem extends StatelessWidget {
   final AttendanceShift shift;
+  final bool showOvertime;
+  final bool showWorkHours;
 
-  const AttendanceShiftItem({Key? key, required this.shift}) : super(key: key);
+  const AttendanceShiftItem({
+    Key? key,
+    required this.shift,
+    this.showOvertime = true,
+    this.showWorkHours = true,
+  }) : super(key: key);
 
   Color _getStatusColor(ShiftStatus status) {
     switch (status) {
@@ -103,9 +110,38 @@ class AttendanceShiftItem extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Schedule',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${_formatTime(shift.scheduledStartTime)} - ${_formatTime(shift.scheduledEndTime)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+              if (showOvertime)
+                _buildTimeInfo('Overtime', '${shift.overtimeHours}h'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               _buildTimeInfo('Check In', shift.checkInTime),
               _buildTimeInfo('Check Out', shift.checkOutTime),
-              _buildTimeInfo('Work Hours', '${shift.workHours}h'),
+              if (showWorkHours)
+                _buildTimeInfo('Work Hours', '${shift.workHours}h'),
             ],
           ),
           if (shift.lateMinutes > 0 || shift.earlyLeaveMinutes > 0) ...[
@@ -119,6 +155,38 @@ class AttendanceShiftItem extends StatelessWidget {
                 if (shift.earlyLeaveMinutes > 0)
                   _buildWarningTag('Early: ${shift.earlyLeaveMinutes}m'),
               ],
+            ),
+          ],
+          if (shift.notes != null && shift.notes!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Notes:',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    shift.notes!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ],

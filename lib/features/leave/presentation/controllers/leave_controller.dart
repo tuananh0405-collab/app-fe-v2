@@ -72,7 +72,7 @@ class LeaveController extends Notifier<LeaveState> {
       (leave) {
         state = state.copyWith(
           isSubmitting: false,
-          successMessage: 'Đơn xin nghỉ đã được tạo thành công',
+          successMessage: 'leave_request_created',
         );
         // Refresh leave records after creating
         getLeaveRecords();
@@ -183,7 +183,7 @@ class LeaveController extends Notifier<LeaveState> {
       (leave) {
         state = state.copyWith(
           isSubmitting: false,
-          successMessage: 'Đơn xin nghỉ đã được cập nhật thành công',
+          successMessage: 'leave_request_updated',
         );
         // Refresh leave records after updating
         getLeaveRecords();
@@ -246,7 +246,7 @@ class LeaveController extends Notifier<LeaveState> {
       (leave) {
         state = state.copyWith(
           isSubmitting: false,
-          successMessage: 'Leave request has been cancelled successfully',
+          successMessage: 'leave_request_cancelled',
           selectedLeave: leave,
         );
         // Refresh leave records after canceling

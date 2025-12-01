@@ -921,7 +921,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        leaveState.successMessage!,
+                        l10n.leave.translate(leaveState.successMessage!),
                         style: theme.bodyText1.override(color: Colors.white),
                       ),
                       backgroundColor: theme.success,

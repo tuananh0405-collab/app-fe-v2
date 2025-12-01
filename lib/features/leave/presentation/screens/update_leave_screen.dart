@@ -140,12 +140,23 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
     ref.listen(leaveControllerProvider, (previous, next) {
       if (next.successMessage != null &&
           next.successMessage != previous?.successMessage) {
-        showSnackbar(context, next.successMessage!, duration: 3);
-        // Navigate back after successful update
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            context.pop();
+        showSnackbar(context, l10n.leave.translate(next.successMessage!), duration: 3);
+        // Refresh leave list and balances before navigating back so the list
+        // screen shows updated data immediately.
+        Future.delayed(const Duration(milliseconds: 200), () async {
+          try {
+            await ref.read(leaveControllerProvider.notifier).getLeaveRecords();
+            await ref.read(leaveControllerProvider.notifier).getLeaveBalance();
+          } catch (_) {
+            // ignore errors from refresh - user already saw success
           }
+
+          // Small delay to let UI update, then pop
+          Future.delayed(const Duration(milliseconds: 200), () {
+            if (mounted) {
+              context.pop();
+            }
+          });
         });
       } else if (next.errorMessage != null &&
           next.errorMessage != previous?.errorMessage) {

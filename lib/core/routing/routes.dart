@@ -30,6 +30,7 @@ class AppRouteName {
   static const profile = 'profile';
   static const profileView = 'profile-view';
   static const profileContract = 'profile-contract';
+  static const locationHistory = 'location-history';
 
   // Devices & FaceID
   static const devices = 'devices';
@@ -87,6 +88,7 @@ class AppRoutePath {
 
   // Schedule
   static const schedule = '/schedule';
+  static const locationHistory = '/location-history';
 
   // Settings
   static const settings = '/settings';

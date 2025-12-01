@@ -152,7 +152,8 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
     ref.listen(overtimeControllerProvider, (previous, next) {
       if (next.successMessage != null &&
           next.successMessage != previous?.successMessage) {
-        showSnackbar(context, next.successMessage!);
+        // successMessage contains a localization key; translate before showing
+        showSnackbar(context, overtime.translate(next.successMessage!));
         // Navigate back after successful creation
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {

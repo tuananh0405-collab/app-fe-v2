@@ -2,7 +2,10 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/foundation.dart';
-import '../utils/jwt_helper.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import '../../features/home/domain/gps_scan_record.dart';
+// jwt_helper not used here
 
 /// GPS Tracking Service
 /// 
@@ -77,7 +80,7 @@ class GpsTrackingService {
   /// - Tìm shift hiện tại của employee
   /// - Validate GPS trong phạm vi geofence
   /// - Tăng presence_verification_rounds_completed counter
-  /// 
+  ///
   /// 🔧 FIX: Đổi endpoint thành đúng path của attendance service
   Future<bool> sendGpsToAttendanceService({
     required Position position,
@@ -108,16 +111,36 @@ class GpsTrackingService {
         debugPrint('✅ GPS verification completed');
         debugPrint('   Valid: ${result['is_valid']}');
         debugPrint('   Distance: ${result['distance_from_office_meters']}m');
-        
+
+        await _saveScanRecord(GpsScanRecord(
+                  timestamp: DateTime.now(),
+                  success: true,
+                  latitude: position.latitude,
+                  longitude: position.longitude,
+                  accuracy: position.accuracy,
+                  statusCode: response.statusCode,
+                  responseData: response.data is Map ? response.data.cast<String, dynamic>() : null,
+                ));
+
         if (result['is_valid'] == true) {
           debugPrint('   ✅ GPS within office geofence');
         } else {
           debugPrint('   ⚠️ GPS outside office geofence: ${result['message']}');
         }
-        
+
         return true;
       } else {
         debugPrint('⚠️ GPS verification failed with status: ${response.statusCode}');
+        // Persist a failed scan record (server returned non-200)
+        await _saveScanRecord(GpsScanRecord(
+          timestamp: DateTime.now(),
+          success: false,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          accuracy: position.accuracy,
+          statusCode: response.statusCode,
+          responseData: response.data is Map ? response.data.cast<String, dynamic>() : null,
+        ));
         return false;
       }
     } on DioException catch (e) {
@@ -126,10 +149,43 @@ class GpsTrackingService {
         debugPrint('   Response data: ${e.response?.data}');
         debugPrint('   Status code: ${e.response?.statusCode}');
       }
+      // Persist a failure record with error
+      await _saveScanRecord(GpsScanRecord(
+        timestamp: DateTime.now(),
+        success: false,
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracy: position.accuracy,
+        statusCode: e.response?.statusCode,
+        responseData: e.response?.data is Map ? (e.response?.data as Map).cast<String, dynamic>() : null,
+        error: e.message,
+      ));
       return false;
     } catch (e) {
       debugPrint('❌ Unexpected error sending GPS: $e');
+      await _saveScanRecord(GpsScanRecord(
+        timestamp: DateTime.now(),
+        success: false,
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracy: position.accuracy,
+        error: e.toString(),
+      ));
       return false;
+    }
+  }
+
+  Future<void> _saveScanRecord(GpsScanRecord record) async {
+    try {
+      if (!Hive.isBoxOpen('gps_history')) {
+        await Hive.initFlutter();
+        await Hive.openBox('gps_history');
+      }
+      final box = Hive.box('gps_history');
+      await box.add(record.toJson());
+      debugPrint('💾 Saved GPS scan record: ${record.toJson()}');
+    } catch (e) {
+      debugPrint('❌ Failed to save GPS scan record: $e');
     }
   }
 

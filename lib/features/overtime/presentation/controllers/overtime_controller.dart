@@ -61,7 +61,8 @@ class OvertimeController extends Notifier<OvertimeState> {
       (overtime) {
         state = state.copyWith(
           isSubmitting: false,
-          successMessage: 'Đơn làm thêm giờ đã được tạo thành công',
+          // store localization key; UI will translate via AppLocalizations
+          successMessage: 'overtime_request_created',
         );
         // Refresh overtime requests after creating
         getMyOvertimeRequests();
@@ -155,7 +156,8 @@ class OvertimeController extends Notifier<OvertimeState> {
       (_) {
         state = state.copyWith(
           isSubmitting: false,
-          successMessage: 'Đơn làm thêm giờ đã được cập nhật thành công',
+          // store localization key; UI will translate via AppLocalizations
+          successMessage: 'overtime_request_updated',
         );
         // Refresh overtime requests after updating
         getMyOvertimeRequests();
@@ -176,7 +178,8 @@ class OvertimeController extends Notifier<OvertimeState> {
       (_) {
         state = state.copyWith(
           isSubmitting: false,
-          successMessage: 'Hủy đơn làm thêm thành công',
+          // store localization key; UI will translate via AppLocalizations
+          successMessage: 'overtime_request_canceled',
         );
         getMyOvertimeRequests();
       },

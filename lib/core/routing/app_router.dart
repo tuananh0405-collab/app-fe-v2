@@ -24,6 +24,7 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/change_password_screen.dart';
 import '../../features/auth/providers/auth_providers.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/home/presentation/location_history_screen.dart';
 import '../../features/common/presentation/stub_screen.dart';
 import '../../faceid_page.dart';
 import 'routes.dart';
@@ -88,6 +89,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutePath.home,
         name: AppRouteName.home,
         builder: (context, state) => const HomeScreen(),
+      ),
+
+      GoRoute(
+        path: AppRoutePath.locationHistory,
+        name: AppRouteName.locationHistory,
+        builder: (c, s) => const LocationHistoryScreen(),
       ),
 
       GoRoute(

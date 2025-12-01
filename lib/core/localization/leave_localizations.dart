@@ -30,6 +30,7 @@ class LeaveLocalizations {
       'please_select_leave_type': 'Please select leave type',
       'leave_request_created': 'Leave request created successfully',
       'leave_request_updated': 'Leave request updated successfully',
+      'leave_request_cancelled': 'Leave request cancelled successfully',
       'error_creating_leave': 'Error creating leave request',
       'error_updating_leave': 'Error updating leave request',
       // Detail screen
@@ -106,6 +107,7 @@ class LeaveLocalizations {
       'please_select_leave_type': 'Vui lòng chọn loại nghỉ phép',
       'leave_request_created': 'Đơn xin nghỉ đã được tạo thành công',
       'leave_request_updated': 'Đơn xin nghỉ đã được cập nhật thành công',
+      'leave_request_cancelled': 'Đơn xin nghỉ đã được hủy thành công',
       'error_creating_leave': 'Lỗi khi tạo đơn xin nghỉ',
       'error_updating_leave': 'Lỗi khi cập nhật đơn xin nghỉ',
       // Detail screen
@@ -187,6 +189,7 @@ class LeaveLocalizations {
   String get pleaseSelectLeaveType => translate('please_select_leave_type');
   String get leaveRequestCreated => translate('leave_request_created');
   String get leaveRequestUpdated => translate('leave_request_updated');
+  String get leaveRequestCancelled => translate('leave_request_cancelled');
   String get errorCreatingLeave => translate('error_creating_leave');
   String get errorUpdatingLeave => translate('error_updating_leave');
   

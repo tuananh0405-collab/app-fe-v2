@@ -36,6 +36,7 @@ class OvertimeLocalizations {
       'please_select_shift': 'Please select shift',
       'overtime_request_created': 'Overtime request created successfully',
       'overtime_request_updated': 'Overtime request updated successfully',
+  'overtime_request_canceled': 'Overtime request canceled successfully',
       'error_creating_overtime': 'Error creating overtime request',
       'error_updating_overtime': 'Error updating overtime request',
       'creating_request': 'Creating request...',
@@ -102,6 +103,7 @@ class OvertimeLocalizations {
       'please_select_shift': 'Vui lòng chọn ca làm việc',
       'overtime_request_created': 'Đơn làm thêm giờ đã được tạo thành công',
       'overtime_request_updated': 'Đơn làm thêm giờ đã được cập nhật thành công',
+  'overtime_request_canceled': 'Hủy đơn làm thêm thành công',
       'error_creating_overtime': 'Lỗi khi tạo đơn làm thêm giờ',
       'error_updating_overtime': 'Lỗi khi cập nhật đơn làm thêm giờ',
       'creating_request': 'Đang tạo đơn...',
@@ -173,6 +175,7 @@ class OvertimeLocalizations {
   String get pleaseSelectShift => translate('please_select_shift');
   String get overtimeRequestCreated => translate('overtime_request_created');
   String get overtimeRequestUpdated => translate('overtime_request_updated');
+  String get overtimeRequestCanceled => translate('overtime_request_canceled');
   String get errorCreatingOvertime => translate('error_creating_overtime');
   String get errorUpdatingOvertime => translate('error_updating_overtime');
   String get creatingRequest => translate('creating_request');

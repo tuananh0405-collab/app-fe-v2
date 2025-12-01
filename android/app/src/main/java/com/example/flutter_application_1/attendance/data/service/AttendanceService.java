@@ -255,7 +255,8 @@ public class AttendanceService {
                     Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
                     
                     // Step 2: Request Face Verification (tạo attendance_check record)
-                    requestFaceVerification("check_in", latitude, longitude, locationAccuracy, deviceId,
+                    // pass null for faceEmbeddingBase64 here (no embedding available in this flow)
+                    requestFaceVerification("check_in", latitude, longitude, locationAccuracy, deviceId, null,
                         new AttendanceCallback<RequestFaceVerificationResponse>() {
                             @Override
                             public void onSuccess(RequestFaceVerificationResponse verifyResult) {

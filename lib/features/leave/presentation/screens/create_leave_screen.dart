@@ -197,7 +197,7 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
     ref.listen(leaveControllerProvider, (previous, next) {
       if (next.successMessage != null &&
           next.successMessage != previous?.successMessage) {
-        showSnackbar(context, next.successMessage!);
+        showSnackbar(context, leave.translate(next.successMessage!));
         // Navigate back after successful creation
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {
