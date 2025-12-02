@@ -118,63 +118,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
               
               // Current Shift Section (use Work Schedule shifts mapped to AttendanceShift)
-              _AttendanceShiftSection(
-                shifts: scheduleState.shifts.map((s) {
-                  // Map EmployeeShiftEntity -> AttendanceShift
-                  // id as string, shiftDate as YYYY-MM-DD, dayOfWeek computed
-                  String dayOfWeek() {
-                    switch (s.shiftDate.weekday) {
-                      case DateTime.monday:
-                        return 'Monday';
-                      case DateTime.tuesday:
-                        return 'Tuesday';
-                      case DateTime.wednesday:
-                        return 'Wednesday';
-                      case DateTime.thursday:
-                        return 'Thursday';
-                      case DateTime.friday:
-                        return 'Friday';
-                      case DateTime.saturday:
-                        return 'Saturday';
-                      case DateTime.sunday:
-                        return 'Sunday';
-                      default:
-                        return '';
-                    }
-                  }
+              // _AttendanceShiftSection(
+              //   shifts: scheduleState.shifts.map((s) {
+              //     // Map EmployeeShiftEntity -> AttendanceShift
+              //     // id as string, shiftDate as YYYY-MM-DD, dayOfWeek computed
+              //     String dayOfWeek() {
+              //       switch (s.shiftDate.weekday) {
+              //         case DateTime.monday:
+              //           return 'Monday';
+              //         case DateTime.tuesday:
+              //           return 'Tuesday';
+              //         case DateTime.wednesday:
+              //           return 'Wednesday';
+              //         case DateTime.thursday:
+              //           return 'Thursday';
+              //         case DateTime.friday:
+              //           return 'Friday';
+              //         case DateTime.saturday:
+              //           return 'Saturday';
+              //         case DateTime.sunday:
+              //           return 'Sunday';
+              //         default:
+              //           return '';
+              //       }
+              //     }
 
-                  attendance.ShiftStatus mapStatus() {
-                    switch (s.status) {
-                      case wsEntity.ShiftStatus.scheduled:
-                        return attendance.ShiftStatus.SCHEDULED;
-                      case wsEntity.ShiftStatus.completed:
-                        return attendance.ShiftStatus.COMPLETED;
-                      case wsEntity.ShiftStatus.absent:
-                        return attendance.ShiftStatus.ABSENT;
-                      case wsEntity.ShiftStatus.cancelled:
-                        return attendance.ShiftStatus.ABSENT;
-                    }
-                    // Fallback
-                    return attendance.ShiftStatus.SCHEDULED;
-                  }
+              //     attendance.ShiftStatus mapStatus() {
+              //       switch (s.status) {
+              //         case wsEntity.ShiftStatus.scheduled:
+              //           return attendance.ShiftStatus.SCHEDULED;
+              //         case wsEntity.ShiftStatus.completed:
+              //           return attendance.ShiftStatus.COMPLETED;
+              //         case wsEntity.ShiftStatus.absent:
+              //           return attendance.ShiftStatus.ABSENT;
+              //         case wsEntity.ShiftStatus.cancelled:
+              //           return attendance.ShiftStatus.ABSENT;
+              //       }
+              //       // Fallback
+              //       return attendance.ShiftStatus.SCHEDULED;
+              //     }
 
-                  return attendance.AttendanceShift(
-                    id: s.id.toString(),
-                    shiftDate: s.shiftDate.toIso8601String().split('T')[0],
-                    dayOfWeek: dayOfWeek(),
-                    scheduledStartTime: s.scheduledStartTime,
-                    scheduledEndTime: s.scheduledEndTime,
-                    checkInTime: s.checkInTime?.toIso8601String(),
-                    checkOutTime: s.checkOutTime?.toIso8601String(),
-                    workHours: s.workHours,
-                    overtimeHours: s.overtimeHours,
-                    lateMinutes: s.lateMinutes,
-                    earlyLeaveMinutes: s.earlyLeaveMinutes,
-                    status: mapStatus(),
-                    notes: s.notes,
-                  );
-                }).toList(),
-              ).animateOnPageLoad(animationsMap['cardOnPageLoad']!),
+              //     return attendance.AttendanceShift(
+              //       id: s.id.toString(),
+              //       shiftDate: s.shiftDate.toIso8601String().split('T')[0],
+              //       dayOfWeek: dayOfWeek(),
+              //       scheduledStartTime: s.scheduledStartTime,
+              //       scheduledEndTime: s.scheduledEndTime,
+              //       checkInTime: s.checkInTime?.toIso8601String(),
+              //       checkOutTime: s.checkOutTime?.toIso8601String(),
+              //       workHours: s.workHours,
+              //       overtimeHours: s.overtimeHours,
+              //       lateMinutes: s.lateMinutes,
+              //       earlyLeaveMinutes: s.earlyLeaveMinutes,
+              //       status: mapStatus(),
+              //       notes: s.notes,
+              //     );
+              //   }).toList(),
+              // ).animateOnPageLoad(animationsMap['cardOnPageLoad']!),
               const SizedBox(height: 24),
 
 

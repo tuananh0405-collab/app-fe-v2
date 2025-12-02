@@ -463,13 +463,13 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Shift History',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                // const Text(
+                //   'Shift History',
+                //   style: TextStyle(
+                //     fontSize: 18,
+                //     fontWeight: FontWeight.bold,
+                //   ),
+                // ),
                 // if (state.selectedStatus != null)
                 //   Container(
                 //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

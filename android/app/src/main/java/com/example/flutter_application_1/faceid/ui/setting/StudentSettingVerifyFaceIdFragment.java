@@ -176,7 +176,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 try {
                     // Check if Fragment is still attached and state is not saved
                     if (!isAdded() || isStateSaved()) {
-                        Log.w(TAG, "Fragment not attached or state saved, ignoring beacon broadcast");
+                        Log.d(TAG, "Fragment not attached or state saved, ignoring beacon broadcast");
                         return;
                     }
                     
@@ -185,7 +185,6 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                         int major = intent.getIntExtra("beaconMajor", -1);
                         int minor = intent.getIntExtra("beaconMinor", -1);
                         int rssi = intent.getIntExtra("rssi", -100);
-                        Log.d(TAG, "Beacon received: " + uuid + ", " + major + ", " + minor + ", " + rssi);
                         
                         // Store beacon data in instance variables instead of modifying arguments
                         // This prevents "Fragment already added and state has been saved" crash
@@ -193,8 +192,6 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                         beaconMajor = major;
                         beaconMinor = minor;
                         beaconRssi = rssi;
-                        
-                        Log.d(TAG, "✅ Beacon data stored successfully");
                     }
                 } catch (Exception e) {
                     Log.e(TAG, "Error processing beacon broadcast: " + e.getMessage(), e);
@@ -464,7 +461,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         }
 
         // Ghi log cho trạng thái
-        Log.d(TAG, "Xử lý trạng thái: " + state);
+        // Log.d(TAG, "Xử lý trạng thái: " + state);
 
         // Cập nhật tvStatusMessage (Thêm vào để luôn cập nhật thông báo trạng thái)
         if (binding != null && binding.tvStatusMessage != null) {
@@ -1638,7 +1635,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 message + "\n\n--- DETAILED ERROR INFORMATION ---\n" + lastDetailedErrorMessage : message;
 
         // Log the detailed error for debugging
-        Log.e(TAG, "Detailed error information: " + detailedMessage);
+        // Log.e(TAG, "Detailed error information: " + detailedMessage);
 
         // For other errors, show regular retry dialog with detailed information
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())

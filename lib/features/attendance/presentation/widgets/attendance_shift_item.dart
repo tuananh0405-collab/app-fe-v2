@@ -237,14 +237,24 @@ class AttendanceShiftItem extends StatelessWidget {
 
   String _formatTime(String isoString) {
     try {
-      // Assuming isoString is full ISO date, we just want HH:mm
-      // Or if it's just HH:mm:ss, we take HH:mm
+      // If it contains 'T', it's a full ISO date-time string
       if (isoString.contains('T')) {
         final date = DateTime.parse(isoString);
         return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
       }
-      return isoString.substring(0, 5);
+      
+      // If it's already in HH:mm or HH:mm:ss format, extract HH:mm
+      if (isoString.contains(':')) {
+        final parts = isoString.split(':');
+        if (parts.length >= 2) {
+          return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
+        }
+      }
+      
+      // Fallback: return as-is
+      return isoString;
     } catch (e) {
+      // If any error occurs, return the original string
       return isoString;
     }
   }

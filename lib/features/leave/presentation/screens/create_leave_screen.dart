@@ -135,14 +135,14 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
         // Check max consecutive days
         if (selected.maxConsecutiveDays != null && requestedDays > selected.maxConsecutiveDays!) {
           showSnackbar(context,
-              'Yêu cầu: $requestedDays ngày. Giới hạn tối đa liên tiếp: ${selected.maxConsecutiveDays} ngày.');
+              leave.validationMaxConsecutiveDays(requestedDays, selected.maxConsecutiveDays!));
           return;
         }
 
         // Check max days per year (basic check using requested days only)
         if (selected.maxDaysPerYear != null && requestedDays > selected.maxDaysPerYear!) {
           showSnackbar(context,
-              'Yêu cầu: $requestedDays ngày. Giới hạn mỗi năm: ${selected.maxDaysPerYear} ngày.');
+              leave.validationMaxDaysPerYear(requestedDays, selected.maxDaysPerYear!));
           return;
         }
 
@@ -151,13 +151,13 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
         final daysUntilStart = _startDate!.difference(DateTime(nowDate.year, nowDate.month, nowDate.day)).inDays;
         if (selected.minNoticeDays > 0 && daysUntilStart < selected.minNoticeDays) {
           showSnackbar(context,
-              'Cần thông báo trước ít nhất ${selected.minNoticeDays} ngày.');
+              leave.validationMinNoticeDays(selected.minNoticeDays));
           return;
         }
 
         // Check requires document
         if (selected.requiresDocument && _supportingDocUrlController.text.trim().isEmpty) {
-          showSnackbar(context, 'Loại nghỉ này yêu cầu tài liệu hỗ trợ. Vui lòng cung cấp URL tài liệu.');
+          showSnackbar(context, leave.validationDocumentRequired);
           return;
         }
       }
@@ -304,7 +304,7 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              'Loading leave types...',
+                              leave.loadingLeaveTypes,
                               style: theme.bodyText2.override(
                                 color: theme.secondaryText,
                               ),

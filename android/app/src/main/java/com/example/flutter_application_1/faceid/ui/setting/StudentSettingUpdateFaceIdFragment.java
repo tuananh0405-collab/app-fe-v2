@@ -266,7 +266,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
         }
 
         // Ghi log cho trạng thái
-        Log.d(TAG, "Xử lý trạng thái: " + state);
+        // Log.d(TAG, "Xử lý trạng thái: " + state);
 
         // Cập nhật tvStatusMessage (Thêm vào để luôn cập nhật thông báo trạng thái)
         if (binding != null && binding.tvStatusMessage != null) {
@@ -1338,11 +1338,11 @@ String userId;
         }
 
         // Add detailed error information if available
-        final String detailedMessage = hasDetailedError ?
-                message + "\n\n--- DETAILED ERROR INFORMATION ---\n" + lastDetailedErrorMessage : message;
+        // final String detailedMessage = hasDetailedError ?
+        //         message + "\n\n--- DETAILED ERROR INFORMATION ---\n" + lastDetailedErrorMessage : message;
 
         // Log the detailed error for debugging
-        Log.e(TAG, "Detailed error information: " + detailedMessage);
+        // Log.e(TAG, "Detailed error information: " + detailedMessage);
 
         // For other errors, show regular retry dialog with detailed information
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
