@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routing/routes.dart';
 import '../../providers/attendance_providers.dart';
+import '../../domain/entities/attendance_entity.dart';
 import '../state/attendance_state.dart';
 import '../widgets/attendance_shift_item.dart';
 import '../widgets/attendance_summary_card.dart';
@@ -18,12 +19,20 @@ class AttendanceScreen extends ConsumerStatefulWidget {
 class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   final List<String> _statusOptions = [
     'All',
-    'SCHEDULED',
     'IN_PROGRESS',
     'COMPLETED',
     'ON_LEAVE',
     'ABSENT',
   ];
+
+
+  //  final List<String> _statusOptions = [
+  //   'All',
+  //   'IN_PROGRESS',
+  //   'COMPLETED',
+  //   'ON_LEAVE',
+  //   'ABSENT',
+  // ];
 
   @override
   void initState() {
@@ -382,7 +391,12 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     }
 
     final summary = state.data!.summary;
-    final shifts = state.data!.shifts;
+    // final shifts = state.data!.shifts;
+
+    // Filter out SCHEDULED shifts
+    final shifts = state.data!.shifts
+        .where((shift) => shift.status != ShiftStatus.SCHEDULED)
+        .toList();
 
     return RefreshIndicator(
       onRefresh: () async {
