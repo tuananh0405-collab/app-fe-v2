@@ -19,7 +19,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
   final _reasonController = TextEditingController();
 
   // Mock data - will be replaced with actual data later
-  int _shiftId = 1;
+  // int _shiftId = 1;
   DateTime? _overtimeDate;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
@@ -130,7 +130,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
       );
 
       ref.read(overtimeControllerProvider.notifier).createOvertimeRequest(
-            shiftId: _shiftId,
+            // shiftId: _shiftId,
             overtimeDate: _overtimeDate!,
             startTime: startDateTime,
             endTime: endDateTime,
@@ -226,60 +226,60 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
               //     ],
               //   ),
               // ).animateOnPageLoad(animationsMap['headerAnimation']!),
-              const SizedBox(height: 24),
+              // const SizedBox(height: 24),
 
               // Shift ID Dropdown
-              Container(
-                decoration: BoxDecoration(
-                  color: theme.secondaryBackground,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.primaryText.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: DropdownButtonFormField<int>(
-                  value: _shiftId,
-                  decoration: InputDecoration(
-                    labelText: overtime.shift,
-                    labelStyle: theme.bodyText2.override(
-                      color: theme.secondaryText,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: theme.secondaryBackground,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                  ),
-                  items: [
-                    DropdownMenuItem(value: 1, child: Text(overtime.shift1)),
-                    DropdownMenuItem(value: 2, child: Text(overtime.shift2)),
-                    DropdownMenuItem(value: 3, child: Text(overtime.shift3)),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _shiftId = value;
-                      });
-                    }
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return overtime.pleaseSelectShift;
-                    }
-                    return null;
-                  },
-                ),
-              ).animateOnPageLoad(animationsMap['formAnimation']!),
-              const SizedBox(height: 20),
+              // Container(
+              //   decoration: BoxDecoration(
+              //     color: theme.secondaryBackground,
+              //     borderRadius: BorderRadius.circular(12),
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: theme.primaryText.withValues(alpha: 0.05),
+              //         blurRadius: 10,
+              //         offset: const Offset(0, 2),
+              //       ),
+              //     ],
+              //   ),
+              //   child: DropdownButtonFormField<int>(
+              //     value: _shiftId,
+              //     decoration: InputDecoration(
+              //       labelText: overtime.shift,
+              //       labelStyle: theme.bodyText2.override(
+              //         color: theme.secondaryText,
+              //       ),
+              //       border: OutlineInputBorder(
+              //         borderRadius: BorderRadius.circular(12),
+              //         borderSide: BorderSide.none,
+              //       ),
+              //       filled: true,
+              //       fillColor: theme.secondaryBackground,
+              //       contentPadding: const EdgeInsets.symmetric(
+              //         horizontal: 16,
+              //         vertical: 16,
+              //       ),
+              //     ),
+              //     items: [
+              //       DropdownMenuItem(value: 1, child: Text(overtime.shift1)),
+              //       DropdownMenuItem(value: 2, child: Text(overtime.shift2)),
+              //       DropdownMenuItem(value: 3, child: Text(overtime.shift3)),
+              //     ],
+              //     onChanged: (value) {
+              //       if (value != null) {
+              //         setState(() {
+              //           _shiftId = value;
+              //         });
+              //       }
+              //     },
+              //     validator: (value) {
+              //       if (value == null) {
+              //         return overtime.pleaseSelectShift;
+              //       }
+              //       return null;
+              //     },
+              //   ),
+              // ).animateOnPageLoad(animationsMap['formAnimation']!),
+              // const SizedBox(height: 20),
 
               // Date Selection Card
               Container(

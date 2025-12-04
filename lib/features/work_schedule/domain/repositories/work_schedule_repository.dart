@@ -6,6 +6,7 @@ abstract class WorkScheduleRepository {
   Future<Either<Failure, List<EmployeeShiftEntity>>> getEmployeeShifts({
     required DateTime fromDate,
     required DateTime toDate,
+    int? employeeId,
   });
 }
 

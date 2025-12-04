@@ -4,7 +4,7 @@ import '../entities/overtime_entity.dart';
 
 abstract class OvertimeRepository {
   Future<Either<Failure, OvertimeEntity>> createOvertimeRequest({
-    required int shiftId,
+    // required int shiftId,
     required DateTime overtimeDate,
     required DateTime startTime,
     required DateTime endTime,

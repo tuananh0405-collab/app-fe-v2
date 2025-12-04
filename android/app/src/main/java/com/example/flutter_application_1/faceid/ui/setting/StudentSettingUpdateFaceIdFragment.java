@@ -1338,8 +1338,8 @@ String userId;
         }
 
         // Add detailed error information if available
-        // final String detailedMessage = hasDetailedError ?
-        //         message + "\n\n--- DETAILED ERROR INFORMATION ---\n" + lastDetailedErrorMessage : message;
+        final String detailedMessage = hasDetailedError ?
+                message + "\n\n--- DETAILED ERROR INFORMATION ---\n" + lastDetailedErrorMessage : message;
 
         // Log the detailed error for debugging
         // Log.e(TAG, "Detailed error information: " + detailedMessage);

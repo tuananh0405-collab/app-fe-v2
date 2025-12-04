@@ -100,6 +100,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             _buildMenuItem(
               context: context,
               theme: theme,
+              icon: Icons.location_on,
+              title: 'Location History',
+              subtitle: 'View your location history',
+              onTap: () => context.push(AppRoutePath.locationHistory),
+            ),
+            const SizedBox(height: 8),
+            _buildMenuItem(
+              context: context,
+              theme: theme,
               icon: Icons.face,
               title: 'Face ID Registration',
               subtitle: 'Register or update your Face ID',
@@ -126,15 +135,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               subtitle: 'Vibration, Sound, etc',
               onTap: () => context.push(AppRoutePath.settings),
             ),
-            const SizedBox(height: 8),
-            _buildMenuItem(
-              context: context,
-              theme: theme,
-              icon: Icons.notifications_outlined,
-              title: 'Notification Settings',
-              subtitle: 'Manage notification preferences',
-              onTap: () => context.push(AppRoutePath.notificationsManage),
-            ),
+            // const SizedBox(height: 8),
+            // _buildMenuItem(
+            //   context: context,
+            //   theme: theme,
+            //   icon: Icons.notifications_outlined,
+            //   title: 'Notification Settings',
+            //   subtitle: 'Manage notification preferences',
+            //   onTap: () => context.push(AppRoutePath.notificationsManage),
+            // ),
 
             const SizedBox(height: 24),
 
@@ -152,7 +161,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ),
           ],
         ),
-        bottomNavigationBar: const BottomNavigation(currentIndex: 3),
+  bottomNavigationBar: const BottomNavigation(currentIndex: 4),
       ),
     );
   }

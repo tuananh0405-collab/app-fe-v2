@@ -96,15 +96,15 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                _buildSettingItem(
-                  theme: theme,
-                  icon: Icons.tune,
-                  title: settings.notificationPreferences,
-                  subtitle: settings.notificationPreferencesSubtitle,
-                  onTap: () {
-                    context.push(AppRoutePath.notificationPreferences);
-                  },
-                ),
+                // _buildSettingItem(
+                //   theme: theme,
+                //   icon: Icons.tune,
+                //   title: settings.notificationPreferences,
+                //   subtitle: settings.notificationPreferencesSubtitle,
+                //   onTap: () {
+                //     context.push(AppRoutePath.notificationPreferences);
+                //   },
+                // ),
                 Divider(
                   height: 1,
                   color: theme.secondaryText.withValues(alpha: 0.2),
@@ -174,87 +174,87 @@ class SettingsScreen extends ConsumerWidget {
 
           // Other Settings Sections
           const SizedBox(height: 8),
-          Container(
-            color: theme.secondaryBackground,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    settings.general,
-                    style: theme.subtitle2.override(
-                      color: theme.secondaryText,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                _buildSettingItem(
-                  theme: theme,
-                  icon: Icons.devices_other,
-                  title: settings.devices,
-                  subtitle: settings.devicesSubtitle,
-                  onTap: () {
-                    context.push(AppRoutePath.devices);
-                  },
-                ),
-                Divider(
-                  height: 1,
-                  color: theme.secondaryText.withValues(alpha: 0.2),
-                ),
-                _buildSettingItem(
-                  theme: theme,
-                  icon: Icons.notifications_outlined,
-                  title: settings.notifications,
-                  onTap: () {
-                    // TODO: Navigate to notifications settings
-                  },
-                ),
-                Divider(
-                  height: 1,
-                  color: theme.secondaryText.withValues(alpha: 0.2),
-                ),
-                _buildSettingItem(
-                  theme: theme,
-                  icon: Icons.security_outlined,
-                  title: settings.privacy,
-                  onTap: () {
-                    // TODO: Navigate to privacy settings
-                  },
-                ),
-              ],
-            ),
-          ),
+          // Container(
+          //   color: theme.secondaryBackground,
+          //   child: Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     children: [
+          //       Padding(
+          //         padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          //         child: Text(
+          //           settings.general,
+          //           style: theme.subtitle2.override(
+          //             color: theme.secondaryText,
+          //             fontWeight: FontWeight.w600,
+          //           ),
+          //         ),
+          //       ),
+          //       _buildSettingItem(
+          //         theme: theme,
+          //         icon: Icons.devices_other,
+          //         title: settings.devices,
+          //         subtitle: settings.devicesSubtitle,
+          //         onTap: () {
+          //           context.push(AppRoutePath.devices);
+          //         },
+          //       ),
+          //       Divider(
+          //         height: 1,
+          //         color: theme.secondaryText.withValues(alpha: 0.2),
+          //       ),
+          //       _buildSettingItem(
+          //         theme: theme,
+          //         icon: Icons.notifications_outlined,
+          //         title: settings.notifications,
+          //         onTap: () {
+          //           // TODO: Navigate to notifications settings
+          //         },
+          //       ),
+          //       Divider(
+          //         height: 1,
+          //         color: theme.secondaryText.withValues(alpha: 0.2),
+          //       ),
+          //       // _buildSettingItem(
+          //       //   theme: theme,
+          //       //   icon: Icons.security_outlined,
+          //       //   title: settings.privacy,
+          //       //   onTap: () {
+          //       //     // TODO: Navigate to privacy settings
+          //       //   },
+          //       // ),
+          //     ],
+          //   ),
+          // ),
 
-          const SizedBox(height: 8),
-          Container(
-            color: theme.secondaryBackground,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    settings.about,
-                    style: theme.subtitle2.override(
-                      color: theme.secondaryText,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                _buildSettingItem(
-                  theme: theme,
-                  icon: Icons.info_outline,
-                  title: settings.appVersion,
-                  trailing: Text(
-                    '1.0.0',
-                    style: theme.bodyText2.override(color: theme.secondaryText),
-                  ),
-                  onTap: null,
-                ),
-              ],
-            ),
-          ),
+          // const SizedBox(height: 8),
+          // Container(
+          //   color: theme.secondaryBackground,
+          //   child: Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     children: [
+          //       Padding(
+          //         padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          //         child: Text(
+          //           settings.about,
+          //           style: theme.subtitle2.override(
+          //             color: theme.secondaryText,
+          //             fontWeight: FontWeight.w600,
+          //           ),
+          //         ),
+          //       ),
+          //       _buildSettingItem(
+          //         theme: theme,
+          //         icon: Icons.info_outline,
+          //         title: settings.appVersion,
+          //         trailing: Text(
+          //           '1.0.0',
+          //           style: theme.bodyText2.override(color: theme.secondaryText),
+          //         ),
+          //         onTap: null,
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );

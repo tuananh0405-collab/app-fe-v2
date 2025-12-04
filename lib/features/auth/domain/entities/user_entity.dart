@@ -3,12 +3,14 @@ class UserEntity {
   final String email;
   final String fullName;
   final String role;
+  final String? employeeId;
 
   const UserEntity({
     required this.id,
     required this.email,
     required this.fullName,
     required this.role,
+    this.employeeId,
   });
 
   @override

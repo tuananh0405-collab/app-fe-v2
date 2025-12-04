@@ -42,7 +42,7 @@ class AttendanceShiftItem extends StatelessWidget {
       case ShiftStatus.ON_LEAVE:
         return 'On Leave';
       default:
-        return 'Scheduled';
+        return 'In Coming';
     }
   }
 

@@ -5,7 +5,6 @@ import '../models/overtime_model.dart';
 
 abstract class OvertimeRemoteDataSource {
   Future<OvertimeModel> createOvertimeRequest({
-    required int shiftId,
     required DateTime overtimeDate,
     required DateTime startTime,
     required DateTime endTime,
@@ -44,7 +43,6 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
 
   @override
   Future<OvertimeModel> createOvertimeRequest({
-    required int shiftId,
     required DateTime overtimeDate,
     required DateTime startTime,
     required DateTime endTime,
@@ -55,7 +53,6 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
       final response = await dio.post(
         '/attendance/overtime-requests',
         data: {
-          'shift_id': shiftId,
           'overtime_date': overtimeDate.toIso8601String().split('T')[0],
           'start_time': startTime.toIso8601String(),
           'end_time': endTime.toIso8601String(),

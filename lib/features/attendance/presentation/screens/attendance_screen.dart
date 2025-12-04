@@ -324,7 +324,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
       case 'All':
         return 'All';
       case 'SCHEDULED':
-        return 'Scheduled';
+        return 'In Coming';
       case 'IN_PROGRESS':
         return 'In Progress';
       case 'COMPLETED':

@@ -14,7 +14,7 @@ class CreateOvertimeRequestUseCase
   Future<Either<Failure, OvertimeEntity>> call(
       CreateOvertimeRequestParams params) async {
     return await repository.createOvertimeRequest(
-      shiftId: params.shiftId,
+      // shiftId: params.shiftId,
       overtimeDate: params.overtimeDate,
       startTime: params.startTime,
       endTime: params.endTime,
@@ -25,7 +25,7 @@ class CreateOvertimeRequestUseCase
 }
 
 class CreateOvertimeRequestParams {
-  final int shiftId;
+  // final int shiftId;
   final DateTime overtimeDate;
   final DateTime startTime;
   final DateTime endTime;
@@ -33,7 +33,7 @@ class CreateOvertimeRequestParams {
   final String reason;
 
   CreateOvertimeRequestParams({
-    required this.shiftId,
+    // required this.shiftId,
     required this.overtimeDate,
     required this.startTime,
     required this.endTime,

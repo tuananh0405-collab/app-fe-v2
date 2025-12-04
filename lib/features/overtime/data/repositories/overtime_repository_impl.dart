@@ -17,7 +17,6 @@ class OvertimeRepositoryImpl implements OvertimeRepository {
 
   @override
   Future<Either<Failure, OvertimeEntity>> createOvertimeRequest({
-    required int shiftId,
     required DateTime overtimeDate,
     required DateTime startTime,
     required DateTime endTime,
@@ -27,7 +26,6 @@ class OvertimeRepositoryImpl implements OvertimeRepository {
     if (await networkInfo.isConnected) {
       try {
         final overtime = await remoteDataSource.createOvertimeRequest(
-          shiftId: shiftId,
           overtimeDate: overtimeDate,
           startTime: startTime,
           endTime: endTime,

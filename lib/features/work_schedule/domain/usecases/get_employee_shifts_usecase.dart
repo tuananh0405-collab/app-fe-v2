@@ -7,10 +7,12 @@ import '../repositories/work_schedule_repository.dart';
 class GetEmployeeShiftsParams {
   final DateTime fromDate;
   final DateTime toDate;
+  final int? employeeId;
 
   const GetEmployeeShiftsParams({
     required this.fromDate,
     required this.toDate,
+    this.employeeId,
   });
 }
 
@@ -26,6 +28,7 @@ class GetEmployeeShiftsUseCase
     return await repository.getEmployeeShifts(
       fromDate: params.fromDate,
       toDate: params.toDate,
+      employeeId: params.employeeId,
     );
   }
 }

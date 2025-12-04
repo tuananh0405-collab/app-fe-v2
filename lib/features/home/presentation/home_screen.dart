@@ -52,7 +52,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     
     // Load notifications and attendance when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(notificationListControllerProvider.notifier).loadNotifications();
+      // For home screen we only need the latest 3 notifications
+      ref.read(notificationListControllerProvider.notifier).loadNotifications(limit: 3);
       ref.read(attendanceControllerProvider.notifier).loadAttendance();
     });
   }
@@ -91,7 +92,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       body: RefreshIndicator(
         onRefresh: () async {
           await Future.wait([
-            ref.read(notificationListControllerProvider.notifier).loadNotifications(),
+            // When refreshing from home, fetch just the top 3 notifications
+            ref.read(notificationListControllerProvider.notifier).loadNotifications(limit: 3, refresh: true),
             ref.read(attendanceControllerProvider.notifier).loadAttendance(),
           ]);
         },
@@ -105,16 +107,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               // Welcome Header
               _WelcomeHeader(userName: user?.fullName ?? 'User')
                   .animateOnPageLoad(animationsMap['headerOnPageLoad']!),
-              const SizedBox(height: 24),
+              // const SizedBox(height: 24),
 
               
               // Location Status
-              GestureDetector(
-                onTap: () => context.push(AppRoutePath.locationHistory),
-                child: _LocationStatusCard(locationStatus: locationStatus),
-              )
-                  .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
-              const SizedBox(height: 16),
+              // GestureDetector(
+              //   onTap: () => context.push(AppRoutePath.locationHistory),
+              //   child: _LocationStatusCard(locationStatus: locationStatus),
+              // )
+              //     .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
+              // const SizedBox(height: 16),
 
               
               // Current Shift Section (use Work Schedule shifts mapped to AttendanceShift)
@@ -863,12 +865,12 @@ class _QuickActionsSection extends StatelessWidget {
     final theme = FlutterFlowTheme.of(context);
     
     final actions = [
-      {
-        'icon': Icons.check_circle_outline,
-        'label': 'Check In/Out',
-        'color': theme.primaryColor,
-        'path': AppRoutePath.attendanceCheck,
-      },
+      // {
+      //   'icon': Icons.check_circle_outline,
+      //   'label': 'Check In/Out',
+      //   'color': theme.primaryColor,
+      //   'path': AppRoutePath.attendanceCheck,
+      // },
       {
         'icon': Icons.event_note,
         'label': 'Leaves',
@@ -881,12 +883,12 @@ class _QuickActionsSection extends StatelessWidget {
         'color': theme.warning,
         'path': AppRoutePath.overtimes,
       },
-      {
-        'icon': Icons.schedule_outlined,
-        'label': 'Schedule',
-        'color': theme.secondaryColor,
-        'path': AppRoutePath.schedule,
-      },
+      // {
+      //   'icon': Icons.schedule_outlined,
+      //   'label': 'Schedule',
+      //   'color': theme.secondaryColor,
+      //   'path': AppRoutePath.schedule,
+      // },
     ];
 
     final Color accent = theme.primaryColor;

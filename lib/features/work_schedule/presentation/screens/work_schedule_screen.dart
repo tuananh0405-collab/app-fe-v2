@@ -435,7 +435,7 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
             children: [
               Flexible(
                 child: Text(
-                  'Shift #${shift.id}',
+                  shift.scheduleName ?? 'Shift #${shift.id}',
                   style: theme.subtitle2.override(
                     fontWeight: FontWeight.w600,
                   ),
@@ -496,12 +496,12 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
             ),
           
           // Work Hours
-          _buildDetailRow(
-            theme,
-            Icons.work_outline,
-            'Work Hours',
-            '${shift.workHours.toStringAsFixed(1)}h',
-          ),
+          // _buildDetailRow(
+          //   theme,
+          //   Icons.work_outline,
+          //   'Work Hours',
+          //   '${shift.workHours.toStringAsFixed(1)}h',
+          // ),
           
           if (shift.overtimeHours > 0)
             Padding(
@@ -635,7 +635,7 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
   String _getStatusText(ShiftStatus status) {
     switch (status) {
       case ShiftStatus.scheduled:
-        return 'Scheduled';
+        return 'In Coming';
       case ShiftStatus.completed:
         return 'Completed';
       case ShiftStatus.absent:
