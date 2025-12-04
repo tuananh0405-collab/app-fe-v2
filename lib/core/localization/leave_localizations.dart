@@ -34,7 +34,7 @@ class LeaveLocalizations {
       'error_creating_leave': 'Error creating leave request',
       'error_updating_leave': 'Error updating leave request',
       // Detail screen
-      'leave_details': 'Leave Details',
+      'leave_details': 'Leave Detail',
       'leave_not_found': 'Leave not found',
       'status': 'Status',
       'leave_information': 'Leave Information',

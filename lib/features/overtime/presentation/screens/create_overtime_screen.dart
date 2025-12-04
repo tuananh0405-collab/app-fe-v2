@@ -112,6 +112,16 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
         return;
       }
 
+      // Validate end time is at least 30 minutes after start time
+      final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
+      final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
+      final diffMinutes = endMinutes - startMinutes;
+      
+      if (diffMinutes < 30) {
+        showSnackbar(context, overtime.timeValidationError);
+        return;
+      }
+
       // Combine date with time
       final startDateTime = DateTime(
         _overtimeDate!.year,

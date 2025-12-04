@@ -70,21 +70,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               context: context,
               theme: theme,
               icon: Icons.person_outline,
-              title: 'View Profile Details',
+              title: 'View Profile Detail',
               subtitle: 'See your personal information',
               onTap: () => context.push(AppRoutePath.profileView),
             ),
             const SizedBox(height: 8),
-            _buildMenuItem(
-              context: context,
-              theme: theme,
-              icon: Icons.description_outlined,
-              title: 'View Contract',
-              subtitle: 'Employment contract details',
-              onTap: () => context.push(AppRoutePath.profileContract),
-            ),
+            // _buildMenuItem(
+            //   context: context,
+            //   theme: theme,
+            //   icon: Icons.description_outlined,
+            //   title: 'View Contract',
+            //   subtitle: 'Employment contract details',
+            //   onTap: () => context.push(AppRoutePath.profileContract),
+            // ),
 
-            const SizedBox(height: 24),
+            // const SizedBox(height: 24),
 
             // Devices Section
             _buildSectionHeader(context, theme, 'Devices & Security'),

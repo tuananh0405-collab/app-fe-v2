@@ -198,7 +198,9 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
           ),
         ),
         eventLoader: (day) {
-          return controller.getShiftsForDate(day);
+          final shifts = controller.getShiftsForDate(day);
+          // Limit to maximum 4 dots per day
+          return shifts.take(4).toList();
         },
         onDaySelected: (selectedDay, focusedDay) {
           setState(() {

@@ -624,9 +624,184 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // Cancel Button
+              // FFButton(
+              //   onPressed: () {
+              //     _showCancelDialog(context, ref);
+              //   },
+              //   text: l10n.leave.cancelRequest,
+              //   icon: const Icon(
+              //     Icons.cancel_outlined,
+              //     size: 20,
+              //     color: Colors.white,
+              //   ),
+              //   options: FFButtonOptions(
+              //     width: double.infinity,
+              //     height: 56,
+              //     padding: const EdgeInsets.symmetric(horizontal: 24),
+              //     color: theme.error,
+              //     textStyle: theme.subtitle1.override(
+              //       color: Colors.white,
+              //       fontWeight: FontWeight.bold,
+              //     ),
+              //     elevation: 4,
+              //     borderRadius: BorderRadius.circular(12),
+              //   ),
+              // ),
+              // const SizedBox(height: 16),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showCancelDialog(BuildContext context, WidgetRef ref) {
+    final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final reasonController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: theme.secondaryBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          l10n.leave.cancelDialogTitle,
+          style: theme.title2.override(
+            color: theme.primaryText,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.leave.cancelDialogMessage,
+              style: theme.bodyText2.override(color: theme.secondaryText),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              maxLines: 3,
+              style: theme.bodyText1.override(color: theme.primaryText),
+              decoration: InputDecoration(
+                hintText: l10n.leave.cancelReasonPlaceholder,
+                hintStyle: theme.bodyText2.override(color: theme.secondaryText),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: theme.secondaryText.withValues(alpha: 0.3),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: theme.primaryColor, width: 2),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          FFButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            text: l10n.leave.close,
+            options: FFButtonOptions(
+              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              color: theme.secondaryText.withValues(alpha: 0.1),
+              textStyle: theme.bodyText1.override(
+                color: theme.primaryText,
+                fontWeight: FontWeight.w500,
+              ),
+              elevation: 0,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          FFButton(
+            onPressed: () async {
+              if (reasonController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      l10n.leave.pleaseEnterCancelReason,
+                      style: theme.bodyText1.override(color: Colors.white),
+                    ),
+                    backgroundColor: theme.error,
+                  ),
+                );
+                return;
+              }
+
+              Navigator.of(dialogContext).pop();
+
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => Center(
+                  child: FFLoadingIndicator(color: theme.primaryColor),
+                ),
+              );
+
+              // Call cancel API
+              await ref
+                  .read(leaveControllerProvider.notifier)
+                  .cancelLeaveRequest(
+                    leaveId: int.parse(widget.leaveId),
+                    cancellationReason: reasonController.text.trim(),
+                  );
+
+              // Close loading dialog
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+
+              // Check result
+              final leaveState = ref.read(leaveControllerProvider);
+
+              if (context.mounted) {
+                if (leaveState.errorMessage != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        leaveState.errorMessage!,
+                        style: theme.bodyText1.override(color: Colors.white),
+                      ),
+                      backgroundColor: theme.error,
+                    ),
+                  );
+                } else if (leaveState.successMessage != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.leave.translate(leaveState.successMessage!),
+                        style: theme.bodyText1.override(color: Colors.white),
+                      ),
+                      backgroundColor: theme.success,
+                    ),
+                  );
+                  // Navigate back after successful cancellation
+                  context.pop();
+                }
+              }
+            },
+            text: l10n.leave.confirmCancel,
+            options: FFButtonOptions(
+              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              color: theme.error,
+              textStyle: theme.bodyText1.override(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              elevation: 2,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ],
       ),
     );
   }
