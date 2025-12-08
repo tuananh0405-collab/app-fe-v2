@@ -1,0 +1,204 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                          USER MANUAL - WORK SCHEDULE
+================================================================================
+
+Version: 1.0 (Simplified)
+Last Updated: December 9, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. WORK SCHEDULE
+
+================================================================================
+1. WORK SCHEDULE
+================================================================================
+
+Description: The Work Schedule module allows employees to view their assigned work shifts in a calendar format. Users can see scheduled shifts, check-in/out times, overtime hours, and other shift-related information. The module provides a visual calendar view with detailed shift information for each day.
+
+Instructions:
+
+Figure 1: Work schedule screen
+
+Step 1: View the Work Schedule screen
+    The system displays:
+        "Work Schedule" title in app bar
+        Back button (top-left corner)
+        Refresh button (top-right corner)
+        Monthly calendar view
+        Selected date heading
+        Shift details section for selected date
+        Pull-to-refresh functionality
+
+Step 2: Initial data loading
+    When the screen opens, the system automatically:
+        Loads shifts for the current month and next month
+        Selects today's date by default
+        Displays shifts for today (if any)
+        Shows a loading indicator during data fetch
+    Calendar dots appear on dates with scheduled shifts.
+
+Step 3: Understand calendar layout
+    The calendar displays:
+        Month and year in the header (e.g., "December 2024")
+        Days of the week (Monday to Sunday)
+        Date numbers for the current month
+        Navigation arrows (< >) to change months
+    The calendar starts each week on Monday.
+
+Step 4: Identify shift indicators
+    Dates with scheduled shifts show small dots below the date number.
+    Each dot represents one shift.
+    Up to 4 dots are displayed per date (if more shifts exist, only 4 dots show).
+    Dot color: Green (indicates shift is scheduled).
+
+Step 5: Identify special date markers
+    Today's date:
+        Highlighted with a semi-transparent colored circle
+        Helps you quickly identify the current date
+    
+    Selected date:
+        Highlighted with a solid colored circle
+        Shows which date's shifts are displayed below
+        By default, today's date is selected
+
+Step 6: Understand date states
+    Dates can have different visual states:
+        Normal: Plain date number, no background
+        Today: Semi-transparent circle background
+        Selected: Solid circle background
+        With shifts: Small green dots below the number
+        Outside current month: Not visible (hidden)
+
+Step 7: Select a date to view shifts
+    Tap on any date number in the calendar.
+    The date becomes highlighted with a solid circle.
+    The previous selection is deselected.
+    The selected date heading updates to show the new date.
+    Format: "Day, Month DD, YYYY" (e.g., "Monday, Dec 06, 2024")
+    The shift details section below updates immediately.
+
+Step 8: View shifts for selected date
+    If the date has scheduled shifts:
+        Shift cards appear in the details section
+        Each shift shows comprehensive information
+        Multiple shifts are listed vertically
+    
+    If the date has no shifts:
+        An empty state message appears
+        Icon: Calendar with X mark
+        Message: "No shifts scheduled"
+
+Step 9: View shift card information
+    Each shift is displayed in a separate card:
+        White background with subtle shadow
+        Shift name/title at the top (e.g., "Morning Shift", "Shift #123")
+        Status badge on the right side (color-coded by status type)
+
+Step 10: View shift details
+    Each shift card displays the following information (when applicable):
+    
+    Scheduled Time:
+        Clock icon
+        Label: "Scheduled"
+        Time range: "HH:MM - HH:MM" (e.g., "08:00 - 17:00")
+    
+    Check In Time (if checked in):
+        Login icon
+        Label: "Check In"
+        Time: "HH:MM" (e.g., "08:05")
+    
+    Check Out Time (if checked out):
+        Logout icon
+        Label: "Check Out"
+        Time: "HH:MM" (e.g., "17:10")
+    
+    Overtime Hours (if overtime worked):
+        Timer icon
+        Label: "Overtime"
+        Hours: "X.Xh" (e.g., "2.5h")
+    
+    Break Hours (if breaks taken):
+        Coffee icon
+        Label: "Break"
+        Hours: "X.Xh" (e.g., "1.0h")
+    
+    Late Minutes (if arrived late):
+        Warning icon (amber)
+        Label: "Late"
+        Minutes: "Xmin" (e.g., "15min")
+        Text color: Red (indicates issue)
+    
+    Early Leave Minutes (if left early):
+        Warning icon (amber)
+        Label: "Early Leave"
+        Minutes: "Xmin" (e.g., "10min")
+        Text color: Red (indicates issue)
+    
+    Notes (if notes exist):
+        Light gray background box
+        Note icon
+        Note text (can be multiple lines)
+
+    Status badges indicate the current state of each shift:
+    
+    In Coming (Scheduled):
+        Color: Orange/Yellow
+        Meaning: Shift is scheduled but hasn't started yet
+        Typical scenario: Future shifts or shifts starting later today
+    
+    Completed:
+        Color: Green
+        Meaning: Shift has been completed successfully
+        Typical scenario: Past shifts where you checked in and out
+    
+    Absent:
+        Color: Red
+        Meaning: You were scheduled but did not attend
+        Typical scenario: Missed shifts without check-in
+    
+    Cancelled:
+        Color: Gray
+        Meaning: Shift was cancelled by management
+        Typical scenario: Shifts removed from schedule
+
+Step 12: Navigate to previous month
+    Tap the left arrow (<) in the calendar header.
+    The calendar updates to show the previous month.
+    Month/year in header updates (e.g., "November 2024").
+    The system automatically loads shift data if not already loaded.
+
+Step 13: Navigate to next month
+    Tap the right arrow (>) in the calendar header.
+    The calendar updates to show the next month.
+    Month/year in header updates (e.g., "January 2025").
+    The system automatically loads shift data if not already loaded.
+
+Step 14: Refresh schedule data
+    Option 1 - Use refresh button:
+        Tap the refresh icon (circular arrow) in the top-right corner.
+        The system reloads shift data for the current date range.
+        A loading indicator appears briefly.
+        Calendar updates with latest shift information.
+    
+    Option 2 - Use pull-to-refresh:
+        Pull down on the shift details section.
+        Drag downward from the top of the shift details area.
+        A circular loading indicator appears.
+        Release to trigger refresh.
+        The system reloads shift data.
+        Calendar and shift details update.
+
+Step 15: View refresh results
+    After refresh completes:
+        Calendar dots update to reflect current shifts
+        Shift details update for selected date
+        Any new shifts appear
+        Cancelled shifts disappear
+        Modified shift information updates
+
+================================================================================
+END OF WORK SCHEDULE USER MANUAL
+================================================================================

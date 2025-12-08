@@ -1,0 +1,97 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                          USER MANUAL - MY ATTENDANCE
+================================================================================
+
+Version: 1.0 (Simplified)
+Last Updated: December 9, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. MY ATTENDANCE
+
+================================================================================
+1. MY ATTENDANCE
+================================================================================
+
+Description: The My Attendance module allows employees to view their attendance history, work hours, and shift details. The screen provides a comprehensive overview of attendance records with filtering options by date range and status.
+
+Instructions:
+
+Figure 1: My Attendance screen
+
+Step 1: View the My Attendance screen
+    The screen is organized into sections:
+        App bar with "My Attendance" title
+        Filter section (date range, quick filters, status dropdown)
+        Summary statistics card
+        Shift history list
+        Pull-to-refresh functionality
+
+Step 2: View attendance summary statistics
+    At the top of the content area, a summary card displays:
+    
+    Working Days (X/Y):
+        X = Days you were present
+        Y = Total working days in the period
+    
+    Work Hours:
+        Total hours worked in the period
+    
+    Late / Early (X / Y):
+        X = Number of times you arrived late
+        Y = Number of times you left early
+    
+    Overtime:
+        Total overtime hours in the period
+
+Step 3: Select custom date range
+    In the filter section, use the Start Date and End Date buttons:
+        Tap "Start Date" to select the beginning of the range.
+        Tap "End Date" to select the end of the range.
+        The selected range must be valid (Start Date <= End Date).
+        The data automatically updates upon selection.
+
+Step 4: Use quick date range filters
+    Tap one of the quick filter buttons for instant selection:
+        This Week: Sets range to current week (Monday to Sunday).
+        This Month: Sets range to current month.
+        Last 30 Days: Sets range to the last 30 days.
+    The summary statistics and shift list refresh immediately.
+
+Step 5: Filter by status
+    Tap the status dropdown to filter shifts by specific state:
+        All: Shows all records.
+        In Progress: Currently active shifts.
+        Completed: Finished shifts.
+        On Leave: Approved leave days.
+        Absent: Missed shifts without check-in.
+
+Step 6: View shift history list
+    Below the summary, shifts are listed by date (newest first). Each card shows:
+        Shift date and status badge
+        Scheduled time (e.g., "08:00 - 17:00")
+        Check-in/Check-out times (if recorded)
+        Work hours, Overtime hours, Break hours
+        Late/Early minutes (displayed in red if applicable)
+        Shift notes (if any)
+
+Step 7: Understand status colors
+    Status badges indicate the attendance state:
+        Orange (In Progress): Shift is currently active.
+        Green (Completed): Shift finished with check-in and check-out.
+        Purple (On Leave): Approved leave.
+        Red (Absent): Scheduled but did not attend.
+
+Step 8: Refresh attendance data
+    To ensure you have the latest data:
+        Pull down on the shift list area.
+        A loading indicator appears.
+        Release to trigger the refresh.
+        The summary and list update with the latest information from the server.
+
+================================================================================
+END OF MY ATTENDANCE USER MANUAL
+================================================================================

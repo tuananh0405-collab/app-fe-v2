@@ -1,0 +1,519 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                            USER MANUAL - PROFILE
+================================================================================
+
+Version: 1.0
+Last Updated: December 6, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. PROFILE MODULE OVERVIEW
+2. ACCESS PROFILE
+   2.1 Navigate to Profile Screen
+3. VIEW PROFILE DETAIL
+   3.1 View Personal Information
+4. MANAGE DEVICES & SECURITY
+   4.1 Manage Devices
+   4.2 View Location History
+   4.3 Face ID Registration
+5. SETTINGS
+   5.1 Change Password
+   5.2 App Settings
+6. LOGOUT
+   6.1 Sign Out of Account
+
+================================================================================
+1. PROFILE MODULE OVERVIEW
+================================================================================
+
+Description: The Profile module provides access to your personal information, 
+account settings, security features, and device management. It serves as a 
+central hub for managing your account and accessing various system settings.
+
+Key Features:
+- View detailed personal information
+- Manage registered devices
+- View location history
+- Register or update Face ID
+- Change password
+- Configure app settings (vibration, sound, etc.)
+- Logout from account
+
+================================================================================
+2. ACCESS PROFILE
+================================================================================
+
+2.1 Navigate to Profile Screen
+--------------------------------------------------------------------------------
+
+Description: The Profile screen is the main menu for accessing all 
+profile-related features and settings. It is organized into sections for easy 
+navigation.
+
+Prerequisites:
+- User must be logged into the system
+
+[Figure 01 - Profile Menu Screen]
+
+Step 1: Access Profile screen
+   - From the Home screen, tap the "Profile" icon in the bottom navigation bar.
+   - The system navigates to the Profile screen.
+   - Alternatively, tap the back button from any profile sub-screen to return 
+     to the main Profile menu.
+
+Step 2: View the Profile screen
+   - The system displays:
+     • "Profile" title in app bar (centered)
+     • Back button (top-left corner) - returns to Home
+     • Bottom navigation bar with Profile tab selected
+     • Menu sections organized by category
+
+Step 3: View menu sections
+   - The Profile screen is organized into 4 sections:
+   
+   Section 1: Account
+   • View Profile Detail - See your personal information
+   
+   Section 2: Devices & Security
+   • Manage Devices - View and manage registered devices
+   • Location History - View your location history
+   • Face ID Registration - Register or update your Face ID
+   
+   Section 3: Settings
+   • Change Password - Update your password
+   • Settings - Vibration, Sound, etc.
+   
+   Section 4: Account Actions
+   • Logout - Sign out of your account (red color)
+
+Step 4: Navigate to a feature
+   - Each menu item is displayed as a card with:
+     • Icon on the left (color-coded)
+     • Title in bold
+     • Subtitle description
+     • Right arrow icon indicating it's tappable
+   - Tap on any menu item to access that feature.
+
+Notes:
+• The Profile screen is accessible from the bottom navigation bar.
+• Back button returns to Home screen, not previous screen.
+• Menu items are organized by category for easy access.
+• Logout option is highlighted in red to prevent accidental taps.
+
+================================================================================
+3. VIEW PROFILE DETAIL
+================================================================================
+
+3.1 View Personal Information
+--------------------------------------------------------------------------------
+
+Description: The Profile Detail screen displays comprehensive personal and 
+employment information about the logged-in user. This is a read-only view of 
+your profile data.
+
+Prerequisites:
+- User is on the Profile screen
+- User profile data exists in the system
+
+[Figure 02 - Profile Detail Screen]
+
+Step 1: Access Profile Detail
+   - From the Profile screen, tap on "View Profile Detail".
+   - The system navigates to the Profile Detail screen.
+
+Step 2: View the Profile Detail screen
+   - The system displays:
+     • "Profile Detail" title in app bar
+     • Back button (top-left corner)
+     • Profile header section
+     • Personal information section
+     • Employment information section
+
+Step 3: View profile header
+   - At the top of the screen:
+     • Circular avatar with initials (if no photo)
+     • Full name in large text
+     • Employee code below name
+   
+   - Avatar initials are generated from:
+     • First letter of first name
+     • First letter of last name
+     • Example: "John Doe" → "JD"
+
+Step 4: View personal information
+   - The Personal Information section displays:
+   
+   • Full Name: Your complete name
+     - Icon: Person
+     - Format: First name + Last name
+   
+   • Email: Your email address
+     - Icon: Email
+     - Format: email@example.com
+   
+   • Phone Number: Your contact number
+     - Icon: Phone
+     - Format: As stored in system
+   
+   • Date of Birth: Your birth date
+     - Icon: Calendar
+     - Format: DD/MM/YYYY (e.g., "15/06/1990")
+   
+   • Gender: Your gender
+     - Icon: Person outline
+     - Values: Male, Female, Other
+   
+   • Address: Your residential address
+     - Icon: Location pin
+     - Format: Full address text
+
+Step 5: View employment information
+   - The Employment Information section displays:
+   
+   • Employee Code: Your unique employee identifier
+     - Icon: Badge
+     - Format: Alphanumeric code (e.g., "EMP001")
+   
+   • Department: Your department name
+     - Icon: Business
+     - Format: Department name
+   
+   • Position: Your job title
+     - Icon: Work
+     - Format: Position/role name
+   
+   • Join Date: Date you joined the company
+     - Icon: Calendar with checkmark
+     - Format: DD/MM/YYYY (e.g., "01/01/2024")
+   
+   • Employment Type: Your employment status
+     - Icon: Description
+     - Values: Full-time, Part-time, Contract, Intern
+   
+   • Manager: Your direct manager's name
+     - Icon: Person
+     - Format: Manager's full name
+
+Step 6: Handle loading and errors
+   
+   Case A - Data Loading:
+   • A loading indicator appears while fetching profile data.
+   • The screen shows a circular progress indicator.
+   • Wait for data to load.
+   
+   Case B - Data Loaded Successfully:
+   • All profile information displays.
+   • You can scroll to view all fields.
+   • All data is read-only (cannot be edited).
+   
+   Case C - Error Loading Data:
+   • An error message appears.
+   • Icon: Warning symbol
+   • Message: Description of the error
+   • "Retry" button to attempt loading again
+   • Tap "Retry" to reload profile data.
+
+Step 7: Return to Profile menu
+   - Tap the Back button (top-left) to return to Profile screen.
+
+Notes:
+• Profile information is read-only and cannot be edited in the app.
+• To update profile information, contact HR department.
+• All dates are displayed in DD/MM/YYYY format.
+• Missing information may show as empty or "Not provided".
+
+================================================================================
+4. MANAGE DEVICES & SECURITY
+================================================================================
+
+4.1 Manage Devices
+--------------------------------------------------------------------------------
+
+Description: The Manage Devices feature allows you to view and manage devices 
+that are registered for accessing the system. This helps maintain account 
+security by tracking which devices have access.
+
+Prerequisites:
+- User is on the Profile screen
+
+[Figure 03 - Manage Devices Screen]
+
+Step 1: Access Manage Devices
+   - From the Profile screen, tap on "Manage Devices".
+   - The system navigates to the Manage Devices screen.
+
+Step 2: View registered devices
+   - The screen displays a list of devices registered to your account.
+   - Each device card shows:
+     • Device name/model
+     • Device type (Mobile, Tablet, etc.)
+     • Registration date
+     • Last active date
+     • Status (Active/Inactive)
+     • Remove button (if applicable)
+
+Step 3: Manage devices
+   - View device details by tapping on a device card.
+   - Remove a device by tapping the remove/delete button.
+   - Confirm removal when prompted.
+
+Notes:
+• You cannot remove the device you're currently using.
+• Removing a device will require re-registration for that device.
+• Contact IT support if you see unfamiliar devices.
+
+--------------------------------------------------------------------------------
+
+4.2 View Location History
+--------------------------------------------------------------------------------
+
+Description: The Location History feature displays a record of your location 
+check-ins and GPS tracking history. This helps verify attendance and work 
+location compliance.
+
+Prerequisites:
+- User is on the Profile screen
+- Location tracking has been enabled
+
+[Figure 04 - Location History Screen]
+
+Step 1: Access Location History
+   - From the Profile screen, tap on "Location History".
+   - The system navigates to the Location History screen.
+
+Step 2: View location records
+   - The screen displays a chronological list of location records.
+   - Each record shows:
+     • Date and time of location capture
+     • Address or coordinates
+     • Location type (Check-in, GPS tracking, etc.)
+     • Associated activity (if any)
+     • Map preview (if available)
+
+Step 3: Filter location history
+   - Use date filters to view specific time periods.
+   - Filter by location type or activity.
+   - Search for specific locations.
+
+Notes:
+• Location history is stored for compliance and verification purposes.
+• GPS tracking requires location permissions to be enabled.
+• Historical data may be retained according to company policy.
+
+--------------------------------------------------------------------------------
+
+4.3 Face ID Registration
+--------------------------------------------------------------------------------
+
+Description: The Face ID Registration feature allows you to register or update 
+your facial recognition data for biometric authentication. This enables quick 
+and secure check-in/check-out.
+
+Prerequisites:
+- User is on the Profile screen
+- User is logged into the system
+- Device has a camera
+
+[Figure 05 - Face ID Registration]
+
+Step 1: Access Face ID Registration
+   - From the Profile screen, tap on "Face ID Registration".
+   - The system verifies your login status.
+
+Step 2: System verification
+   - The system checks:
+     • User is logged in
+     • User ID is available
+   
+   Case A - Verification Success:
+   • The Face ID registration process starts.
+   • Camera permission may be requested.
+   • Follow on-screen instructions.
+   
+   Case B - Verification Failure:
+   • Error message appears: "Please login first"
+   • You are returned to the Profile screen.
+   • Try logging out and logging in again.
+
+Step 3: Register Face ID
+   - Follow the on-screen instructions to capture your face.
+   - Position your face within the frame.
+   - Keep your face steady during capture.
+   - Multiple angles may be captured for better recognition.
+
+Step 4: Complete registration
+   - Once capture is complete:
+     • Success message appears
+     • Face ID is registered to your account
+     • You can now use Face ID for check-in/check-out
+
+Notes:
+• Face ID registration requires good lighting.
+• Remove glasses or face coverings for better accuracy.
+• You can update Face ID anytime by re-registering.
+• Face ID data is stored securely and used only for authentication.
+
+================================================================================
+5. SETTINGS
+================================================================================
+
+5.1 Change Password
+--------------------------------------------------------------------------------
+
+Description: The Change Password feature allows you to update your account 
+password for security purposes. This is recommended to be done periodically.
+
+Prerequisites:
+- User is on the Profile screen
+- User knows their current password
+
+[Figure 06 - Change Password Screen]
+
+Step 1: Access Change Password
+   - From the Profile screen, tap on "Change Password".
+   - The system navigates to the Change Password screen.
+
+Step 2: Change your password
+   - Follow the instructions in the Authentication User Manual, Section 4.1.
+   - Enter your current password.
+   - Enter your new password (must meet requirements).
+   - Submit the password change.
+
+Notes:
+• Refer to USER_MANUAL_AUTHENTICATION.txt for detailed password change instructions.
+• Password must meet security requirements (8+ characters, uppercase, lowercase, number, special character).
+• After changing password, you may need to login again on other devices.
+
+--------------------------------------------------------------------------------
+
+5.2 App Settings
+--------------------------------------------------------------------------------
+
+Description: The App Settings feature allows you to configure application 
+preferences such as vibration, sound, notifications, and other app behaviors.
+
+Prerequisites:
+- User is on the Profile screen
+
+[Figure 07 - App Settings Screen]
+
+Step 1: Access App Settings
+   - From the Profile screen, tap on "Settings".
+   - The system navigates to the App Settings screen.
+
+Step 2: Configure settings
+   - The Settings screen displays various configuration options:
+   
+   • Vibration: Enable/disable vibration feedback
+     - Toggle switch
+     - Affects button taps and notifications
+   
+   • Sound: Enable/disable sound effects
+     - Toggle switch
+     - Affects notification sounds and alerts
+   
+   • Notifications: Configure notification preferences
+     - Enable/disable specific notification types
+     - Set notification sound and vibration
+   
+   • Language: Select app language (if available)
+     - Dropdown or selection list
+     - May require app restart
+   
+   • Theme: Select app theme (if available)
+     - Light/Dark mode
+     - System default option
+
+Step 3: Save settings
+   - Settings are typically saved automatically when changed.
+   - Some settings may require app restart to take effect.
+   - A confirmation message may appear for certain changes.
+
+Notes:
+• Settings are stored locally on your device.
+• Some settings may sync across devices.
+• Notification settings may require device permissions.
+
+================================================================================
+6. LOGOUT
+================================================================================
+
+6.1 Sign Out of Account
+--------------------------------------------------------------------------------
+
+Description: The Logout function signs you out of your account and returns you 
+to the login screen. This should be done when you're finished using the app or 
+switching accounts.
+
+Prerequisites:
+- User is on the Profile screen
+
+[Figure 08 - Logout Confirmation Dialog]
+
+Step 1: Initiate logout
+   - From the Profile screen, scroll to the bottom.
+   - Tap on "Logout" (displayed in red).
+   - A confirmation dialog appears.
+
+Step 2: View logout confirmation dialog
+   - The dialog displays:
+     • "Logout" title
+     • Confirmation message: "Are you sure you want to logout?"
+     • "Cancel" button (gray)
+     • "Logout" button (red)
+
+Step 3: Confirm logout
+   - To proceed with logout:
+     • Tap the "Logout" button (red).
+     • The system signs you out.
+     • You are redirected to the Login screen.
+     • All local session data is cleared.
+   
+   - To cancel logout:
+     • Tap the "Cancel" button.
+     • The dialog closes.
+     • You remain on the Profile screen.
+     • No logout occurs.
+
+Step 4: After logout
+   - Once logged out:
+     • You are returned to the Sign In screen.
+     • You must enter credentials to login again.
+     • Face ID may be available for quick login (if registered).
+     • Previous session data is cleared.
+
+Notes:
+• Logout clears your session but doesn't delete your account.
+• You can login again immediately after logout.
+• Unsaved data in other screens may be lost upon logout.
+• Logout is recommended when using shared devices.
+• Face ID registration persists after logout.
+
+================================================================================
+CONTACT INFORMATION
+================================================================================
+
+For profile-related questions or issues, please contact:
+
+Human Resources Department
+For profile information updates and employment details
+Email: [Contact your organization for HR email]
+Phone: [Contact your organization for HR phone]
+
+IT Support
+For technical issues, device management, and Face ID problems
+Email: [Contact your organization for IT support email]
+Phone: [Contact your organization for IT support phone]
+
+Security Team
+For account security concerns and unauthorized device access
+Email: [Contact your organization for security email]
+
+Business Hours: [Contact your organization for support hours]
+
+================================================================================
+END OF PROFILE USER MANUAL
+================================================================================

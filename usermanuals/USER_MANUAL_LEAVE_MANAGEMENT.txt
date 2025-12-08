@@ -1,0 +1,953 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                        USER MANUAL - LEAVE MANAGEMENT
+================================================================================
+
+Version: 1.0
+Last Updated: December 6, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. LEAVE MANAGEMENT MODULE OVERVIEW
+2. VIEW LEAVE REQUESTS
+   2.1 View Leave List
+   2.2 Filter Leave Requests
+   2.3 View Leave Balance
+3. CREATE LEAVE REQUEST
+   3.1 Submit New Leave Request
+4. VIEW LEAVE DETAILS
+   4.1 View Leave Request Details
+   4.2 Cancel Leave Request
+5. UPDATE LEAVE REQUEST
+   5.1 Edit Leave Request
+
+================================================================================
+1. LEAVE MANAGEMENT MODULE OVERVIEW
+================================================================================
+
+Description: The Leave Management module allows employees to manage their 
+leave requests including creating new requests, viewing existing requests, 
+updating pending requests, and canceling requests. The system also displays 
+leave balance information for different leave types.
+
+Key Features:
+- View all leave requests with status filtering
+- Create new leave requests with validation
+- View detailed information of each leave request
+- Update pending leave requests
+- Cancel leave requests with reason
+- View leave balance for each leave type
+- Support for multiple leave types (Annual, Sick, Personal, Unpaid)
+- Automatic validation based on leave type rules
+
+================================================================================
+2. VIEW LEAVE REQUESTS
+================================================================================
+
+2.1 View Leave List
+--------------------------------------------------------------------------------
+
+Description: The Leave List screen displays all leave requests submitted by 
+the employee. Users can view the status, dates, and type of each request. The 
+list shows leave balance information at the top and provides filtering options.
+
+Prerequisites:
+- User must be logged into the system
+- User must have access to Leave Management feature
+
+[Figure 01 - Leave List Screen]
+
+Step 1: Access Leave Management
+   - From the Home screen or navigation menu, tap on "Leave Management".
+   - The system navigates to the Leave List screen.
+
+Step 2: View the Leave List screen
+   - The system displays:
+     • "Leave Management" title in app bar
+     • Leave balance cards showing available days for each leave type
+     • Filter button (top-right corner)
+     • Quick filter chips (All, Pending, Approved, Rejected, Cancelled)
+     • List of leave requests sorted by submission date (newest first)
+     • Floating action button (+) to create new leave request
+     • Pull-to-refresh functionality
+
+Step 3: View leave balance information
+   - At the top of the screen, leave balance cards display:
+     • Leave type name (e.g., "Annual Leave", "Sick Leave")
+     • Available days remaining
+     • Total days allocated
+     • Color-coded progress indicator
+   - The balance updates automatically when requests are approved/rejected.
+
+Step 4: View leave request cards
+   - Each leave request card shows:
+     • Leave type name with icon
+     • Status badge (Pending/Approved/Rejected/Cancelled) with color coding:
+       - Pending: Orange
+       - Approved: Green
+       - Rejected: Red
+       - Cancelled: Gray
+     • Start date and end date
+     • Total number of days requested
+     • Submission date
+     • Reason (truncated if long)
+   - Tap on any card to view full details.
+
+Step 5: Refresh the list
+   - Pull down on the list to refresh.
+   - The system fetches the latest leave requests and balances.
+   - A loading indicator appears during refresh.
+
+Notes:
+• The list automatically refreshes when returning from other screens.
+• Leave balance is calculated based on approved/pending requests.
+• Cards are color-coded by status for easy identification.
+
+--------------------------------------------------------------------------------
+
+2.2 Filter Leave Requests
+--------------------------------------------------------------------------------
+
+Description: The filter functionality allows users to narrow down the leave 
+request list by status, leave type, and date range. Quick filters provide 
+one-tap access to common filter options.
+
+Prerequisites:
+- User is on the Leave List screen
+- Leave requests exist in the system
+
+[Figure 02 - Leave Filter Options]
+
+Step 1: Use quick filters
+   - At the top of the leave list, filter chips are displayed:
+     • All - Shows all leave requests
+     • Pending - Shows only pending requests
+     • Approved - Shows only approved requests
+     • Rejected - Shows only rejected requests
+     • Cancelled - Shows only cancelled requests
+   - Tap on any chip to apply that filter.
+   - The selected chip is highlighted.
+   - The list updates immediately to show filtered results.
+
+Step 2: Access advanced filters
+   - Tap the filter icon (funnel icon) in the top-right corner.
+   - A bottom sheet appears with advanced filter options.
+
+Step 3: View advanced filter options
+   - The filter bottom sheet displays:
+     • "Filter" title
+     • Status section with radio buttons (All/Pending/Approved/Rejected/Cancelled)
+     • Leave Type section with dropdown
+     • Time section with From Date and To Date pickers
+     • Reset button to clear all filters
+     • Apply button to apply selected filters
+
+Step 4: Filter by status
+   - In the Status section, select one of the radio options:
+     • All - No status filter
+     • Pending - Only pending requests
+     • Approved - Only approved requests
+     • Rejected - Only rejected requests
+     • Cancelled - Only cancelled requests
+   - Only one status can be selected at a time.
+
+Step 5: Filter by leave type
+   - Tap on the "Select Leave Type" dropdown.
+   - A list of available leave types appears:
+     • Annual Leave
+     • Sick Leave
+     • Personal Leave
+     • Unpaid Leave
+   - Select a leave type to filter by that type.
+   - Leave blank to show all types.
+
+Step 6: Filter by date range
+   - In the Time section:
+     • Tap "From Date" to select start date of range
+     • Tap "To Date" to select end date of range
+   - A date picker appears for each selection.
+   - The filter will show requests with start dates within this range.
+   - Leave dates blank to show all dates.
+
+Step 7: Apply filters
+   - After selecting desired filters, tap "Apply" button.
+   - The bottom sheet closes.
+   - The list updates to show only matching requests.
+   - Active filters are displayed as chips below the quick filters.
+
+Step 8: Reset filters
+   - To clear all filters, tap "Reset" button in the filter bottom sheet.
+   - All filter selections are cleared.
+   - The list returns to showing all requests.
+
+Step 9: Remove individual filters
+   - Active filter chips are displayed below the quick filters.
+   - Each chip shows the active filter (e.g., "Status: Pending", "Type: Annual Leave").
+   - Tap the X icon on any chip to remove that specific filter.
+   - The list updates immediately.
+
+Notes:
+• Multiple filters can be combined (e.g., Pending + Annual Leave + Date range).
+• Quick filters override status selection in advanced filters.
+• Filters persist while navigating within Leave Management.
+• Filters reset when leaving Leave Management module.
+
+--------------------------------------------------------------------------------
+
+2.3 View Leave Balance
+--------------------------------------------------------------------------------
+
+Description: Leave balance cards display the remaining available days for 
+each leave type. The balance is calculated based on allocated days minus 
+approved and pending requests.
+
+Prerequisites:
+- User is on the Leave List screen
+- Leave types are configured in the system
+
+[Figure 03 - Leave Balance Cards]
+
+Step 1: View balance cards
+   - At the top of the Leave List screen, balance cards are displayed.
+   - Each card shows one leave type.
+   - Cards are arranged in a horizontal scrollable row.
+
+Step 2: Understand balance information
+   - Each balance card displays:
+     • Leave type name (e.g., "Annual Leave")
+     • Available days (large number)
+     • "left" label
+     • Total allocated days (smaller text)
+     • Progress bar showing usage percentage
+   
+   Example:
+   Annual Leave
+   12 left
+   out of 15 days
+   [Progress bar: 80% remaining]
+
+Step 3: Interpret progress bar colors
+   - The progress bar color indicates remaining balance:
+     • Green: 50% or more remaining
+     • Orange: 20-50% remaining
+     • Red: Less than 20% remaining
+   - This helps quickly identify which leave types are running low.
+
+Step 4: Scroll through leave types
+   - If there are more than 2-3 leave types, swipe left/right to see all.
+   - Each leave type has its own balance card.
+
+Notes:
+• Balance includes both approved and pending requests.
+• Balance updates in real-time when requests are submitted/cancelled.
+• Negative balance may appear if over-allocated (shown in red).
+• Contact HR if balance appears incorrect.
+
+================================================================================
+3. CREATE LEAVE REQUEST
+================================================================================
+
+3.1 Submit New Leave Request
+--------------------------------------------------------------------------------
+
+Description: The Create Leave Request function allows employees to submit 
+new leave requests. The system validates the request based on leave type 
+rules including maximum consecutive days, minimum notice period, and document 
+requirements.
+
+Prerequisites:
+- User must be logged into the system
+- User must have available leave balance
+- User must know the dates they want to request leave
+
+[Figure 04 - Create Leave Request Screen]
+
+Step 1: Access Create Leave Request screen
+   - From the Leave List screen, tap the floating action button (+) at the 
+     bottom-right corner.
+   - The system navigates to the Create Leave Request screen.
+
+Step 2: View the Create Leave Request screen
+   - The system displays:
+     • "Create Leave Request" title in app bar
+     • Back button (top-left corner)
+     • Leave Type dropdown
+     • Start Date selector
+     • End Date selector
+     • Reason text field (required)
+     • Supporting Document URL field (optional)
+     • Submit button
+
+Step 3: Select leave type
+   - Tap on the "Leave Type" dropdown.
+   - If leave types are loading, a loading indicator appears.
+   - Once loaded, a list of available leave types appears:
+     • Annual Leave
+     • Sick Leave
+     • Personal Leave
+     • Unpaid Leave
+   - Select the appropriate leave type for your request.
+   
+   Validation Rules:
+   • Leave type must be selected
+   
+   Error Messages:
+   • "Please select leave type" - if no type selected
+
+Step 4: Select start date
+   - Tap on the "Start Date" field.
+   - A date picker calendar appears.
+   - Select the first day of your leave.
+   - The selected date displays in DD/MM/YYYY format.
+   - If no date is selected, the field shows "Select Date".
+   
+   Validation Rules:
+   • Start date must be selected
+   • Start date cannot be in the past (for some leave types)
+   
+   Error Messages:
+   • "Please select start and end dates" - if dates not selected
+
+Step 5: Select end date
+   - Tap on the "End Date" field.
+   - A date picker calendar appears.
+   - Select the last day of your leave.
+   - The selected date displays in DD/MM/YYYY format.
+   - End date must be on or after start date.
+   - If you select an end date before start date, it automatically adjusts.
+   
+   Validation Rules:
+   • End date must be selected
+   • End date must be on or after start date
+
+Step 6: Enter reason for leave
+   - Tap on the "Reason" text field.
+   - Enter a detailed reason for your leave request.
+   - The field supports multiple lines (up to 4 lines visible).
+   - Placeholder text: "Please provide a detailed reason for your leave request"
+   
+   Validation Rules:
+   • Reason cannot be empty
+   • Reason must contain meaningful text
+   
+   Error Messages:
+   • "Enter reason for leave" - if field is empty
+
+Step 7: Add supporting document (if required)
+   - Some leave types require supporting documentation.
+   - If required, the "Supporting Document" field must be filled.
+   - Enter a URL to the document (e.g., Google Drive link, cloud storage link).
+   - Format: https://example.com/document.pdf
+   - If not required, the field shows "(Optional)" label.
+   
+   Validation Rules:
+   • Required for certain leave types (e.g., Sick Leave > 3 days)
+   • Must be a valid URL format if provided
+   
+   Error Messages:
+   • "This leave type requires supporting documentation. Please provide a document URL." - if required but not provided
+
+Step 8: Review request details
+   - Before submitting, review all entered information:
+     • Leave type selected
+     • Start and end dates
+     • Number of days (calculated automatically)
+     • Reason provided
+     • Supporting document (if applicable)
+
+Step 9: Submit the request
+   - Tap the "Submit" button at the bottom.
+   - The system performs validation checks:
+     • All required fields are filled
+     • Dates are valid
+     • Leave type rules are met (see Step 10)
+   - If validation passes, the button becomes disabled during submission.
+   - A loading indicator appears.
+
+Step 10: System validates leave type rules
+   
+   The system checks the following rules based on selected leave type:
+   
+   a) Maximum Consecutive Days:
+   • Some leave types have a limit on consecutive days.
+   • If your request exceeds this limit, an error appears.
+   • Error format: "Requested: X days. Maximum consecutive limit: Y days."
+   • Example: "Requested: 10 days. Maximum consecutive limit: 7 days."
+   
+   b) Maximum Days Per Year:
+   • Some leave types have an annual limit.
+   • If your request exceeds remaining annual allowance, an error appears.
+   • Error format: "Requested: X days. Annual limit: Y days."
+   • Example: "Requested: 5 days. Annual limit: 15 days."
+   
+   c) Minimum Notice Days:
+   • Some leave types require advance notice.
+   • The system calculates days between today and start date.
+   • If notice period is insufficient, an error appears.
+   • Error format: "Minimum notice of X days required."
+   • Example: "Minimum notice of 7 days required."
+   
+   d) Weekend Exclusion:
+   • Some leave types exclude weekends from day count.
+   • The system automatically calculates working days only.
+   • Weekends (Saturday, Sunday) are not counted.
+   
+   e) Document Requirement:
+   • Some leave types require supporting documents.
+   • If required but not provided, an error appears.
+   • Error: "This leave type requires supporting documentation. Please provide a document URL."
+
+Step 11: Handle validation results
+   
+   Case A - Validation Success:
+   • The request is submitted to the system.
+   • Success message appears: "Leave request created successfully"
+   • User is automatically returned to the Leave List screen after 0.5 seconds.
+   • The new request appears in the list with "Pending" status.
+   • Leave balance is updated to reflect the pending request.
+   
+   Case B - Validation Failure:
+   • Error message appears at the bottom of the screen.
+   • The message explains which validation rule failed.
+   • User remains on the Create Leave Request screen.
+   • User can correct the information and resubmit.
+   • Common errors:
+     - Missing required fields
+     - Date validation failures
+     - Leave type rule violations
+     - Insufficient leave balance
+     - Network connection errors
+
+Step 12 (Optional): Cancel request creation
+   - To cancel at any time, tap the Back button (top-left).
+   - The system returns to the Leave List screen.
+   - No leave request is created.
+   - Entered data is not saved.
+
+Notes:
+• Leave requests are created with "Pending" status by default.
+• Requests require approval from manager/HR.
+• You can edit or cancel pending requests (see sections 4.2 and 5.1).
+• Some leave types may have additional rules not listed here.
+• Contact HR if you encounter validation errors you don't understand.
+• Supporting documents should be accessible to approvers.
+• Keep document links valid until request is approved/rejected.
+
+================================================================================
+4. VIEW LEAVE DETAILS
+================================================================================
+
+4.1 View Leave Request Details
+--------------------------------------------------------------------------------
+
+Description: The Leave Detail screen displays comprehensive information about 
+a specific leave request including status, dates, approval information, and 
+action buttons for editing or canceling.
+
+Prerequisites:
+- User is on the Leave List screen
+- At least one leave request exists
+
+[Figure 05 - Leave Detail Screen]
+
+Step 1: Access Leave Detail screen
+   - From the Leave List screen, tap on any leave request card.
+   - The system navigates to the Leave Detail screen.
+
+Step 2: View the Leave Detail screen
+   - The system displays:
+     • "Leave Detail" title in app bar
+     • Back button (top-left corner)
+     • Leave balance card (same as list screen)
+     • Status badge with icon
+     • Leave Information section
+     • Approval Information section (if approved/rejected)
+     • Edit button (if status is Pending)
+     • Cancel Request button (if status is Pending)
+     • Note about edit/cancel restrictions
+
+Step 3: View status information
+   - At the top of the detail section, the status is prominently displayed:
+     • Status badge with color coding:
+       - Pending: Orange background, clock icon
+       - Approved: Green background, checkmark icon
+       - Rejected: Red background, X icon
+       - Cancelled: Gray background, cancel icon
+     • Status text in English (Pending/Approved/Rejected/Cancelled)
+
+Step 4: View leave information
+   - The Leave Information section displays:
+     • Leave ID: Unique identifier (e.g., "LV-2024-001")
+     • Employee Code: Your employee code
+     • Leave Type: Type of leave (e.g., "Annual Leave")
+     • Start Date: First day of leave (DD/MM/YYYY format)
+     • End Date: Last day of leave (DD/MM/YYYY format)
+     • Half-day indicators (if applicable):
+       - "Half-day leave (morning)" - if morning half-day
+       - "Half-day leave (afternoon)" - if afternoon half-day
+     • Leave Days: Total days requested (e.g., "5 days")
+     • Working Days: Total working days (excluding weekends if applicable)
+     • Submitted At: Date and time request was submitted
+     • Reason: Full text of leave reason
+     • Supporting Document: Link to document (if provided)
+       - Tap the link icon to open document in browser
+
+Step 5: View approval information (if applicable)
+   - If the request has been approved or rejected, additional information shows:
+     
+   For Approved Requests:
+   • Approval Level: Level of approver (e.g., "Level 1", "Level 2")
+   • Approved At: Date and time of approval
+   
+   For Rejected Requests:
+   • Approval Level: Level of approver who rejected
+   • Rejection Reason: Reason provided by approver
+   • If no reason provided, shows "No reason provided"
+
+Step 6: Understand action availability
+   - At the bottom of the screen, a note explains:
+     "You can only edit or cancel when status is 'Pending'"
+   
+   - Action buttons are only enabled if status is Pending:
+     • Edit button: Navigate to Update Leave screen
+     • Cancel Request button: Show cancellation dialog
+   
+   - If status is Approved, Rejected, or Cancelled:
+     • Both buttons are disabled (grayed out)
+     • Cannot modify the request
+     • Can only view the information
+
+Step 7: Navigate to edit (if Pending)
+   - If status is Pending, tap the "Edit" button.
+   - The system navigates to Update Leave screen.
+   - See Section 5.1 for edit instructions.
+
+Step 8: Initiate cancellation (if Pending)
+   - If status is Pending, tap the "Cancel Request" button.
+   - A cancellation dialog appears.
+   - See Section 4.2 for cancellation instructions.
+
+Step 9: Return to list
+   - Tap the Back button (top-left) to return to Leave List screen.
+   - The list refreshes to show any changes.
+
+Notes:
+• Leave details are read-only except for Pending status.
+• Supporting document links should remain accessible.
+• Approval information only appears after manager/HR action.
+• Rejection reasons help understand why request was denied.
+• Contact your manager if you have questions about rejection.
+
+--------------------------------------------------------------------------------
+
+4.2 Cancel Leave Request
+--------------------------------------------------------------------------------
+
+Description: The Cancel Leave Request function allows employees to cancel 
+their pending leave requests. A cancellation reason must be provided. Only 
+requests with "Pending" status can be cancelled.
+
+Prerequisites:
+- User is on the Leave Detail screen
+- Leave request status is "Pending"
+- User has a valid reason for cancellation
+
+[Figure 06 - Cancel Leave Request Dialog]
+
+Step 1: Initiate cancellation
+   - From the Leave Detail screen, tap "Cancel Request" button.
+   - A dialog appears with cancellation form.
+
+Step 2: View cancellation dialog
+   - The dialog displays:
+     • "Cancel Leave Request" title
+     • Instruction text: "Please provide a reason for cancellation:"
+     • Cancellation reason text field
+     • Close button (to dismiss without canceling)
+     • Confirm Cancel button (to proceed with cancellation)
+
+Step 3: Enter cancellation reason
+   - Tap on the text field in the dialog.
+   - Enter a clear reason for canceling the leave request.
+   - Placeholder text: "Enter cancellation reason..."
+   - The field supports multiple lines.
+   
+   Examples of good cancellation reasons:
+   • "Plans changed, no longer need leave"
+   • "Project deadline moved up, need to be present"
+   • "Personal matter resolved"
+   • "Submitted wrong dates by mistake"
+   
+   Validation Rules:
+   • Cancellation reason cannot be empty
+   • Must contain meaningful text
+   
+   Error Messages:
+   • "Please enter a cancellation reason" - if field is empty
+
+Step 4: Confirm cancellation
+   - After entering the reason, tap "Confirm Cancel" button.
+   - The system validates the input.
+   - If validation passes, the button becomes disabled during processing.
+   - A loading indicator may appear.
+
+Step 5: System processes cancellation
+   
+   Case A - Successful Cancellation:
+   • The leave request status is changed to "Cancelled".
+   • The cancellation reason is saved.
+   • Success message appears: "Leave request cancelled successfully"
+   • The dialog closes automatically.
+   • User is returned to the Leave List screen.
+   • The cancelled request appears with "Cancelled" status.
+   • Leave balance is updated to reflect the cancellation.
+   
+   Case B - Cancellation Failure:
+   • Error message appears in the dialog or as a snackbar.
+   • Common error messages:
+     - "Cannot cancel request with current status" - status changed
+     - "Network error" - connection problem
+     - "Unauthorized" - permission issue
+   • User remains in the dialog.
+   • User can retry or close the dialog.
+
+Step 6 (Optional): Close without canceling
+   - To dismiss the dialog without canceling, tap "Close" button.
+   - The dialog closes.
+   - No changes are made to the leave request.
+   - User returns to the Leave Detail screen.
+
+Notes:
+• Cancelled requests cannot be un-cancelled.
+• To resubmit, create a new leave request.
+• Cancellation reason is visible to managers/HR.
+• Cancelled requests remain in your history for record keeping.
+• Leave balance is restored immediately upon cancellation.
+• You can cancel a request even if it's already been approved (depending on company policy).
+
+================================================================================
+5. UPDATE LEAVE REQUEST
+================================================================================
+
+5.1 Edit Leave Request
+--------------------------------------------------------------------------------
+
+Description: The Update Leave Request function allows employees to modify 
+their pending leave requests. Users can change dates, leave type, reason, and 
+supporting documents. Only requests with "Pending" status can be edited.
+
+Prerequisites:
+- User has a leave request with "Pending" status
+- User is on the Leave Detail screen or Leave List screen
+- User wants to modify request details
+
+[Figure 07 - Update Leave Request Screen]
+
+Step 1: Access Update Leave Request screen
+   - From the Leave Detail screen, tap the "Edit" button.
+   - The system navigates to the Update Leave Request screen.
+   - Alternatively, tap "Edit" on a pending request card in the list (if available).
+
+Step 2: View the Update Leave Request screen
+   - The system displays:
+     • "Update Leave Request" title in app bar
+     • Back button (top-left corner)
+     • Leave Type dropdown (pre-filled with current type)
+     • Start Date selector (pre-filled with current date)
+     • End Date selector (pre-filled with current date)
+     • Reason text field (pre-filled with current reason)
+     • Supporting Document URL field (pre-filled if exists)
+     • Update button
+     • Cancel button (to cancel the leave request)
+   
+   - All fields are pre-populated with the current request data.
+
+Step 3: Modify leave type (if needed)
+   - Tap on the "Leave Type" dropdown.
+   - Select a different leave type if needed.
+   - The same leave types are available as in Create screen:
+     • Annual Leave
+     • Sick Leave
+     • Personal Leave
+     • Unpaid Leave
+   - Leave type change may affect validation rules.
+
+Step 4: Modify start date (if needed)
+   - Tap on the "Start Date" field.
+   - A date picker calendar appears.
+   - Select a new start date.
+   - The date displays in DD/MM/YYYY format.
+   - Same validation rules apply as Create screen.
+
+Step 5: Modify end date (if needed)
+   - Tap on the "End Date" field.
+   - A date picker calendar appears.
+   - Select a new end date.
+   - End date must be on or after start date.
+   - Same validation rules apply as Create screen.
+
+Step 6: Modify reason (if needed)
+   - Tap on the "Reason" text field.
+   - Edit the existing reason or enter a completely new one.
+   - The field supports multiple lines.
+   - Same validation rules apply as Create screen.
+
+Step 7: Modify supporting document (if needed)
+   - Tap on the "Supporting Document" field.
+   - Edit the existing URL or enter a new one.
+   - Clear the field if document is no longer needed (if optional).
+   - Same validation rules apply as Create screen.
+
+Step 8: Review changes
+   - Before updating, review all modified information.
+   - Ensure all required fields are still filled.
+   - Verify dates are correct.
+   - Check that reason is clear and accurate.
+
+Step 9: Submit the update
+   - Tap the "Update" button at the bottom.
+   - The system performs the same validation checks as Create screen:
+     • All required fields are filled
+     • Dates are valid
+     • Leave type rules are met
+   - If validation passes, the button becomes disabled during submission.
+   - A loading indicator appears.
+
+Step 10: System validates and processes update
+   
+   The system applies the same validation rules as create:
+   • Maximum consecutive days
+   • Maximum days per year
+   • Minimum notice days
+   • Weekend exclusion (if applicable)
+   • Document requirements
+   
+   Case A - Update Success:
+   • The leave request is updated with new information.
+   • Success message appears: "Leave request updated successfully"
+   • User is automatically returned to the Leave List screen.
+   • The updated request appears in the list with "Pending" status.
+   • Leave balance is recalculated based on new dates.
+   
+   Case B - Update Failure:
+   • Error message appears at the bottom of the screen.
+   • The message explains which validation rule failed.
+   • User remains on the Update Leave Request screen.
+   • User can correct the information and resubmit.
+   • Common errors are the same as Create screen.
+
+Step 11: Cancel the leave request (alternative action)
+   - At the bottom of the Update screen, there is also a "Cancel" button.
+   - This button allows you to cancel the leave request entirely.
+   - Tap "Cancel" button to initiate cancellation.
+   - A cancellation dialog appears (same as Section 4.2).
+   - Enter cancellation reason and confirm.
+   - The request is cancelled and you return to the Leave List screen.
+
+Step 12 (Optional): Discard changes
+   - To discard changes without updating, tap the Back button (top-left).
+   - The system returns to the Leave Detail screen.
+   - No changes are saved to the leave request.
+   - Original request data remains unchanged.
+
+Notes:
+• Only Pending requests can be edited.
+• Editing a request does not change its submission date.
+• Approval process restarts if request was partially approved.
+• If request is approved/rejected while you're editing, update will fail.
+• Refresh the detail screen to see current status before editing.
+• All validation rules are re-applied on update.
+• Leave balance updates reflect the new dates immediately.
+• Supporting document links should remain accessible after update.
+
+================================================================================
+LEAVE TYPE INFORMATION
+================================================================================
+
+The system supports multiple leave types, each with specific rules and 
+requirements. Understanding these rules helps ensure your requests are 
+approved smoothly.
+
+Common Leave Types:
+
+1. Annual Leave
+   - Description: Paid time off for vacation and personal time
+   - Typical Allocation: 12-15 days per year
+   - Rules:
+     • Maximum consecutive days: Usually 10-14 days
+     • Minimum notice: 7-14 days in advance
+     • Excludes weekends: Yes
+     • Requires document: No
+   - Notes: Most flexible leave type, plan in advance
+
+2. Sick Leave
+   - Description: Leave for illness or medical appointments
+   - Typical Allocation: 10-12 days per year
+   - Rules:
+     • Maximum consecutive days: Varies
+     • Minimum notice: 0 days (can be same-day)
+     • Excludes weekends: Yes
+     • Requires document: Yes (for > 3 days)
+   - Notes: Medical certificate required for extended sick leave
+
+3. Personal Leave
+   - Description: Leave for personal matters and emergencies
+   - Typical Allocation: 5-7 days per year
+   - Rules:
+     • Maximum consecutive days: Usually 3-5 days
+     • Minimum notice: 1-3 days
+     • Excludes weekends: Yes
+     • Requires document: Sometimes
+   - Notes: Use for urgent personal matters
+
+4. Unpaid Leave
+   - Description: Leave without pay for extended absences
+   - Typical Allocation: No limit (subject to approval)
+   - Rules:
+     • Maximum consecutive days: Varies by company policy
+     • Minimum notice: 14-30 days
+     • Excludes weekends: No
+     • Requires document: Usually yes
+   - Notes: Affects salary, requires strong justification
+
+Important Notes:
+• Leave type rules vary by company policy.
+• Some leave types may have additional requirements.
+• Consult your HR department for specific policies.
+• Leave balances reset annually (usually January 1st).
+• Unused leave may or may not carry over (check policy).
+• Public holidays are not counted as leave days.
+
+================================================================================
+BEST PRACTICES
+================================================================================
+
+Planning Leave Requests:
+• Plan annual leave well in advance (2-4 weeks minimum).
+• Check team calendar to avoid conflicts.
+• Coordinate with colleagues for coverage.
+• Submit requests during low-activity periods when possible.
+• Keep supporting documents organized and accessible.
+
+Writing Leave Reasons:
+• Be clear and concise.
+• Provide sufficient detail for approval.
+• Be honest about the purpose.
+• For sick leave, mention general nature (no need for private details).
+• For personal leave, brief explanation is sufficient.
+
+Managing Leave Balance:
+• Check balance regularly before submitting requests.
+• Plan leave distribution throughout the year.
+• Don't wait until year-end to use all leave.
+• Keep track of pending requests affecting balance.
+• Contact HR if balance appears incorrect.
+
+Document Management:
+• Use reliable cloud storage for supporting documents.
+• Ensure links are accessible to approvers.
+• Keep documents available until request is fully processed.
+• Use clear file names (e.g., "Medical_Certificate_2024-12-06.pdf").
+• For medical certificates, ensure they include required information.
+
+Communication:
+• Inform your manager before submitting leave request.
+• Notify team members about upcoming leave.
+• Set up out-of-office messages.
+• Provide emergency contact if needed.
+• Follow up if request is pending for too long.
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Problem: Cannot create leave request - "Insufficient leave balance"
+Solution:
+• Check your leave balance on the Leave List screen.
+• Verify you have enough days for the requested period.
+• Consider using a different leave type.
+• Contact HR if balance appears incorrect.
+• Wait for pending requests to be approved/rejected.
+
+Problem: Validation error - "Maximum consecutive days exceeded"
+Solution:
+• Check the leave type's maximum consecutive days limit.
+• Split your leave into multiple requests with gaps.
+• Use a different leave type if appropriate.
+• Contact HR for exceptions or special circumstances.
+
+Problem: Validation error - "Minimum notice days required"
+Solution:
+• Check the leave type's minimum notice requirement.
+• Submit request earlier to meet notice period.
+• For emergencies, use leave types with shorter notice (e.g., Sick Leave).
+• Contact your manager for urgent situations.
+
+Problem: Cannot edit leave request - Edit button is disabled
+Solution:
+• Check the request status - only Pending requests can be edited.
+• If status changed to Approved/Rejected, you cannot edit.
+• For approved requests, contact your manager to discuss changes.
+• For rejected requests, create a new request with corrections.
+
+Problem: Supporting document link not working
+Solution:
+• Verify the URL is correct and complete.
+• Ensure the document has proper sharing permissions.
+• Test the link in a browser before submitting.
+• Use a reliable cloud storage service.
+• Contact IT support if you need help with document sharing.
+
+Problem: Leave request stuck in "Pending" status for long time
+Solution:
+• Check with your manager about approval timeline.
+• Verify your manager received the notification.
+• Company policy may specify approval timeframes.
+• Escalate to HR if pending beyond normal timeframe.
+• Ensure you submitted to the correct approval chain.
+
+Problem: Cannot cancel leave request
+Solution:
+• Verify the request status is still "Pending".
+• Check your network connection.
+• Try refreshing the screen and attempting again.
+• Contact HR if you need to cancel an approved request.
+• System may prevent cancellation too close to start date.
+
+Problem: Leave balance not updating after cancellation
+Solution:
+• Pull down to refresh the Leave List screen.
+• Wait a few moments and check again.
+• Log out and log back in.
+• Contact HR if balance remains incorrect after 24 hours.
+
+Problem: Error message - "Cannot cancel request with current status"
+Solution:
+• Refresh the detail screen to see current status.
+• Request may have been approved/rejected while you were viewing it.
+• Contact your manager if you need to cancel an approved request.
+
+================================================================================
+CONTACT INFORMATION
+================================================================================
+
+For leave-related questions or issues, please contact:
+
+Human Resources Department
+Email: [Contact your organization for HR email]
+Phone: [Contact your organization for HR phone]
+
+Your Direct Manager
+For leave approval questions and urgent requests
+
+IT Support
+For technical issues with the leave management system
+Email: [Contact your organization for IT support email]
+
+Business Hours: [Contact your organization for support hours]
+
+================================================================================
+END OF LEAVE MANAGEMENT USER MANUAL
+================================================================================
