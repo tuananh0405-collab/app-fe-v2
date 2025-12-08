@@ -409,65 +409,112 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
-              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildSummaryItem(
-                          'Working Days',
-                          '${summary.daysPresent}/${summary.totalWorkingDays}',
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Attendance Summary',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Divider(
+                      height: 24,
+                      color: Colors.grey.withOpacity(0.2),
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Days Present',
+                            '${summary.daysPresent}',
+                            Icons.check_circle_outline,
+                          ),
                         ),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 40,
-                        color: Colors.grey[200],
-                      ),
-                      Expanded(
-                        child: _buildSummaryItem(
-                          'Work Hours',
-                          '${summary.totalWorkHours}h',
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Total Working Days',
+                            '${summary.totalWorkingDays}',
+                            Icons.calendar_today,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Divider(height: 24, color: Colors.grey[200]),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildSummaryItem(
-                          'Late / Early',
-                          '${summary.timesLate} / ${summary.timesEarlyLeave}',
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Days Absent',
+                            '${summary.daysAbsent}',
+                            Icons.cancel_outlined,
+                          ),
                         ),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 40,
-                        color: Colors.grey[200],
-                      ),
-                      Expanded(
-                        child: _buildSummaryItem(
-                          'Overtime',
-                          '${summary.totalOvertimeHours}h',
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Days On Leave',
+                            '${summary.daysOnLeave}',
+                            Icons.beach_access,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Total Work Hours',
+                            '${summary.totalWorkHours}h',
+                            Icons.access_time,
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Total Overtime Hours',
+                            '${summary.totalOvertimeHours}h',
+                            Icons.timer,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Times Late',
+                            '${summary.timesLate}',
+                            Icons.warning_amber_rounded,
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Times Early Leave',
+                            '${summary.timesEarlyLeave}',
+                            Icons.exit_to_app,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -517,29 +564,43 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   }
 
 
-  Widget _buildSummaryItem(String title, String value) {
-    return Column(
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w400,
+  Widget _buildInfoRow(
+    String label,
+    String value,
+    IconData icon,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.blue),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

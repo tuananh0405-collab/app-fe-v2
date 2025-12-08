@@ -31,21 +31,23 @@ Step 1: View the My Attendance screen
         Pull-to-refresh functionality
 
 Step 2: View attendance summary statistics
-    At the top of the content area, a summary card displays:
+    At the top of the content area, a summary card displays key statistics in a grid layout:
     
-    Working Days (X/Y):
-        X = Days you were present
-        Y = Total working days in the period
+    Row 1:
+        Days Present: Total number of days you were present.
+        Total Working Days: Total number of scheduled working days in the period.
     
-    Work Hours:
-        Total hours worked in the period
+    Row 2:
+        Days Absent: Total number of days you were absent.
+        Days On Leave: Total number of days you were on approved leave.
     
-    Late / Early (X / Y):
-        X = Number of times you arrived late
-        Y = Number of times you left early
+    Row 3:
+        Total Work Hours: Cumulative hours worked in the period.
+        Total Overtime Hours: Cumulative overtime hours worked.
     
-    Overtime:
-        Total overtime hours in the period
+    Row 4:
+        Times Late: Frequency of late arrivals.
+        Times Early Leave: Frequency of early departures.
 
 Step 3: Select custom date range
     In the filter section, use the Start Date and End Date buttons:

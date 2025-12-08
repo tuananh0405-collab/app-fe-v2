@@ -1,0 +1,67 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                       USER MANUAL - FACE VERIFICATION
+================================================================================
+
+Version: 1.0 (Simplified)
+Last Updated: December 9, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. FACE VERIFICATION OVERVIEW
+2. PERFORM FACE VERIFICATION
+
+================================================================================
+1. FACE VERIFICATION OVERVIEW
+================================================================================
+
+Description: The Face Verification module is used for secure Attendance Check-in. It validates your identity using facial recognition, liveness detection, GPS location, and Bluetooth beacons to ensure you are physically present at the office.
+
+Instructions:
+
+Figure 1: Face verification screen
+
+Step 1: Access Verification
+    The system displays the Face Verification screen with a countdown timer.
+    Ensure you are in a well-lit area and near the company beacon.
+    Tap "Get Started".
+    Grant Camera, Location, and Bluetooth permissions if prompted.
+
+Step 2: Position Face
+    Position your face within the oval frame.
+    Follow the color indicators:
+        WHITE: Ready / No face detected.
+        YELLOW: Face detected / Stabilizing (Hold still).
+        RED: Error (Face too far, spoof detected, or multiple faces).
+        GREEN: Face verified / Success.
+
+Step 3: Liveness Check & Stabilization
+    If prompted, perform the liveness challenge (e.g., "Look at the camera and blink").
+    Once real face is confirmed, hold still while the system stabilizes.
+    The oval remains YELLOW during stabilization (progress shown as %).
+
+Step 4: Automatic Capture
+    When stability reaches 100%, the oval turns GREEN.
+    The system automatically captures your face image.
+    NO manual button press is required.
+
+Step 5: System Processing
+    The system automatically validates based on:
+        Beacon Signal (Must be near office device)
+        GPS Location (Must be within allowed range)
+        Face Matching (Must match registered profile)
+    
+    Case A - Successful Verification:
+        Success message appears: "Face ID verified successfully!"
+        User is redirected to the Success screen.
+        Attendance check-in is recorded.
+    
+    Case B - Validation Failed:
+        Error message appears explaining the issue (e.g., "Beacon not found", "Spoof detected").
+        User is prompted to try again or check conditions.
+
+================================================================================
+END OF FACE VERIFICATION USER MANUAL
+================================================================================

@@ -55,14 +55,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       // For home screen we only need the latest 3 notifications
       ref.read(notificationListControllerProvider.notifier).loadNotifications(limit: 3);
       ref.read(attendanceControllerProvider.notifier).loadAttendance();
+      
+      final now = DateTime.now();
+      // Load shifts for today only
+      final start = DateTime(now.year, now.month, now.day);
+      final end = DateTime(now.year, now.month, now.day, 23, 59, 59);
+      ref.read(workScheduleControllerProvider.notifier).loadShifts(fromDate: start, toDate: end);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-  final notificationState = ref.watch(notificationListControllerProvider);
-  final scheduleState = ref.watch(workScheduleControllerProvider);
+    final notificationState = ref.watch(notificationListControllerProvider);
+    final scheduleState = ref.watch(workScheduleControllerProvider);
+    
+    // Filter for today's shifts only (in case state has a larger range loaded)
+    final now = DateTime.now();
+    final todayShifts = scheduleState.shifts.where((s) {
+      return s.shiftDate.year == now.year && 
+             s.shiftDate.month == now.month && 
+             s.shiftDate.day == now.day;
+    });
+
     final locationStatusAsync = ref.watch(locationStatusProvider);
     final locationStatus = locationStatusAsync.asData?.value ?? const LocationStatusModel(
       isInsideWorkZone: false,
@@ -91,10 +106,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+          final now = DateTime.now();
+          final start = DateTime(now.year, now.month, now.day);
+          final end = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
           await Future.wait([
             // When refreshing from home, fetch just the top 3 notifications
             ref.read(notificationListControllerProvider.notifier).loadNotifications(limit: 3, refresh: true),
             ref.read(attendanceControllerProvider.notifier).loadAttendance(),
+            ref.read(workScheduleControllerProvider.notifier).loadShifts(fromDate: start, toDate: end),
           ]);
         },
         color: theme.primaryColor,
@@ -116,67 +136,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               //   child: _LocationStatusCard(locationStatus: locationStatus),
               // )
               //     .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
-              // const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               
               // Current Shift Section (use Work Schedule shifts mapped to AttendanceShift)
-              // _AttendanceShiftSection(
-              //   shifts: scheduleState.shifts.map((s) {
-              //     // Map EmployeeShiftEntity -> AttendanceShift
-              //     // id as string, shiftDate as YYYY-MM-DD, dayOfWeek computed
-              //     String dayOfWeek() {
-              //       switch (s.shiftDate.weekday) {
-              //         case DateTime.monday:
-              //           return 'Monday';
-              //         case DateTime.tuesday:
-              //           return 'Tuesday';
-              //         case DateTime.wednesday:
-              //           return 'Wednesday';
-              //         case DateTime.thursday:
-              //           return 'Thursday';
-              //         case DateTime.friday:
-              //           return 'Friday';
-              //         case DateTime.saturday:
-              //           return 'Saturday';
-              //         case DateTime.sunday:
-              //           return 'Sunday';
-              //         default:
-              //           return '';
-              //       }
-              //     }
+              _AttendanceShiftSection(
+                shifts: todayShifts.map((s) {
+                  // Map EmployeeShiftEntity -> AttendanceShift
+                  // id as string, shiftDate as YYYY-MM-DD, dayOfWeek computed
+                  String dayOfWeek() {
+                    switch (s.shiftDate.weekday) {
+                      case DateTime.monday:
+                        return 'Monday';
+                      case DateTime.tuesday:
+                        return 'Tuesday';
+                      case DateTime.wednesday:
+                        return 'Wednesday';
+                      case DateTime.thursday:
+                        return 'Thursday';
+                      case DateTime.friday:
+                        return 'Friday';
+                      case DateTime.saturday:
+                        return 'Saturday';
+                      case DateTime.sunday:
+                        return 'Sunday';
+                      default:
+                        return '';
+                    }
+                  }
 
-              //     attendance.ShiftStatus mapStatus() {
-              //       switch (s.status) {
-              //         case wsEntity.ShiftStatus.scheduled:
-              //           return attendance.ShiftStatus.SCHEDULED;
-              //         case wsEntity.ShiftStatus.completed:
-              //           return attendance.ShiftStatus.COMPLETED;
-              //         case wsEntity.ShiftStatus.absent:
-              //           return attendance.ShiftStatus.ABSENT;
-              //         case wsEntity.ShiftStatus.cancelled:
-              //           return attendance.ShiftStatus.ABSENT;
-              //       }
-              //       // Fallback
-              //       return attendance.ShiftStatus.SCHEDULED;
-              //     }
+                  attendance.ShiftStatus mapStatus() {
+                    switch (s.status) {
+                      case wsEntity.ShiftStatus.scheduled:
+                        return attendance.ShiftStatus.SCHEDULED;
+                      case wsEntity.ShiftStatus.completed:
+                        return attendance.ShiftStatus.COMPLETED;
+                      case wsEntity.ShiftStatus.absent:
+                        return attendance.ShiftStatus.ABSENT;
+                      case wsEntity.ShiftStatus.cancelled:
+                        return attendance.ShiftStatus.ABSENT;
+                    }
+                    // Fallback
+                    return attendance.ShiftStatus.SCHEDULED;
+                  }
 
-              //     return attendance.AttendanceShift(
-              //       id: s.id.toString(),
-              //       shiftDate: s.shiftDate.toIso8601String().split('T')[0],
-              //       dayOfWeek: dayOfWeek(),
-              //       scheduledStartTime: s.scheduledStartTime,
-              //       scheduledEndTime: s.scheduledEndTime,
-              //       checkInTime: s.checkInTime?.toIso8601String(),
-              //       checkOutTime: s.checkOutTime?.toIso8601String(),
-              //       workHours: s.workHours,
-              //       overtimeHours: s.overtimeHours,
-              //       lateMinutes: s.lateMinutes,
-              //       earlyLeaveMinutes: s.earlyLeaveMinutes,
-              //       status: mapStatus(),
-              //       notes: s.notes,
-              //     );
-              //   }).toList(),
-              // ).animateOnPageLoad(animationsMap['cardOnPageLoad']!),
+                  return attendance.AttendanceShift(
+                    id: s.id.toString(),
+                    shiftDate: s.shiftDate.toIso8601String().split('T')[0],
+                    dayOfWeek: dayOfWeek(),
+                    scheduledStartTime: s.scheduledStartTime,
+                    scheduledEndTime: s.scheduledEndTime,
+                    checkInTime: s.checkInTime?.toIso8601String(),
+                    checkOutTime: s.checkOutTime?.toIso8601String(),
+                    workHours: s.workHours,
+                    overtimeHours: s.overtimeHours,
+                    lateMinutes: s.lateMinutes,
+                    earlyLeaveMinutes: s.earlyLeaveMinutes,
+                    status: mapStatus(),
+                    notes: s.notes,
+                  );
+                }).toList(),
+              ).animateOnPageLoad(animationsMap['cardOnPageLoad']!),
               const SizedBox(height: 24),
 
 
@@ -376,8 +396,8 @@ class _AttendanceShiftSection extends StatelessWidget {
     // Sort shifts by date and time to ensure correct order
   final sortedShifts = List<attendance.AttendanceShift>.from(shifts);
     sortedShifts.sort((a, b) {
-      final dateA = DateTime.parse('${a.shiftDate}T${a.scheduledStartTime}');
-      final dateB = DateTime.parse('${b.shiftDate}T${b.scheduledStartTime}');
+      final dateA = _parseDateTime(a.shiftDate, a.scheduledStartTime);
+      final dateB = _parseDateTime(b.shiftDate, b.scheduledStartTime);
       return dateA.compareTo(dateB);
     });
 
@@ -479,13 +499,18 @@ class _AttendanceShiftSection extends StatelessWidget {
 
   DateTime _parseDateTime(String date, String time) {
     // date: YYYY-MM-DD
-    // time: HH:mm or HH:mm:ss
-    // If time is just HH:mm, append :00
-    String timeStr = time;
-    if (time.length == 5) {
-      timeStr = '$time:00';
-    }
-    return DateTime.parse('${date}T$timeStr');
+    // time: H:mm, HH:mm, H:mm:ss, or HH:mm:ss
+    
+    // Ensure time components are padded (e.g., 8:30 -> 08:30)
+    final parts = time.split(':');
+    if (parts.isEmpty) return DateTime.parse('${date}T00:00:00');
+    
+    final hour = parts[0].padLeft(2, '0');
+    final minute = parts.length > 1 ? parts[1].padLeft(2, '0') : '00';
+    final second = parts.length > 2 ? parts[2].padLeft(2, '0') : '00';
+    
+    final formattedTime = '$hour:$minute:$second';
+    return DateTime.parse('${date}T$formattedTime');
   }
 }
 

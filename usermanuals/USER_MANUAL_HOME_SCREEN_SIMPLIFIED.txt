@@ -1,0 +1,88 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                          USER MANUAL - HOME SCREEN
+================================================================================
+
+Version: 1.0 (Simplified)
+Last Updated: December 9, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. HOME SCREEN DASHBOARD
+   1.1 Dashboard Overview
+   1.2 Quick Actions & Navigation
+
+================================================================================
+1. HOME SCREEN DASHBOARD
+================================================================================
+
+1.1 Dashboard Overview
+--------------------------------------------------------------------------------
+
+Description: The Home Screen is the central hub of the application. It provides an immediate view of your daily work schedule, recent notifications, and quick access to essential modules.
+
+Instructions:
+
+Figure 1: Home Screen Layout
+
+Step 1: Launch the Application
+    After signing in, the Home Screen loads automatically.
+    The top bar displays "Home" and a Notification bell icon.
+
+Step 2: Check Welcome Header
+    The top card displays:
+        Greeting (Good Morning/Afternoon/Evening)
+        Your Name
+    Tap the Bell icon (top right) to open the full Notification Center.
+
+Step 3: View Shift Schedule
+    The "Shift Schedule" section shows your status for today:
+    Case A - Current Shift:
+        Displays your ongoing shift (e.g., "08:00 - 17:00").
+        Shows "Current Shift" status.
+    
+    Case B - Incoming Shift:
+        Displays your next scheduled shift for the day.
+        Shows "Incoming Shift" label.
+    
+    Case C - No Shift:
+        Displays "No incoming shift" if you are off duty or finished for the day.
+
+Step 4: Check Latest Notifications
+    A dashboard widget shows your 3 most recent alerts (e.g., Request Approved, Reminder).
+    Swipe left/right to browse the summaries.
+    Tap any notification to view the full message dialog.
+    Tap "View All" to go to the Notifications screen.
+
+--------------------------------------------------------------------------------
+
+1.2 Quick Actions & Navigation
+--------------------------------------------------------------------------------
+
+Description: Quickly navigate to frequently used features without searching through menus.
+
+Instructions:
+
+Step 1: Use Quick Action Buttons
+    Located at the bottom of the dashboard.
+    Tap to access:
+        [Leaves]: Request time off or view leave balance/history.
+        [Overtime]: Register overtime work or view request status.
+
+Step 2: Refresh Dashboard
+    To update the data (shifts, notifications):
+    Pull down from the top of the screen and release.
+    The screen will show a loading indicator and refresh the content.
+
+Step 3: Bottom Navigation Bar
+    Use the bottom bar to switch main modules:
+    [Home]: Return to this dashboard.
+    [Attendance]: Go to detailed attendance checking and history.
+    [Work Schedule]: View your monthly roster.
+    [Profile]: View account details and settings.
+
+================================================================================
+END OF HOME SCREEN USER MANUAL
+================================================================================

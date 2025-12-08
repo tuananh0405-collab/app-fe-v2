@@ -1,0 +1,73 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                       USER MANUAL - NOTIFICATIONS
+================================================================================
+
+Version: 1.0 (Simplified)
+Last Updated: December 9, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. NOTIFICATIONS OVERVIEW
+2. MANAGING NOTIFICATIONS
+
+================================================================================
+1. NOTIFICATIONS OVERVIEW
+================================================================================
+
+Description: The Notifications module keeps you updated on important work-related events such as leave approvals, attendance reminders, and system announcements.
+
+Instructions:
+
+Figure 1: Notifications Screen
+
+Step 1: Access Notifications
+    Tap the Bell icon on the Home Dashboard.
+    OR tap "View All" from the dashboard widget.
+    
+Step 2: Understand the Interface
+    The screen displays a list of your alerts.
+    Top Bar:
+        Title "Notifications" (Thông báo).
+        Unread count (e.g., "3 chưa đọc").
+        "Mark All as Read" button (Đọc tất cả).
+    
+    List Items:
+        Each card shows the notification title, icon, and time received.
+        Unread items have a bold title and a blue dot indicator.
+        Urgent/High priority items have specific tags.
+
+================================================================================
+2. MANAGING NOTIFICATIONS
+================================================================================
+
+Description: View details, mark as read, and refresh your list.
+
+Instructions:
+
+Step 1: View Notification Details
+    Tap any notification card in the list.
+    A dialog appears showing the full message and timestamp.
+    Tapping a notification automatically marks it as "Read".
+    Tap "Close" to return to the list.
+
+Step 2: Mark All as Read
+    If you have multiple unread items:
+    Tap "Read All" (Đọc tất cả) in the top right corner.
+    Confirm the action in the popup dialog.
+    All blue dot indicators will disappear.
+
+Step 3: Refresh List
+    To check for new notifications:
+    Pull down from the top of the list and release.
+    The list will reload with the latest data.
+
+Step 4: Load More History
+    Scroll down to the bottom of the list.
+    If there are older notifications, the system will automatically load them.
+
+================================================================================
+END OF NOTIFICATIONS USER MANUAL
+================================================================================
