@@ -35,7 +35,8 @@ class WorkScheduleRemoteDataSourceImpl
       
       try {
         final fromDateStr = fromDate.toIso8601String().split('T')[0];
-        final toDateStr = effectiveToDate.toIso8601String().split('T')[0];
+        // Add 1 day to toDate to ensure we get all shifts for today (API uses exclusive end date)
+        final toDateStr = effectiveToDate.add(const Duration(days: 1)).toIso8601String().split('T')[0];
 
         final response = await dio.get(
           '/attendance/employee-shifts/my',

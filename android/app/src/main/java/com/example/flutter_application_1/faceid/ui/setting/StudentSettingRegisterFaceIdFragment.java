@@ -1854,13 +1854,17 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         Log.d(TAG, " Starting face registration API call...");
 
         AuthManager authManager = AuthManager.getInstance(requireContext());
-        String tempUserId = authManager.getUserId();
+        // Use employeeId instead of userId as requested
+        String tempUserId = authManager.getEmployeeId();
         
         if (tempUserId == null || tempUserId.isEmpty()) {
+            // Try to get from intent if not in AuthManager
             if (getActivity() != null && getActivity().getIntent() != null) {
-                tempUserId = getActivity().getIntent().getStringExtra("userId");
-                if (tempUserId != null && !tempUserId.isEmpty()) {
-                    authManager.setUserId(tempUserId);
+                String intentEmployeeId = getActivity().getIntent().getStringExtra("employeeId");
+                if (intentEmployeeId != null && !intentEmployeeId.isEmpty()) {
+                    tempUserId = intentEmployeeId;
+                    // Also save to AuthManager for future use
+                    authManager.setEmployeeId(tempUserId);
                 }
             }
         }
@@ -1871,7 +1875,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
             hasStartedRegistration = false;
             
             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
-                    "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
+                    "Không tìm thấy mã nhân viên (Employee ID). Vui lòng đăng nhập lại.");
             return;
         }
         

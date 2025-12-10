@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
 import '../../providers/leave_providers.dart';
+import '../../../auth/providers/auth_providers.dart';
 
 class CreateLeaveScreen extends ConsumerStatefulWidget {
   const CreateLeaveScreen({super.key});
@@ -19,10 +20,6 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
   final _reasonController = TextEditingController();
   final _supportingDocUrlController = TextEditingController();
 
-  // Mock data - will be replaced with actual data later
-  final int  _employeeId = 7;
-  final String _employeeCode = 'EMP001';
-  final int _departmentId = 1;
   int? _leaveTypeId;
 
   DateTime? _startDate;
@@ -91,6 +88,28 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
   void _handleSubmit() {
     final l10n = AppLocalizations.of(context);
     final leave = l10n.leave;
+
+    // Get logged-in user data
+    final authState = ref.read(loginControllerProvider);
+    final user = authState.user;
+
+    // Validate user is logged in
+    if (user == null) {
+      showSnackbar(context, 'Please login first');
+      return;
+    }
+
+    // Validate employee ID exists
+    if (user.employeeId == null || user.employeeId!.isEmpty) {
+      showSnackbar(context, 'Employee ID not found. Please contact administrator.');
+      return;
+    }
+
+    final employeeId = int.tryParse(user.employeeId!);
+    if (employeeId == null) {
+      showSnackbar(context, 'Invalid employee ID format.');
+      return;
+    }
 
     if (_formKey.currentState!.validate()) {
       if (_startDate == null || _endDate == null) {
@@ -165,9 +184,9 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
       ref
           .read(leaveControllerProvider.notifier)
           .createLeaveRequest(
-            employeeId: _employeeId,
-            employeeCode: _employeeCode,
-            departmentId: _departmentId,
+            employeeId: employeeId,
+            employeeCode: user.employeeId!, // Using employeeId as employeeCode for now
+            departmentId: 1, // TODO: Get from user profile when available
             leaveTypeId: _leaveTypeId!,
             startDate: _startDate!,
             endDate: _endDate!,

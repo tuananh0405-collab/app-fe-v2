@@ -1327,12 +1327,32 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
         String userId;
         try {
-            userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
-            if (userId == null || userId.isEmpty()) {
-                Log.e(TAG, " No user ID available");
-                stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "User not logged in");
+            AuthManager authManager = AuthManager.getInstance(requireContext());
+            // Use employeeId instead of userId as requested
+            String tempUserId = authManager.getEmployeeId();
+            Log.d(TAG, "================= getEmployeeId: " + authManager.getEmployeeId());
+            Log.d(TAG, "================= tempUserId: " + authManager.getCurrentUserId());
+
+            if (tempUserId == null || tempUserId.isEmpty()) {
+                // Try to get from intent if not in AuthManager
+                if (getActivity() != null && getActivity().getIntent() != null) {
+                    String intentEmployeeId = getActivity().getIntent().getStringExtra("employeeId");
+                    if (intentEmployeeId != null && !intentEmployeeId.isEmpty()) {
+                        tempUserId = intentEmployeeId;
+                        // Also save to AuthManager for future use
+                        authManager.setEmployeeId(tempUserId);
+                    }
+                }
+            }
+
+            if (tempUserId == null || tempUserId.isEmpty()) {
+                Log.e(TAG, " No employee ID available");
+                stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "User not logged in (missing employee ID)");
                 return;
             }
+
+            userId = tempUserId;
+
         } catch (IllegalStateException e) {
             Log.e(TAG, " Fragment not attached when getting user ID", e);
             return;
@@ -1515,7 +1535,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
             // Save bitmap for background sync
             String bitmapPath = saveBitmapToTempFile(currentFrameBitmap);
-            String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
+            String userId = AuthManager.getInstance(requireContext()).getEmployeeId();
             String successMessage = "Face ID verified successfully!";
 
             // Double-check fragment is still attached before starting activity
@@ -2442,7 +2462,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         stopCameraSafe();
         
         // Navigate to success screen
-        String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
+        String userId = AuthManager.getInstance(requireContext()).getEmployeeId();
         String userName = AuthManager.getInstance(requireContext()).getCurrentUserName();
         
         Intent successIntent = FaceIdSuccessActivity.createVerifySuccessIntent(

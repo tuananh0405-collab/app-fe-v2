@@ -57,10 +57,10 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
   }
 
   List<EmployeeShiftEntity> getShiftsForDate(DateTime date) {
-    final dateStr = date.toIso8601String().split('T')[0];
     return state.shifts.where((shift) {
-      final shiftDateStr = shift.shiftDate.toIso8601String().split('T')[0];
-      return shiftDateStr == dateStr;
+      return shift.shiftDate.year == date.year &&
+             shift.shiftDate.month == date.month &&
+             shift.shiftDate.day == date.day;
     }).toList();
   }
 }

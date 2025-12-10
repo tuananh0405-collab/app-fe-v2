@@ -180,112 +180,184 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
 
   Widget _buildLeaveBalanceCard(
       FlutterFlowTheme theme, dynamic leaveState, AppLocalizations l10n) {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.05),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: theme.primaryColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.account_balance_wallet,
-                  color: theme.primaryColor,
-                  size: 26,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                l10n.leave.leaveBalance,
-                style: theme.title2.override(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-
-          const SizedBox(height: 20),
-
-          /// Danh sách leave
-          ...leaveState.leaveBalances.map<Widget>((b) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 14),
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: Colors.black.withValues(alpha: 0.05),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  /// Tên loại nghỉ + tổng
-                  // Column(
-                  //   crossAxisAlignment: CrossAxisAlignment.start,
-                  //   children: [
-                  //     Text(
-                  //       b.leaveTypeName,
-                  //       style: theme.subtitle1.override(
-                  //         color: Colors.black87,
-                  //         fontWeight: FontWeight.w600,
-                  //       ),
-                  //     ),
-                  //     const SizedBox(height: 4),
-                  //     Text(
-                  //       'Total: ${b.totalDays.toStringAsFixed(1)} days',
-                  //       style: theme.bodyText2.override(
-                  //         color: Colors.black54,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-
-                  /// Remaining dạng chip
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: theme.primaryColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${b.remainingDays.toStringAsFixed(1)} ${l10n.leave.daysLeft}',
-                      style: theme.bodyText1.override(
-                        color: theme.primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
         ],
       ),
-    ),
-  );
-}
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// Header
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: theme.primaryColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.account_balance_wallet,
+                    color: theme.primaryColor,
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  l10n.leave.leaveBalance,
+                  style: theme.title2.override(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            /// Balance List
+            ...leaveState.leaveBalances.map<Widget>((b) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.black.withValues(alpha: 0.05),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Text(
+                    //   b.leaveTypeName,
+                    //   style: theme.subtitle1.override(
+                    //     color: Colors.black87,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
+                    // Divider(
+                    //   height: 24,
+                    //   color: Colors.grey.withValues(alpha: 0.2),
+                    // ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildInfoRow(
+                            theme,
+                            'Year',
+                            '${b.year}',
+                            Icons.calendar_today,
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildInfoRow(
+                            theme,
+                            'Total Days',
+                            '${b.totalDays}',
+                            Icons.format_list_numbered,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildInfoRow(
+                            theme,
+                            'Used Days',
+                            '${b.usedDays}',
+                            Icons.check_circle_outline,
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildInfoRow(
+                            theme,
+                            'Pending Days',
+                            '${b.pendingDays}',
+                            Icons.hourglass_empty,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildInfoRow(
+                            theme,
+                            'Remaining Days',
+                            '${b.remainingDays}',
+                            Icons.event_available,
+                          ),
+                        ),
+                        const Spacer(), // Placeholder for even spacing if needed
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(
+    FlutterFlowTheme theme,
+    String label,
+    String value,
+    IconData icon,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: theme.primaryColor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: theme.bodyText2.override(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: theme.bodyText1.override(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildLeaveCard(
     BuildContext context,
