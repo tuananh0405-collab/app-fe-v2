@@ -43,6 +43,8 @@ class WorkScheduleRemoteDataSourceImpl
           queryParameters: {
             'from_date': fromDateStr,
             'to_date': toDateStr,
+            'page': 1,
+            'limit': 30,
           },
         );
 
