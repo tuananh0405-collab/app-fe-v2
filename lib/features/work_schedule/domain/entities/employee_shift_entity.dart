@@ -1,5 +1,6 @@
 enum ShiftStatus {
   scheduled,
+  inProgress,
   completed,
   absent,
   cancelled,

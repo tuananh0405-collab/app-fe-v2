@@ -625,6 +625,8 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
     switch (status) {
       case ShiftStatus.scheduled:
         return theme.warning;
+      case ShiftStatus.inProgress:
+        return theme.primaryColor;
       case ShiftStatus.completed:
         return theme.success;
       case ShiftStatus.absent:
@@ -638,6 +640,8 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
     switch (status) {
       case ShiftStatus.scheduled:
         return 'In Coming';
+      case ShiftStatus.inProgress:
+        return 'In Progress';
       case ShiftStatus.completed:
         return 'Completed';
       case ShiftStatus.absent:

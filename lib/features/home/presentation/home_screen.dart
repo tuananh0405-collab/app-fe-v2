@@ -169,6 +169,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     switch (s.status) {
                       case wsEntity.ShiftStatus.scheduled:
                         return attendance.ShiftStatus.SCHEDULED;
+                      case wsEntity.ShiftStatus.inProgress:
+                        return attendance.ShiftStatus.SCHEDULED;
                       case wsEntity.ShiftStatus.completed:
                         return attendance.ShiftStatus.COMPLETED;
                       case wsEntity.ShiftStatus.absent:

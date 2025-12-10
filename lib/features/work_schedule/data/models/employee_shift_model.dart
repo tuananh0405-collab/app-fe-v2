@@ -53,6 +53,8 @@ class EmployeeShiftModel extends EmployeeShiftEntity {
     switch (status?.toUpperCase()) {
       case 'SCHEDULED':
         return ShiftStatus.scheduled;
+      case 'IN_PROGRESS':
+        return ShiftStatus.inProgress;
       case 'COMPLETED':
         return ShiftStatus.completed;
       case 'ABSENT':
