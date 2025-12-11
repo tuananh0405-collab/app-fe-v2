@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_application_1/faceid_channel.dart';
+import 'package:zentry/faceid_channel.dart';
 
 /// A widget that listens to Face ID success events and navigates to the success page
 class FaceIdSuccessHandler extends ConsumerStatefulWidget {

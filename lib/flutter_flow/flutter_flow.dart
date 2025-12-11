@@ -5,7 +5,7 @@
 /// 
 /// Usage:
 /// ```dart
-/// import 'package:flutter_application_1/flutter_flow/flutter_flow.dart';
+/// import 'package:zentry/flutter_flow/flutter_flow.dart';
 /// ```
 
 library ;
