@@ -58,7 +58,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
         backgroundColor: Colors.grey[50],
         appBar: AppBar(
           title: const Text(
-            'My Attendance',
+            'View Attendance Report',
             style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
           ),
           backgroundColor: Colors.white,
@@ -395,7 +395,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
     // Filter out SCHEDULED shifts
     final shifts = state.data!.shifts
-        .where((shift) => shift.status != ShiftStatus.SCHEDULED)
+        .where((shift) => shift.status != ShiftStatus.SCHEDULED && shift.status != ShiftStatus.IN_PROGRESS)
         .toList();
 
     return RefreshIndicator(
@@ -524,29 +524,29 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // const Text(
-                //   'Shift History',
-                //   style: TextStyle(
-                //     fontSize: 18,
-                //     fontWeight: FontWeight.bold,
-                //   ),
-                // ),
-                // if (state.selectedStatus != null)
-                //   Container(
-                //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                //     decoration: BoxDecoration(
-                //       color: _getStatusColor(state.selectedStatus!).withOpacity(0.2),
-                //       borderRadius: BorderRadius.circular(12),
-                //     ),
-                //     child: Text(
-                //       _getStatusLabel(state.selectedStatus!),
-                //       style: TextStyle(
-                //         fontSize: 12,
-                //         fontWeight: FontWeight.bold,
-                //         color: _getStatusColor(state.selectedStatus!),
-                //       ),
-                //     ),
-                //   ),
+                const Text(
+                  'Shift History',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (state.selectedStatus != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(state.selectedStatus!).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _getStatusLabel(state.selectedStatus!),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: _getStatusColor(state.selectedStatus!),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

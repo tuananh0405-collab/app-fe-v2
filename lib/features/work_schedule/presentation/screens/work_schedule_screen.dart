@@ -60,7 +60,7 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
       backgroundColor: theme.primaryBackground,
       appBar: AppBar(
         title: Text(
-          'Work Schedule',
+          'View Schedule',
           style: theme.title2.override(
             color: Colors.white,
             fontWeight: FontWeight.w600,

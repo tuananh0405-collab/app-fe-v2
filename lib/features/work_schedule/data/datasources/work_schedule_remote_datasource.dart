@@ -167,8 +167,20 @@ class WorkScheduleRemoteDataSourceImpl
           timeParts.length > 2 ? int.parse(timeParts[2]) : 0,
         );
 
-        // If check-in time has passed, change status to inProgress
-        if (now.isAfter(checkInDateTime) || now.isAtSameMomentAs(checkInDateTime)) {
+        // Parse the scheduled end time to get check-out time
+        final endTimeParts = shift.scheduledEndTime.split(':');
+        final checkOutDateTime = DateTime(
+          shift.shiftDate.year,
+          shift.shiftDate.month,
+          shift.shiftDate.day,
+          int.parse(endTimeParts[0]),
+          int.parse(endTimeParts[1]),
+          endTimeParts.length > 2 ? int.parse(endTimeParts[2]) : 0,
+        );
+
+        // If check-in time has passed and now is before or at check-out time, change status to inProgress
+        if ((now.isAfter(checkInDateTime) || now.isAtSameMomentAs(checkInDateTime)) &&
+            (now.isBefore(checkOutDateTime) || now.isAtSameMomentAs(checkOutDateTime))) {
           return EmployeeShiftModel(
             id: shift.id,
             employeeId: shift.employeeId,

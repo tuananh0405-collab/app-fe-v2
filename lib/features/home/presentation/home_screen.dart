@@ -392,7 +392,7 @@ class _AttendanceShiftSection extends StatelessWidget {
     final now = DateTime.now();
 
   attendance.AttendanceShift? displayShift;
-    String label = 'No incoming shift';
+    String label = 'No incoming shift today';
     bool isCurrent = false;
 
     // Sort shifts by date and time to ensure correct order
@@ -460,7 +460,7 @@ class _AttendanceShiftSection extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'No incoming shift',
+              'No incoming shift today',
               style: theme.bodyText2.override(
                 color: theme.secondaryText,
               ),
