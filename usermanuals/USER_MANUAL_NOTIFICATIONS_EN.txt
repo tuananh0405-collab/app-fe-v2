@@ -1,10 +1,10 @@
 ================================================================================
                     EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
-                       USER MANUAL - NOTIFICATIONS
+                          USER MANUAL - NOTIFICATIONS
 ================================================================================
 
-Version: 1.0 (Simplified)
-Last Updated: December 11, 2025
+Version: 1.0 (English)
+Last Updated: December 12, 2025
 
 ================================================================================
 TABLE OF CONTENTS
@@ -26,9 +26,9 @@ Figure 1: Notifications Screen
 Step 1: View the Notifications Screen
     The system displays:
         App Bar:
-            Title: "Thông báo" (Notifications)
-            Unread count: Shows "X chưa đọc" if you have unread notifications
-            "Đọc tất cả" button: Appears if you have unread items
+            Title: "Notifications"
+            Unread count: Shows "X unread" if you have unread notifications
+            "Mark All as Read" button: Appears if you have unread items
             Back button: Returns to Home screen
         
         Notification List:
@@ -36,7 +36,7 @@ Step 1: View the Notifications Screen
             Each card shows:
                 - Color-coded icon (green ✓, red ✗, orange 🕐, blue 📅, purple 📢)
                 - Title (bold if unread, semibold if read)
-                - Time ("Vừa xong", "X phút trước", "X giờ trước", "X ngày trước", or "DD/MM/YYYY")
+                - Time ("Just now", "X minutes ago", "X hours ago", "X days ago", or "DD/MM/YYYY")
                 - Priority badge ("HIGH" in orange or "URGENT" in red, if applicable)
                 - Blue dot indicator on unread notifications
             
@@ -58,9 +58,9 @@ Step 2: View Notification Details
 
 Step 3: Mark All Notifications as Read
     If you have unread notifications:
-        Tap the "Đọc tất cả" button in the top-right corner.
-        A confirmation dialog appears.
-        Tap "Đồng ý" to confirm.
+        Tap the "Mark All as Read" button in the top-right corner.
+        A confirmation dialog appears asking: "Are you sure you want to mark all notifications as read?"
+        Tap "Confirm" to proceed.
         
     Result:
         All notifications are marked as read.
@@ -77,7 +77,7 @@ Step 5: Load Older Notifications
     The system automatically loads older notifications as you scroll.
     
     Simply scroll down through the list.
-    When you reach near the bottom, older notifications load automatically.
+    When you reach near the bottom (200 pixels from end), older notifications load automatically.
     A small loading spinner appears while loading more items.
 
 Step 6: Understand Screen States
@@ -86,12 +86,13 @@ Step 6: Understand Screen States
         Wait for the notifications to load.
     
     Empty State:
-        Bell icon with "Không có thông báo" message appears.
+        Bell icon with "No Notifications" message appears.
+        Subtitle: "You're all caught up!"
         This means you have no notifications at this time.
     
     Error State:
-        Error icon with "Lỗi tải thông báo" message appears.
-        Tap the "Thử lại" button to retry loading.
+        Error icon with "Error loading notifications" message appears.
+        Tap the "Retry" button to attempt loading again.
 
 ================================================================================
 2. NOTIFICATION TYPES
@@ -115,6 +116,7 @@ Leave Rejection
 
 Attendance Reminders
     Icon: Orange clock (🕐)
+    Types: Attendance Reminder, Check-in Reminder, Check-out Reminder
     Meaning: Reminder to check in at the start of your shift or check out at the end.
     Examples: 
         "Please check in to start your work day"
@@ -148,7 +150,7 @@ Tips for Best Experience:
     ✓ Check your notifications daily to stay updated on important events.
     ✓ Act promptly on urgent notifications marked with a red "URGENT" badge.
     ✓ Tap each notification to mark it as read and keep your list organized.
-    ✓ Use the "Đọc tất cả" button to quickly clear many unread notifications.
+    ✓ Use the "Mark All as Read" button to quickly clear many unread notifications.
     ✓ Pull down to refresh before important tasks to ensure you have the latest updates.
 
 Common Issues and Solutions:
@@ -156,7 +158,7 @@ Common Issues and Solutions:
 Problem: Notifications won't load
     Solution 1: Pull down from the top to refresh the list.
     Solution 2: Check your internet connection (WiFi or mobile data).
-    Solution 3: Tap the "Thử lại" button if an error message appears.
+    Solution 3: Tap the "Retry" button if an error message appears.
     Solution 4: Close and restart the app.
 
 Problem: Unread count is not updating
