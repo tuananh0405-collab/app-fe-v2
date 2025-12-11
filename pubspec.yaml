@@ -133,6 +133,6 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/AAS.png"
+  image_path: "assets/images/logo.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/AAS.png"
+  adaptive_icon_foreground: "assets/images/logo.png"
