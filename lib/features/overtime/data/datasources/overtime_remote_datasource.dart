@@ -54,8 +54,8 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
         '/attendance/overtime-requests',
         data: {
           'overtime_date': overtimeDate.toIso8601String().split('T')[0],
-          'start_time': startTime.toIso8601String(),
-          'end_time': endTime.toIso8601String(),
+          'start_time': startTime.toUtc().add(const Duration(hours: 7)).toIso8601String(),
+          'end_time': endTime.toUtc().add(const Duration(hours: 7)).toIso8601String(),
           'estimated_hours': estimatedHours.toDouble(),
           'reason': reason,
         },
@@ -273,8 +273,8 @@ class OvertimeRemoteDataSourceImpl implements OvertimeRemoteDataSource {
       final response = await dio.put(
         '/attendance/overtime-requests/$overtimeId',
         data: {
-          'start_time': startTime.toIso8601String(),
-          'end_time': endTime.toIso8601String(),
+          'start_time': startTime.toUtc().add(const Duration(hours: 7)).toIso8601String().replaceFirst(RegExp(r'\.\d+Z$'), 'Z'),
+          'end_time': endTime.toUtc().add(const Duration(hours: 7)).toIso8601String().replaceFirst(RegExp(r'\.\d+Z$'), 'Z'),
           'estimated_hours': estimatedHours.toDouble(),
           'reason': reason,
         },
