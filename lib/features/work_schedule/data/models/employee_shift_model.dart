@@ -19,6 +19,7 @@ class EmployeeShiftModel extends EmployeeShiftEntity {
     super.earlyLeaveMinutes,
     required super.status,
     super.notes,
+    super.scheduleName,
   });
 
   factory EmployeeShiftModel.fromJson(Map<String, dynamic> json) {
@@ -44,6 +45,7 @@ class EmployeeShiftModel extends EmployeeShiftEntity {
       earlyLeaveMinutes: (json['early_leave_minutes'] as num?)?.toInt() ?? 0,
       status: _parseStatus(json['status'] as String?),
       notes: json['notes'] as String?,
+      scheduleName: json['schedule_name'] as String?,
     );
   }
 
@@ -51,6 +53,8 @@ class EmployeeShiftModel extends EmployeeShiftEntity {
     switch (status?.toUpperCase()) {
       case 'SCHEDULED':
         return ShiftStatus.scheduled;
+      case 'IN_PROGRESS':
+        return ShiftStatus.inProgress;
       case 'COMPLETED':
         return ShiftStatus.completed;
       case 'ABSENT':
@@ -82,6 +86,7 @@ class EmployeeShiftModel extends EmployeeShiftEntity {
       'early_leave_minutes': earlyLeaveMinutes,
       'status': status.toString().split('.').last.toUpperCase(),
       if (notes != null) 'notes': notes,
+      if (scheduleName != null) 'schedule_name': scheduleName,
     };
   }
 }

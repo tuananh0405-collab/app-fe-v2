@@ -4,6 +4,7 @@ import '../network/dio_client.dart';
 import '../network/push_notification_api.dart';
 import 'push_notification_service.dart';
 import 'push_notification_manager.dart';
+import 'gps_tracking_service.dart';
 
 /// Provider for push notification enabled setting
 final pushNotificationEnabledProvider = NotifierProvider<PushNotificationEnabledNotifier, bool>(PushNotificationEnabledNotifier.new);
@@ -74,13 +75,22 @@ class NotificationVibrationEnabledNotifier extends Notifier<bool> {
   }
 }
 
+/// Provider for GpsTrackingService
+final gpsTrackingServiceProvider = Provider<GpsTrackingService>((ref) {
+  final dio = ref.watch(dioProvider);
+  return GpsTrackingService(dio);
+});
+
 /// Provider for PushNotificationService
 final pushNotificationServiceProvider = Provider<PushNotificationService>((ref) {
   final soundEnabled = ref.watch(notificationSoundEnabledProvider);
   final vibrationEnabled = ref.watch(notificationVibrationEnabledProvider);
+  final gpsTrackingService = ref.watch(gpsTrackingServiceProvider);
+  
   return PushNotificationService(
     soundEnabled: soundEnabled,
     vibrationEnabled: vibrationEnabled,
+    gpsTrackingService: gpsTrackingService,
   );
 });
 

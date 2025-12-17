@@ -34,7 +34,7 @@ class LeaveLocalizations {
       'error_creating_leave': 'Error creating leave request',
       'error_updating_leave': 'Error updating leave request',
       // Detail screen
-      'leave_details': 'Leave Details',
+      'leave_details': 'Leave Detail',
       'leave_not_found': 'Leave not found',
       'status': 'Status',
       'leave_information': 'Leave Information',
@@ -76,6 +76,12 @@ class LeaveLocalizations {
       'filter_to_date': 'To Date',
       'filter_reset': 'Reset',
       'filter_apply': 'Apply',
+      // Validation messages
+      'validation_max_consecutive_days': 'Requested: {requestedDays} days. Maximum consecutive limit: {maxDays} days.',
+      'validation_max_days_per_year': 'Requested: {requestedDays} days. Annual limit: {maxDays} days.',
+      'validation_min_notice_days': 'Minimum notice of {minDays} days required.',
+      'validation_document_required': 'This leave type requires supporting documentation. Please provide a document URL.',
+      'loading_leave_types': 'Loading leave types...',
       // Status texts
       'status_pending': 'Pending',
       'status_approved': 'Approved',
@@ -153,6 +159,12 @@ class LeaveLocalizations {
       'filter_to_date': 'Đến ngày',
       'filter_reset': 'Đặt lại',
       'filter_apply': 'Áp dụng',
+      // Validation messages
+      'validation_max_consecutive_days': 'Yêu cầu: {requestedDays} ngày. Giới hạn tối đa liên tiếp: {maxDays} ngày.',
+      'validation_max_days_per_year': 'Yêu cầu: {requestedDays} ngày. Giới hạn mỗi năm: {maxDays} ngày.',
+      'validation_min_notice_days': 'Cần thông báo trước ít nhất {minDays} ngày.',
+      'validation_document_required': 'Loại nghỉ này yêu cầu tài liệu hỗ trợ. Vui lòng cung cấp URL tài liệu.',
+      'loading_leave_types': 'Đang tải loại nghỉ phép...',
       // Status texts
       'status_pending': 'Chờ duyệt',
       'status_approved': 'Đã duyệt',
@@ -236,6 +248,27 @@ class LeaveLocalizations {
   String get filterToDate => translate('filter_to_date');
   String get filterReset => translate('filter_reset');
   String get filterApply => translate('filter_apply');
+  
+  // Validation messages with parameters
+  String validationMaxConsecutiveDays(int requestedDays, int maxDays) {
+    return translate('validation_max_consecutive_days')
+        .replaceAll('{requestedDays}', requestedDays.toString())
+        .replaceAll('{maxDays}', maxDays.toString());
+  }
+  
+  String validationMaxDaysPerYear(int requestedDays, int maxDays) {
+    return translate('validation_max_days_per_year')
+        .replaceAll('{requestedDays}', requestedDays.toString())
+        .replaceAll('{maxDays}', maxDays.toString());
+  }
+  
+  String validationMinNoticeDays(int minDays) {
+    return translate('validation_min_notice_days')
+        .replaceAll('{minDays}', minDays.toString());
+  }
+  
+  String get validationDocumentRequired => translate('validation_document_required');
+  String get loadingLeaveTypes => translate('loading_leave_types');
   
   // Status texts
   String get statusPending => translate('status_pending');

@@ -119,6 +119,9 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     // ✅ SUCCESS FLAG - Prevent processing after successful verification
     private boolean verificationCompleted = false;
 
+    // 🕒 ATTENDANCE TYPE
+    private String attendanceType = "check_in"; // Default to check-in
+
     // Verification window control
     private long verifyDeadlineMs = 0L;
     private final Runnable verifyCountdownRunnable = new Runnable() {
@@ -176,7 +179,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 try {
                     // Check if Fragment is still attached and state is not saved
                     if (!isAdded() || isStateSaved()) {
-                        Log.w(TAG, "Fragment not attached or state saved, ignoring beacon broadcast");
+                        Log.d(TAG, "Fragment not attached or state saved, ignoring beacon broadcast");
                         return;
                     }
                     
@@ -185,7 +188,6 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                         int major = intent.getIntExtra("beaconMajor", -1);
                         int minor = intent.getIntExtra("beaconMinor", -1);
                         int rssi = intent.getIntExtra("rssi", -100);
-                        Log.d(TAG, "Beacon received: " + uuid + ", " + major + ", " + minor + ", " + rssi);
                         
                         // Store beacon data in instance variables instead of modifying arguments
                         // This prevents "Fragment already added and state has been saved" crash
@@ -193,8 +195,6 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                         beaconMajor = major;
                         beaconMinor = minor;
                         beaconRssi = rssi;
-                        
-                        Log.d(TAG, "✅ Beacon data stored successfully");
                     }
                 } catch (Exception e) {
                     Log.e(TAG, "Error processing beacon broadcast: " + e.getMessage(), e);
@@ -262,6 +262,31 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             requestManager.initializeRequest(requestId, sessionId, deadline);
         } else {
             Log.d(TAG, "⚠️ No requestId/sessionId found, using legacy verification mode");
+        }
+
+        // 🔄 NEW: Check for attendance_type in Intent/Args and update UI logic
+        if (args != null && args.containsKey("attendance_type")) {
+            attendanceType = args.getString("attendance_type");
+        } else if (getActivity() != null && getActivity().getIntent() != null && getActivity().getIntent().hasExtra("attendance_type")) {
+            attendanceType = getActivity().getIntent().getStringExtra("attendance_type");
+        }
+        
+        Log.d(TAG, "Attendance Type: " + attendanceType);
+        
+        // Update Button Text
+        if (binding != null && binding.btnGetStarted != null) {
+            try {
+                TextView tvBtn = binding.btnGetStarted.findViewById(R.id.tvGetStarted);
+                if (tvBtn != null) {
+                    if ("check_out".equalsIgnoreCase(attendanceType)) {
+                        tvBtn.setText("Check out");
+                    } else {
+                        tvBtn.setText("Check in");
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Could not update button text", e);
+            }
         }
     }
 
@@ -464,7 +489,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         }
 
         // Ghi log cho trạng thái
-        Log.d(TAG, "Xử lý trạng thái: " + state);
+        // Log.d(TAG, "Xử lý trạng thái: " + state);
 
         // Cập nhật tvStatusMessage (Thêm vào để luôn cập nhật thông báo trạng thái)
         if (binding != null && binding.tvStatusMessage != null) {
@@ -1330,12 +1355,32 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
         String userId;
         try {
-            userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
-            if (userId == null || userId.isEmpty()) {
-                Log.e(TAG, " No user ID available");
-                stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "User not logged in");
+            AuthManager authManager = AuthManager.getInstance(requireContext());
+            // Use employeeId instead of userId as requested
+            String tempUserId = authManager.getEmployeeId();
+            Log.d(TAG, "================= getEmployeeId: " + authManager.getEmployeeId());
+            Log.d(TAG, "================= tempUserId: " + authManager.getCurrentUserId());
+
+            if (tempUserId == null || tempUserId.isEmpty()) {
+                // Try to get from intent if not in AuthManager
+                if (getActivity() != null && getActivity().getIntent() != null) {
+                    String intentEmployeeId = getActivity().getIntent().getStringExtra("employeeId");
+                    if (intentEmployeeId != null && !intentEmployeeId.isEmpty()) {
+                        tempUserId = intentEmployeeId;
+                        // Also save to AuthManager for future use
+                        authManager.setEmployeeId(tempUserId);
+                    }
+                }
+            }
+
+            if (tempUserId == null || tempUserId.isEmpty()) {
+                Log.e(TAG, " No employee ID available");
+                stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "User not logged in (missing employee ID)");
                 return;
             }
+
+            userId = tempUserId;
+
         } catch (IllegalStateException e) {
             Log.e(TAG, " Fragment not attached when getting user ID", e);
             return;
@@ -1462,9 +1507,9 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 Log.d(TAG, "✅ Face embedding generated: " + faceEmbeddingBase64.length() + " chars");
 
                 // Step 2: Request Face Verification WITH face embedding
-                // Backend will verify face via RabbitMQ event → Face Service
                 stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Submitting face verification...");
-                attendanceService.requestFaceVerification("check_in", latitude, longitude, accuracy, deviceId, faceEmbeddingBase64,
+                String verifyType = attendanceType != null ? attendanceType : "check_in";
+                attendanceService.requestFaceVerification(verifyType, latitude, longitude, accuracy, deviceId, faceEmbeddingBase64,
                     new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse>() {
                         @Override
                         public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse verifyResult) {
@@ -1518,7 +1563,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
             // Save bitmap for background sync
             String bitmapPath = saveBitmapToTempFile(currentFrameBitmap);
-            String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
+            String userId = AuthManager.getInstance(requireContext()).getEmployeeId();
             String successMessage = "Face ID verified successfully!";
 
             // Double-check fragment is still attached before starting activity
@@ -1609,100 +1654,63 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
         // Check if fragment is still attached
         if (!isAdded()) {
-            Log.w(TAG, "Fragment not attached, cannot show error dialog");
             return;
         }
 
-        // Handle all errors in a unified way - no longer using separate handler for network errors
-
-        // Prepare error message based on state
-        String title = "Registration Failed";
+        // Handle all errors in a unified way w/ Simple Messages
+        String title = "Verification Failed";
         String message;
 
-        // Set appropriate message based on error type
+        // Set simple English message based on error type
         if (state == FaceRegistrationState.FAILED_NETWORK) {
-            title = "Network Connection Issue";
-            message = "Cannot connect to the server. Please check your internet connection and try again.";
+            message = "Weak signal or no internet connection. Please check and try again.";
         } else if (state == FaceRegistrationState.FAILED_SPOOF) {
-            message = "Spoof detection triggered. Please ensure you're using a real face and not a photo or video.\n\nWould you like to try again?";
+            message = "Unable to verify face. Please make sure you are in good lighting and try again.";
         } else {
-            // Use the actual message from state transition instead of default message
-            // This ensures specific error messages like "Beacon data not available" are displayed
-            message = (lastStateMessage != null && !lastStateMessage.isEmpty()) 
-                    ? lastStateMessage + "\n\nWould you like to try again?"
-                    : state.getDefaultMessage() + "\n\nWould you like to try again?";
+            // Check for specific Beacon or GPS errors
+            if (lastStateMessage != null) {
+                if (lastStateMessage.contains("Beacon")) {
+                    message = "Beacon signal not found. Please ensure you are within range of the office beacon.";
+                } else if (lastStateMessage.contains("Location") || lastStateMessage.contains("GPS")) {
+                    message = "Location verification failed. Please ensure GPS is enabled and you are at the correct location.";
+                } else if (lastStateMessage.contains("No active shift available")) {
+                     message = "No active shift available for check-in/check-out at this time.";
+                } else {
+                    message = "Verification failed. Please try again.";
+                }
+            } else {
+                message = "Verification failed. Please try again.";
+            }
         }
 
-        // Add detailed error information if available
-        final String detailedMessage = hasDetailedError ?
-                message + "\n\n--- DETAILED ERROR INFORMATION ---\n" + lastDetailedErrorMessage : message;
-
-        // Log the detailed error for debugging
-        Log.e(TAG, "Detailed error information: " + detailedMessage);
-
-        // For other errors, show regular retry dialog with detailed information
+        // Create alert dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
                 .setTitle(title)
-                .setMessage(detailedMessage)
-                .setPositiveButton("Retry", (dialog, which) -> {
-                    // Check if fragment is still attached before proceeding
-                    if (!isAdded()) {
-                        Log.w(TAG, "Fragment not attached, cannot retry");
-                        return;
-                    }
+                .setMessage(message)
+                .setPositiveButton("Try Again", (dialog, which) -> {
+                     if (!isAdded()) return;
 
                     // Reset error tracking
                     hasDetailedError = false;
                     lastDetailedErrorMessage = "";
                     lastStateMessage = "";
-                    
-                    // Dismiss dialog
                     currentErrorDialog = null;
 
-                    // Make sure everything is fully reset before retry
                     resetComponents();
-                    // Small delay to ensure complete reset
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        // Check again if fragment is attached before starting camera
-                        if (!isAdded()) {
-                            Log.w(TAG, "Fragment not attached, cannot start registration");
-                            return;
-                        }
-                        startFaceRegistration();
+                        if (isAdded()) startFaceRegistration();
                     }, 500);
                 })
-                // No neutral button - removed offline mode and copy error options
-                .setNegativeButton("Cancel", (dialog, which) -> {
-                    // Check if fragment is still attached before proceeding
-                    if (!isAdded()) {
-                        Log.w(TAG, "Fragment not attached, cannot handle cancel");
-                        return;
-                    }
-
-                    // Reset error tracking
-                    hasDetailedError = false;
-                    lastDetailedErrorMessage = "";
-                    lastStateMessage = "";
-                    
-                    // Dismiss dialog
+                .setNegativeButton("Cancel", (d, which) -> {
+                     if (!isAdded()) return;
                     currentErrorDialog = null;
-                    
                     requireActivity().onBackPressed();
                 })
                 .setCancelable(false);
 
-        // Create and show the dialog
         AlertDialog dialog = builder.create();
-        
-        // Store reference before showing
         currentErrorDialog = dialog;
         dialog.show();
-
-        // Make the message scrollable for long detailed errors
-        TextView messageView = dialog.findViewById(android.R.id.message);
-        if (messageView != null) {
-            messageView.setMovementMethod(new ScrollingMovementMethod());
-        }
     }
 
     /**
@@ -2365,22 +2373,14 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         StringBuilder feedback = new StringBuilder();
 
         if (variance > 0.05) {
-            feedback.append("Detected unstable face. Please hold your face steadier and try again.");
-            feedback.append("\n\nDetails: Variance = ").append(String.format(Locale.US, "%.5f", variance));
-            feedback.append(" (exceeds threshold 0.05)");
+            feedback.append("Please hold your face steady.");
         } else if (averageScore < 0.4f) {
-            feedback.append("Very low detection quality. Please try again with better lighting.");
-            feedback.append("\n\nDetails: Average score = ").append(String.format(Locale.US, "%.3f", averageScore));
-            feedback.append(" (below minimum 0.4)");
+            feedback.append("Lighting is too dark. Please find better light.");
         } else if (averageScore < 0.6f) {
-            feedback.append("Low detection quality. Improve lighting and reduce face movement.");
-            feedback.append("\n\nDetails: Average score = ").append(String.format(Locale.US, "%.3f", averageScore));
-            feedback.append(" (below recommended 0.6)");
+            feedback.append("Face not clear enough. Please wipe camera lens or improve lighting.");
         } else {
-            feedback.append("Unable to capture a clear image. Please try again with better lighting and positioning.");
-            feedback.append("\n\nDetails: Combination of detection score and stability did not meet requirements");
+            feedback.append("Could not capture clear face. Please try again.");
         }
-
         return feedback.toString();
     }
 
@@ -2445,7 +2445,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         stopCameraSafe();
         
         // Navigate to success screen
-        String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
+        String userId = AuthManager.getInstance(requireContext()).getEmployeeId();
         String userName = AuthManager.getInstance(requireContext()).getCurrentUserName();
         
         Intent successIntent = FaceIdSuccessActivity.createVerifySuccessIntent(

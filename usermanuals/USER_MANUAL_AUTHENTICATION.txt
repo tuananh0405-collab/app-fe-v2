@@ -1,0 +1,565 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                         USER MANUAL - AUTHENTICATION
+================================================================================
+
+Version: 1.0
+Last Updated: December 6, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. AUTHENTICATION MODULE OVERVIEW
+2. SIGN IN
+   2.1 Sign In to Application
+3. FORGOT PASSWORD
+   3.1 Request New Password
+4. CHANGE PASSWORD
+   4.1 Change Regular Password
+   4.2 Change Temporary Password
+
+================================================================================
+1. AUTHENTICATION MODULE OVERVIEW
+================================================================================
+
+Description: The Authentication module manages user access to the Employee 
+Attendance Management System. It provides secure login, password recovery, 
+and password management features.
+
+Key Features:
+- Secure email and password authentication
+- Password recovery via email
+- Password change functionality
+- Temporary password support
+- Password strength validation
+
+================================================================================
+2. SIGN IN
+================================================================================
+
+2.1 Sign In to Application
+--------------------------------------------------------------------------------
+
+Description: The Sign In function allows employees to access the system using 
+their registered email address and password. Upon successful authentication, 
+users are directed to the home screen. If a user has a temporary password, 
+they will be required to change it before accessing the system.
+
+Prerequisites:
+- Valid employee account in the system
+- Registered email address
+- Active password (regular or temporary)
+
+[Figure 01 - Sign In Screen]
+
+Step 1: Launch the application
+   - Open the Employee Attendance Management System app on your device.
+
+Step 2: View the Sign In screen
+   - The system displays the Sign In screen with:
+     • Application logo/icon
+     • "Sign in" title
+     • Email input field
+     • Password input field
+     • "Forgot password?" link
+     • "Sign in" button
+
+Step 3: Enter your email address
+   - Tap on the Email field.
+   - Enter your registered email address.
+   - The system validates the email format.
+   
+   Validation Rules:
+   • Email cannot be empty
+   • Email must be in valid format (example@domain.com)
+   
+   Error Messages:
+   • "Please enter your email" - if field is empty
+   • "Please enter a valid email" - if format is incorrect
+
+Step 4: Enter your password
+   - Tap on the Password field.
+   - Enter your password.
+   - By default, password characters are hidden (shown as dots).
+   - Tap the eye icon to show/hide password characters.
+   
+   Validation Rules:
+   • Password cannot be empty
+   
+   Error Messages:
+   • "Please enter your password" - if field is empty
+
+Step 5: Submit login credentials
+   - Tap the "Sign in" button.
+   - The system displays a loading indicator.
+   - The button becomes disabled during processing.
+
+Step 6: System processes authentication
+   
+   Case A - Successful Login (Regular Password):
+   • The system validates credentials.
+   • Success message may appear briefly.
+   • User is automatically redirected to the Home screen.
+   • User can access all system features.
+   
+   Case B - Successful Login (Temporary Password):
+   • The system validates credentials.
+   • System detects temporary password status.
+   • User is automatically redirected to Change Password screen.
+   • User MUST change password before accessing the system.
+   • See Section 4.2 for password change instructions.
+   
+   Case C - Failed Login:
+   • Error message appears at the bottom of the screen.
+   • Common error messages:
+     - "Invalid email or password" - incorrect credentials
+     - "Account is locked" - account has been disabled
+     - "Network error" - connection problem
+   • User remains on Sign In screen.
+   • User can retry with correct credentials.
+
+Step 7: Access the system
+   - After successful login, user is on the Home screen.
+   - User can now access all available features based on their role.
+
+Notes:
+• The Sign In screen has animated elements for better user experience.
+• All password entries are encrypted during transmission.
+• Multiple failed login attempts may temporarily lock the account.
+• Contact system administrator if you cannot access your account.
+
+================================================================================
+3. FORGOT PASSWORD
+================================================================================
+
+3.1 Request New Password
+--------------------------------------------------------------------------------
+
+Description: The Forgot Password function allows users who have forgotten 
+their password to request a new temporary password. The system will send a 
+new password to the user's registered email address. Users must then use this 
+temporary password to sign in and change it to a permanent password.
+
+Prerequisites:
+- Valid employee account in the system
+- Access to registered email address
+
+[Figure 02 - Forgot Password Screen]
+
+Step 1: Access Forgot Password screen
+   - From the Sign In screen, tap on "Forgot password?" link.
+   - The system navigates to the Forgot Password screen.
+
+Step 2: View the Forgot Password screen
+   - The system displays:
+     • Lock reset icon
+     • "Forgot password" title
+     • Instruction text: "Enter your email to receive a new password"
+     • Email input field
+     • "Send Request" button
+     • Back button (top-left corner)
+
+Step 3: Enter your email address
+   - Tap on the Email field.
+   - Enter your registered email address.
+   - The system validates the email format in real-time.
+   
+   Validation Rules:
+   • Email cannot be empty
+   • Email must be in valid format (example@domain.com)
+   
+   Error Messages:
+   • "Please enter your email" - if field is empty
+   • "Invalid email format" - if format is incorrect
+
+Step 4: Submit password reset request
+   - Tap the "Send Request" button.
+   - The system displays a loading indicator.
+   - The button becomes disabled during processing.
+
+Step 5: System processes the request
+   
+   Case A - Successful Request:
+   • The system validates the email exists in the database.
+   • A new temporary password is generated.
+   • The temporary password is sent to the registered email.
+   • Success message appears: "A new password has been sent to your email"
+   • User is automatically returned to the Sign In screen.
+   
+   Case B - Failed Request:
+   • Error message appears at the bottom of the screen.
+   • Common error messages:
+     - "Email not found" - email is not registered
+     - "Account is inactive" - account has been disabled
+     - "Network error" - connection problem
+   • User remains on Forgot Password screen.
+   • User can retry with correct email.
+
+Step 6: Check your email
+   - Open your email application.
+   - Look for an email from the system.
+   - The email contains:
+     • Your new temporary password
+     • Instructions to sign in
+     • Reminder to change password after login
+
+Step 7: Sign in with temporary password
+   - Return to the Sign In screen.
+   - Enter your email address.
+   - Enter the temporary password from the email.
+   - Tap "Sign in" button.
+   - See Section 4.2 for changing temporary password.
+
+Step 8 (Optional): Cancel and return
+   - To cancel at any time, tap the Back button (top-left).
+   - The system returns to the Sign In screen.
+   - No password reset is performed.
+
+Notes:
+• The temporary password is valid for a limited time (check with administrator).
+• You MUST change the temporary password on first login.
+• If you don't receive the email within 5 minutes, check your spam folder.
+• You can request a new password multiple times if needed.
+• Contact system administrator if you continue to have issues.
+
+================================================================================
+4. CHANGE PASSWORD
+================================================================================
+
+4.1 Change Regular Password
+--------------------------------------------------------------------------------
+
+Description: The Change Password function allows users to update their current 
+password to a new one. This is used when users want to change their password 
+for security reasons or regular password rotation.
+
+Prerequisites:
+- User must be logged into the system
+- User must know their current password
+- New password must meet security requirements
+
+[Figure 03 - Change Password Screen]
+
+Step 1: Access Change Password screen
+   - From the Profile screen, tap on "Change Password" option.
+   - The system navigates to the Change Password screen.
+
+Step 2: View the Change Password screen
+   - The system displays:
+     • "Change Password" title in app bar
+     • Lock reset icon
+     • "Change Password" heading
+     • Instruction text: "Enter current password and new password"
+     • Current password input field
+     • New password input field
+     • Password requirements section
+     • "Change Password" button
+     • Back button (top-left corner)
+
+Step 3: Enter current password
+   - Tap on the "Current Password" field.
+   - Enter your current password.
+   - By default, password is hidden (shown as dots).
+   - Tap the eye icon to show/hide password.
+   
+   Validation Rules:
+   • Current password cannot be empty
+   
+   Error Messages:
+   • "Please enter current password" - if field is empty
+
+Step 4: Enter new password
+   - Tap on the "New Password" field.
+   - Enter your desired new password.
+   - By default, password is hidden (shown as dots).
+   - Tap the eye icon to show/hide password.
+   
+   Password Requirements (all must be met):
+   • Minimum 8 characters
+   • At least 1 uppercase letter (A-Z)
+   • At least 1 lowercase letter (a-z)
+   • At least 1 number (0-9)
+   • At least 1 special character (!@#$%^&*(),.?":{}|<>)
+   
+   Validation Error Messages:
+   • "Please enter password" - if field is empty
+   • "Password must be at least 8 characters" - less than 8 characters
+   • "Password must have at least 1 uppercase letter" - no uppercase letter
+   • "Password must have at least 1 lowercase letter" - no lowercase letter
+   • "Password must have at least 1 number" - no number
+   • "Password must have at least 1 special character" - no special character
+
+Step 5: Review password requirements
+   - Below the password fields, a requirements box displays:
+     ✓ At least 8 characters
+     ✓ At least 1 uppercase letter
+     ✓ At least 1 lowercase letter
+     ✓ At least 1 number
+     ✓ At least 1 special character (!@#$%^&*...)
+   - Ensure your new password meets all requirements.
+
+Step 6: Submit password change
+   - Tap the "Change Password" button.
+   - The system validates all fields.
+   - If validation passes, the button becomes disabled during processing.
+
+Step 7: System processes password change
+   
+   Case A - Successful Change:
+   • The system validates the current password.
+   • The system validates the new password meets requirements.
+   • The password is updated in the database.
+   • Success message appears: "Password changed successfully!"
+   • User is returned to the Profile screen.
+   • User can continue using the system with the new password.
+   
+   Case B - Failed Change:
+   • Error message appears at the bottom of the screen.
+   • Common error messages:
+     - "Current password is incorrect" - wrong current password
+     - "New password does not meet requirements" - validation failed
+     - "Network error" - connection problem
+   • User remains on Change Password screen.
+   • User can correct the information and retry.
+
+Step 8 (Optional): Cancel password change
+   - To cancel at any time, tap the Back button (top-left).
+   - The system returns to the Profile screen.
+   - No password change is performed.
+
+Notes:
+• Your new password takes effect immediately after successful change.
+• Make sure to remember your new password.
+• Do not share your password with anyone.
+• Consider using a password manager for secure password storage.
+• Change your password regularly for better security.
+
+--------------------------------------------------------------------------------
+
+4.2 Change Temporary Password
+--------------------------------------------------------------------------------
+
+Description: The Change Temporary Password function is mandatory for users 
+who have received a temporary password (either from initial account setup or 
+password reset). Users MUST change their temporary password to a permanent 
+one before they can access the system.
+
+Prerequisites:
+- User has logged in with a temporary password
+- User must know their temporary password
+- New password must meet security requirements
+
+[Figure 04 - Change Temporary Password Screen]
+
+Step 1: Automatic redirect after login
+   - After signing in with a temporary password.
+   - The system automatically detects the temporary password status.
+   - User is immediately redirected to the Change Password screen.
+   - User CANNOT access other parts of the system until password is changed.
+
+Step 2: View the Change Temporary Password screen
+   - The system displays:
+     • "Change Temporary Password" title
+     • Lock reset icon
+     • Warning message: "You are using a temporary password"
+     • Instruction: "Please change to a new password to continue"
+     • Current password input field (for temporary password)
+     • New password input field
+     • Confirm new password input field
+     • Password requirements section
+     • "Change Password" button
+     • NO back button (change is mandatory)
+
+Step 3: Enter temporary password
+   - Tap on the "Current Password" field.
+   - Enter your temporary password (from email or administrator).
+   - By default, password is hidden (shown as dots).
+   - Tap the eye icon to show/hide password.
+   
+   Validation Rules:
+   • Current password cannot be empty
+   
+   Error Messages:
+   • "Please enter current password" - if field is empty
+
+Step 4: Enter new password
+   - Tap on the "New Password" field.
+   - Enter your desired new password.
+   - By default, password is hidden (shown as dots).
+   - Tap the eye icon to show/hide password.
+   
+   Password Requirements (all must be met):
+   • Minimum 8 characters
+   • At least 1 uppercase letter (A-Z)
+   • At least 1 lowercase letter (a-z)
+   • At least 1 number (0-9)
+   • At least 1 special character (!@#$%^&*(),.?":{}|<>)
+   
+   Validation Error Messages:
+   • "Please enter password" - if field is empty
+   • "Password must be at least 8 characters" - less than 8 characters
+   • "Password must have at least 1 uppercase letter" - no uppercase letter
+   • "Password must have at least 1 lowercase letter" - no lowercase letter
+   • "Password must have at least 1 number" - no number
+   • "Password must have at least 1 special character" - no special character
+
+Step 5: Confirm new password
+   - Tap on the "Confirm New Password" field.
+   - Re-enter your new password exactly as entered in Step 4.
+   - By default, password is hidden (shown as dots).
+   - Tap the eye icon to show/hide password.
+   
+   Validation Rules:
+   • Confirm password cannot be empty
+   • Must match the new password exactly
+   
+   Error Messages:
+   • "Please confirm password" - if field is empty
+   • "Passwords do not match" - passwords don't match
+
+Step 6: Review password requirements
+   - Below the password fields, a requirements box displays:
+     ✓ At least 8 characters
+     ✓ At least 1 uppercase letter
+     ✓ At least 1 lowercase letter
+     ✓ At least 1 number
+     ✓ At least 1 special character (!@#$%^&*...)
+   - Ensure your new password meets all requirements.
+
+Step 7: Submit password change
+   - Tap the "Change Password" button.
+   - The system validates all fields.
+   - If validation passes, the button becomes disabled during processing.
+
+Step 8: System processes password change
+   
+   Case A - Successful Change:
+   • The system validates the temporary password.
+   • The system validates the new password meets requirements.
+   • The system validates password confirmation matches.
+   • The password is updated in the database.
+   • The temporary password flag is removed.
+   • Success message appears: "Password changed successfully! Please login again."
+   • User session is cleared for security.
+   • User is automatically redirected to the Sign In screen.
+   
+   Case B - Failed Change:
+   • Error message appears at the bottom of the screen.
+   • Common error messages:
+     - "Current password is incorrect" - wrong temporary password
+     - "Passwords do not match" - confirmation doesn't match
+     - "New password does not meet requirements" - validation failed
+     - "Network error" - connection problem
+   • User remains on Change Password screen.
+   • User can correct the information and retry.
+
+Step 9: Sign in with new password
+   - After successful password change, user is on Sign In screen.
+   - Enter your email address.
+   - Enter your NEW password (not the temporary one).
+   - Tap "Sign in" button.
+   - User is now logged in with permanent password.
+   - User can access all system features normally.
+
+Important Notes:
+• Changing temporary password is MANDATORY - you cannot skip this step.
+• There is no back button - you must complete the password change.
+• After changing temporary password, you must sign in again.
+• Make sure to remember your new password - write it down securely.
+• The temporary password becomes invalid after successful change.
+• If you close the app before changing password, you will be redirected 
+  to this screen again upon next login with temporary password.
+
+================================================================================
+SECURITY BEST PRACTICES
+================================================================================
+
+Password Security:
+• Never share your password with anyone
+• Use a unique password not used on other systems
+• Change your password regularly (every 90 days recommended)
+• Do not write passwords in easily accessible places
+• Use a password manager for secure storage
+• Do not use easily guessable passwords (birthdate, name, etc.)
+
+Account Security:
+• Always log out when finished using the system
+• Do not leave your device unattended while logged in
+• Report any suspicious activity to system administrator
+• Keep your registered email address up to date
+• Verify all password reset emails are legitimate
+
+Strong Password Examples:
+• MyC0mp@ny2024! (Good)
+• P@ssw0rd#2024 (Good)
+• Secure$Pass123 (Good)
+
+Weak Password Examples (DO NOT USE):
+• password123 (No uppercase, no special character)
+• 12345678 (No letters, no special character)
+• MyPassword (No numbers, no special character)
+• abc123 (Too short, no uppercase, no special character)
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Problem: Cannot sign in - "Invalid email or password"
+Solution:
+• Verify you are using the correct email address
+• Check if Caps Lock is on (password is case-sensitive)
+• Try the "Forgot password?" option to reset your password
+• Contact administrator if problem persists
+
+Problem: Did not receive password reset email
+Solution:
+• Check your spam/junk folder
+• Verify you entered the correct email address
+• Wait 5-10 minutes for email delivery
+• Try requesting password reset again
+• Contact administrator if email still not received
+
+Problem: New password not accepted - validation errors
+Solution:
+• Ensure password is at least 8 characters
+• Include at least one uppercase letter (A-Z)
+• Include at least one lowercase letter (a-z)
+• Include at least one number (0-9)
+• Include at least one special character (!@#$%^&*...)
+• Check all requirements in the requirements box
+
+Problem: "Account is locked" message
+Solution:
+• Your account may be temporarily locked due to multiple failed login attempts
+• Wait 15-30 minutes and try again
+• Contact system administrator to unlock your account
+
+Problem: Cannot access system after login
+Solution:
+• You may have a temporary password that needs to be changed
+• Follow the Change Temporary Password process (Section 4.2)
+• Contact administrator if you need assistance
+
+Problem: Forgot new password after changing
+Solution:
+• Use the "Forgot password?" option on Sign In screen
+• A new temporary password will be sent to your email
+• Change the temporary password to a new permanent password
+• Consider using a password manager to avoid this issue
+
+================================================================================
+CONTACT INFORMATION
+================================================================================
+
+For technical support or account issues, please contact:
+
+System Administrator
+Email: [Contact your organization for support email]
+Phone: [Contact your organization for support phone]
+
+Business Hours: [Contact your organization for support hours]
+
+================================================================================
+END OF AUTHENTICATION USER MANUAL
+================================================================================

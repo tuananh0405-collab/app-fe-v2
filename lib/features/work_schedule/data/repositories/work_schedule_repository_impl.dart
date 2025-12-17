@@ -19,12 +19,14 @@ class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
   Future<Either<Failure, List<EmployeeShiftEntity>>> getEmployeeShifts({
     required DateTime fromDate,
     required DateTime toDate,
+    int? employeeId,
   }) async {
     if (await networkInfo.isConnected) {
       try {
         final result = await remoteDataSource.getEmployeeShifts(
           fromDate: fromDate,
           toDate: toDate,
+          employeeId: employeeId,
         );
         return Right(result);
       } on UnauthorizedException catch (e) {

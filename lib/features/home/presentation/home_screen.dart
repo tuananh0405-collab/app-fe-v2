@@ -11,12 +11,14 @@ import '../domain/models/location_status_model.dart';
 import '../../notifications/domain/models/notification_model.dart';
 import '../../../core/widgets/bottom_navigation.dart';
 import '../../../flutter_flow/flutter_flow.dart';
+import 'package:intl/intl.dart';
 
 import '../../attendance/domain/entities/attendance_entity.dart' as attendance;
 import '../../attendance/presentation/widgets/attendance_shift_item.dart';
 import '../../attendance/providers/attendance_providers.dart';
 import '../../work_schedule/providers/work_schedule_providers.dart';
 import '../../work_schedule/domain/entities/employee_shift_entity.dart' as wsEntity;
+import '../../overtime/providers/overtime_providers.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -52,16 +54,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     
     // Load notifications and attendance when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(notificationListControllerProvider.notifier).loadNotifications();
+      // For home screen we only need the latest 3 notifications
+      ref.read(notificationListControllerProvider.notifier).loadNotifications(limit: 3);
       ref.read(attendanceControllerProvider.notifier).loadAttendance();
+      
+      final now = DateTime.now();
+      // Load shifts for today only
+      final start = DateTime(now.year, now.month, now.day);
+      final end = DateTime(now.year, now.month, now.day, 23, 59, 59);
+      ref.read(workScheduleControllerProvider.notifier).loadShifts(fromDate: start, toDate: end);
+      
+      // Load overtime requests for today
+      ref.read(overtimeControllerProvider.notifier).getMyOvertimeRequests();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-  final notificationState = ref.watch(notificationListControllerProvider);
-  final scheduleState = ref.watch(workScheduleControllerProvider);
+    final notificationState = ref.watch(notificationListControllerProvider);
+    final scheduleState = ref.watch(workScheduleControllerProvider);
+    final overtimeState = ref.watch(overtimeControllerProvider);
+    
+    // Filter for today's shifts only (in case state has a larger range loaded)
+    final now = DateTime.now();
+    final todayShifts = scheduleState.shifts.where((s) {
+      return s.shiftDate.year == now.year && 
+             s.shiftDate.month == now.month && 
+             s.shiftDate.day == now.day;
+    });
+    
+    // Filter for today's approved overtime requests
+    final todayOvertimes = overtimeState.overtimeRequests.where((ot) {
+      return ot.status == 'approved' &&
+             ot.startTime.year == now.year &&
+             ot.startTime.month == now.month &&
+             ot.startTime.day == now.day;
+    }).toList();
+
     final locationStatusAsync = ref.watch(locationStatusProvider);
     final locationStatus = locationStatusAsync.asData?.value ?? const LocationStatusModel(
       isInsideWorkZone: false,
@@ -82,20 +112,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         elevation: 2,
         actions: [
           FFIconButton(
-            icon: Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () => context.push(AppRoutePath.notifications),
-            buttonSize: 48,
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+            onPressed: () async {
+              final now = DateTime.now();
+              final start = DateTime(now.year, now.month, now.day);
+              final end = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
+              await Future.wait([
+                ref.read(notificationListControllerProvider.notifier).loadNotifications(limit: 3, refresh: true),
+                ref.read(attendanceControllerProvider.notifier).loadAttendance(),
+                ref.read(workScheduleControllerProvider.notifier).loadShifts(fromDate: start, toDate: end),
+                ref.read(overtimeControllerProvider.notifier).getMyOvertimeRequests(),
+              ]);
+
+              if (context.mounted) {
+                context.push(AppRoutePath.notifications);
+              }
+            },
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await Future.wait([
-            ref.read(notificationListControllerProvider.notifier).loadNotifications(),
-            ref.read(attendanceControllerProvider.notifier).loadAttendance(),
-          ]);
-        },
-        color: theme.primaryColor,
+      body: Container(
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
@@ -105,21 +142,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               // Welcome Header
               _WelcomeHeader(userName: user?.fullName ?? 'User')
                   .animateOnPageLoad(animationsMap['headerOnPageLoad']!),
-              const SizedBox(height: 24),
+              // const SizedBox(height: 24),
 
               
               // Location Status
-              GestureDetector(
-                onTap: () => context.push(AppRoutePath.locationHistory),
-                child: _LocationStatusCard(locationStatus: locationStatus),
-              )
-                  .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
+              // GestureDetector(
+              //   onTap: () => context.push(AppRoutePath.locationHistory),
+              //   child: _LocationStatusCard(locationStatus: locationStatus),
+              // )
+              //     .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
               const SizedBox(height: 16),
 
               
               // Current Shift Section (use Work Schedule shifts mapped to AttendanceShift)
               _AttendanceShiftSection(
-                shifts: scheduleState.shifts.map((s) {
+                shifts: todayShifts.map((s) {
                   // Map EmployeeShiftEntity -> AttendanceShift
                   // id as string, shiftDate as YYYY-MM-DD, dayOfWeek computed
                   String dayOfWeek() {
@@ -147,6 +184,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     switch (s.status) {
                       case wsEntity.ShiftStatus.scheduled:
                         return attendance.ShiftStatus.SCHEDULED;
+                      case wsEntity.ShiftStatus.inProgress:
+                        return attendance.ShiftStatus.IN_PROGRESS;
                       case wsEntity.ShiftStatus.completed:
                         return attendance.ShiftStatus.COMPLETED;
                       case wsEntity.ShiftStatus.absent:
@@ -177,6 +216,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ).animateOnPageLoad(animationsMap['cardOnPageLoad']!),
               const SizedBox(height: 24),
 
+              // Today's Overtime Section
+              if (todayOvertimes.isNotEmpty)
+                _TodayOvertimeSection(overtimes: todayOvertimes)
+                    .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
+              if (todayOvertimes.isNotEmpty)
+                const SizedBox(height: 24),
 
               // Latest Notifications
               _LatestNotificationsSection(
@@ -368,14 +413,14 @@ class _AttendanceShiftSection extends StatelessWidget {
     final now = DateTime.now();
 
   attendance.AttendanceShift? displayShift;
-    String label = 'No incoming shift';
+    String label = 'No incoming shift today';
     bool isCurrent = false;
 
     // Sort shifts by date and time to ensure correct order
   final sortedShifts = List<attendance.AttendanceShift>.from(shifts);
     sortedShifts.sort((a, b) {
-      final dateA = DateTime.parse('${a.shiftDate}T${a.scheduledStartTime}');
-      final dateB = DateTime.parse('${b.shiftDate}T${b.scheduledStartTime}');
+      final dateA = _parseDateTime(a.shiftDate, a.scheduledStartTime);
+      final dateB = _parseDateTime(b.shiftDate, b.scheduledStartTime);
       return dateA.compareTo(dateB);
     });
 
@@ -436,7 +481,7 @@ class _AttendanceShiftSection extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'No incoming shift',
+              'No incoming shift today',
               style: theme.bodyText2.override(
                 color: theme.secondaryText,
               ),
@@ -477,15 +522,113 @@ class _AttendanceShiftSection extends StatelessWidget {
 
   DateTime _parseDateTime(String date, String time) {
     // date: YYYY-MM-DD
-    // time: HH:mm or HH:mm:ss
-    // If time is just HH:mm, append :00
-    String timeStr = time;
-    if (time.length == 5) {
-      timeStr = '$time:00';
-    }
-    return DateTime.parse('${date}T$timeStr');
+    // time: H:mm, HH:mm, H:mm:ss, or HH:mm:ss
+    
+    // Ensure time components are padded (e.g., 8:30 -> 08:30)
+    final parts = time.split(':');
+    if (parts.isEmpty) return DateTime.parse('${date}T00:00:00');
+    
+    final hour = parts[0].padLeft(2, '0');
+    final minute = parts.length > 1 ? parts[1].padLeft(2, '0') : '00';
+    final second = parts.length > 2 ? parts[2].padLeft(2, '0') : '00';
+    
+    final formattedTime = '$hour:$minute:$second';
+    return DateTime.parse('${date}T$formattedTime');
   }
 }
+
+class _TodayOvertimeSection extends StatelessWidget {
+  final List<dynamic> overtimes;
+
+  const _TodayOvertimeSection({required this.overtimes});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.timer_outlined,
+              color: const Color(0xFF7C2D12), // orange-900
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Today\'s Overtime',
+              style: theme.subtitle1.override(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...overtimes.map((overtime) {
+          final timeFormat = DateFormat('HH:mm');
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFEDD5), // orange-100
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFFFDBA74), // orange-300
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDBA74).withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.timer_outlined,
+                    size: 20,
+                    color: Color(0xFF7C2D12), // orange-900
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${timeFormat.format(overtime.startTime)} - ${timeFormat.format(overtime.endTime)}',
+                        style: theme.bodyText1.override(
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF7C2D12),
+                        ),
+                      ),
+                      if (overtime.reason != null && overtime.reason.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          overtime.reason,
+                          style: theme.bodyText2.override(
+                            fontSize: 12,
+                            color: const Color(0xFF7C2D12).withValues(alpha: 0.8),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ],
+    );
+  }
+}
+
 
 class _LatestNotificationsSection extends ConsumerStatefulWidget {
   final List<NotificationEntity> notifications;
@@ -863,12 +1006,12 @@ class _QuickActionsSection extends StatelessWidget {
     final theme = FlutterFlowTheme.of(context);
     
     final actions = [
-      {
-        'icon': Icons.check_circle_outline,
-        'label': 'Check In/Out',
-        'color': theme.primaryColor,
-        'path': AppRoutePath.attendanceCheck,
-      },
+      // {
+      //   'icon': Icons.check_circle_outline,
+      //   'label': 'Check In/Out',
+      //   'color': theme.primaryColor,
+      //   'path': AppRoutePath.attendanceCheck,
+      // },
       {
         'icon': Icons.event_note,
         'label': 'Leaves',
@@ -881,12 +1024,12 @@ class _QuickActionsSection extends StatelessWidget {
         'color': theme.warning,
         'path': AppRoutePath.overtimes,
       },
-      {
-        'icon': Icons.schedule_outlined,
-        'label': 'Schedule',
-        'color': theme.secondaryColor,
-        'path': AppRoutePath.schedule,
-      },
+      // {
+      //   'icon': Icons.schedule_outlined,
+      //   'label': 'Schedule',
+      //   'color': theme.secondaryColor,
+      //   'path': AppRoutePath.schedule,
+      // },
     ];
 
     final Color accent = theme.primaryColor;

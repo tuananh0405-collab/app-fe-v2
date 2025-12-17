@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/routing/routes.dart';
 import '../providers/auth_providers.dart';
 import '../../../flutter_flow/flutter_flow.dart';
+import '../../../core/localization/auth_localizations.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
   final bool isTemporary;
@@ -82,28 +83,28 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
     }
   }
 
-  String? _validatePassword(String? value) {
+  String? _validatePassword(String? value, AuthLocalizations authLoc) {
     if (value == null || value.isEmpty) {
-      return 'Vui lòng nhập mật khẩu';
+      return authLoc.pleaseEnterPassword;
     }
     if (value.length < 8) {
-      return 'Mật khẩu phải có ít nhất 8 ký tự';
+      return authLoc.passwordMin8Chars;
     }
     // Check for at least one uppercase letter
     if (!RegExp(r'[A-Z]').hasMatch(value)) {
-      return 'Mật khẩu phải có ít nhất 1 chữ hoa';
+      return authLoc.passwordNeedUppercase;
     }
     // Check for at least one lowercase letter
     if (!RegExp(r'[a-z]').hasMatch(value)) {
-      return 'Mật khẩu phải có ít nhất 1 chữ thường';
+      return authLoc.passwordNeedLowercase;
     }
     // Check for at least one digit
     if (!RegExp(r'[0-9]').hasMatch(value)) {
-      return 'Mật khẩu phải có ít nhất 1 số';
+      return authLoc.passwordNeedNumber;
     }
     // Check for at least one special character
-    if (!RegExp(r'[!@#\$%^&*(),.?":{}|<>]').hasMatch(value)) {
-      return 'Mật khẩu phải có ít nhất 1 ký tự đặc biệt';
+    if (!RegExp(r'[!@#\\$%^\\&*(),.?\":{}|<>]').hasMatch(value)) {
+      return authLoc.passwordNeedSpecialChar;
     }
     return null;
   }
@@ -111,6 +112,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
   @override
   Widget build(BuildContext context) {
     final changePasswordState = ref.watch(changePasswordControllerProvider);
+    final authLoc = AuthLocalizations(Localizations.localeOf(context));
 
     // Listen for password change success
     ref.listen(changePasswordControllerProvider, (previous, next) {
@@ -118,8 +120,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
 
       if (next.isSuccess) {
         final message = widget.isTemporary
-            ? 'Đổi mật khẩu thành công! Vui lòng đăng nhập lại.'
-            : 'Đổi mật khẩu thành công!';
+            ? authLoc.passwordChangedLoginAgain
+            : authLoc.passwordChangedSuccess;
 
         showSnackbar(context, message);
 
@@ -143,7 +145,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
       appBar: AppBar(
         backgroundColor: theme.primaryColor,
         title: Text(
-          widget.isTemporary ? 'Đổi mật khẩu tạm thời' : 'Đổi mật khẩu',
+          widget.isTemporary ? authLoc.changeTemporaryPassword : authLoc.changePassword,
           style: theme.title2.override(color: Colors.white),
         ),
         centerTitle: true,
@@ -177,25 +179,25 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                       const SizedBox(height: 16),
                       if (widget.isTemporary) ...[
                         Text(
-                          'Bạn đang sử dụng mật khẩu tạm thời',
+                          authLoc.usingTemporaryPassword,
                           style: theme.title3,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Vui lòng đổi sang mật khẩu mới để tiếp tục',
+                          authLoc.pleaseChangePassword,
                           style: theme.bodyText2,
                           textAlign: TextAlign.center,
                         ),
                       ] else ...[
                         Text(
-                          'Đổi mật khẩu',
+                          authLoc.changePassword,
                           style: theme.title3,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Nhập mật khẩu hiện tại và mật khẩu mới',
+                          authLoc.enterCurrentAndNew,
                           style: theme.bodyText2,
                           textAlign: TextAlign.center,
                         ),
@@ -213,7 +215,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                         obscureText: _obscureCurrentPassword,
                         style: theme.bodyText1,
                         decoration: InputDecoration(
-                          labelText: 'Mật khẩu hiện tại',
+                          labelText: authLoc.currentPassword,
                           labelStyle: theme.bodyText2,
                           prefixIcon: Icon(
                             Icons.lock_outline,
@@ -252,7 +254,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập mật khẩu hiện tại';
+                            return authLoc.pleaseEnterCurrentPassword;
                           }
                           return null;
                         },
@@ -265,7 +267,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                         obscureText: _obscureNewPassword,
                         style: theme.bodyText1,
                         decoration: InputDecoration(
-                          labelText: 'Mật khẩu mới',
+                          labelText: authLoc.newPassword,
                           labelStyle: theme.bodyText2,
                           prefixIcon: Icon(
                             Icons.lock,
@@ -301,7 +303,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                             },
                           ),
                         ),
-                        validator: _validatePassword,
+                        validator: (value) => _validatePassword(value, authLoc),
                       ),
                       const SizedBox(height: 16),
 
@@ -312,7 +314,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                           obscureText: _obscureConfirmPassword,
                           style: theme.bodyText1,
                           decoration: InputDecoration(
-                            labelText: 'Xác nhận mật khẩu mới',
+                            labelText: authLoc.confirmPassword,
                             labelStyle: theme.bodyText2,
                             prefixIcon: Icon(
                               Icons.lock,
@@ -351,10 +353,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Vui lòng xác nhận mật khẩu';
+                              return authLoc.pleaseConfirmPassword;
                             }
                             if (value != _newPasswordController.text) {
-                              return 'Mật khẩu xác nhận không khớp';
+                              return authLoc.passwordsDoNotMatch;
                             }
                             return null;
                           },
@@ -373,20 +375,17 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Yêu cầu mật khẩu:',
+                              authLoc.passwordRequirements,
                               style: theme.bodyText2.override(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            _buildRequirement(theme, 'Ít nhất 8 ký tự'),
-                            _buildRequirement(theme, 'Có ít nhất 1 chữ hoa'),
-                            _buildRequirement(theme, 'Có ít nhất 1 chữ thường'),
-                            _buildRequirement(theme, 'Có ít nhất 1 số'),
-                            _buildRequirement(
-                              theme,
-                              'Có ít nhất 1 ký tự đặc biệt (!@#\$%^&*...)',
-                            ),
+                            _buildRequirement(theme, authLoc.requirementMinLength),
+                            _buildRequirement(theme, authLoc.requirementUppercase),
+                            _buildRequirement(theme, authLoc.requirementLowercase),
+                            _buildRequirement(theme, authLoc.requirementNumber),
+                            _buildRequirement(theme, authLoc.requirementSpecialChar),
                           ],
                         ),
                       ),
@@ -399,7 +398,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen>
                     onPressed: changePasswordState.isLoading
                         ? null
                         : _handleChangePassword,
-                    text: 'Đổi mật khẩu',
+                    text: authLoc.changePassword,
                     options: FFButtonOptions(
                       width: double.infinity,
                       height: 56,

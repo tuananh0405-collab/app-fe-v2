@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_1/features/notifications/domain/models/notification_model.dart';
-import 'package:flutter_application_1/features/notifications/data/models/notification_model.dart';
+import 'package:zentry/features/notifications/domain/models/notification_model.dart';
+import 'package:zentry/features/notifications/data/models/notification_model.dart';
 
 void main() {
   group('NotificationModel', () {

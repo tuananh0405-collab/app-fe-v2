@@ -105,6 +105,17 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
     if (_formKey.currentState!.validate()) {
       debugPrint('Validation passed, preparing to update overtime...');
       
+      // Validate end time is at least 30 minutes after start time
+      final startMinutes = _startTime.hour * 60 + _startTime.minute;
+      final endMinutes = _endTime.hour * 60 + _endTime.minute;
+      final diffMinutes = endMinutes - startMinutes;
+      
+      if (diffMinutes < 30) {
+        final l10n = AppLocalizations.of(context);
+        showSnackbar(context, l10n.overtime.timeValidationError);
+        return;
+      }
+      
       // Combine date with time
       final startDateTime = DateTime(
         _overtimeDate.year,

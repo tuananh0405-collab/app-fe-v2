@@ -30,7 +30,7 @@ class OvertimeController extends Notifier<OvertimeState> {
   }
 
   Future<void> createOvertimeRequest({
-    required int shiftId,
+    // required int shiftId,
     required DateTime overtimeDate,
     required DateTime startTime,
     required DateTime endTime,
@@ -42,7 +42,7 @@ class OvertimeController extends Notifier<OvertimeState> {
 
     final result = await _createOvertimeRequestUseCase(
       CreateOvertimeRequestParams(
-        shiftId: shiftId,
+        // shiftId: shiftId,
         overtimeDate: overtimeDate,
         startTime: startTime,
         endTime: endTime,

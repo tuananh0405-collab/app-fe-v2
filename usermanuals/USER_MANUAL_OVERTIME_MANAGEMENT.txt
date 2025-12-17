@@ -1,0 +1,651 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                       USER MANUAL - OVERTIME MANAGEMENT
+================================================================================
+
+Version: 1.0
+Last Updated: December 6, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. OVERTIME MANAGEMENT MODULE OVERVIEW
+2. VIEW OVERTIME REQUESTS
+   2.1 View Overtime List
+   2.2 Filter Overtime Requests
+3. CREATE OVERTIME REQUEST
+   3.1 Submit New Overtime Request
+4. VIEW OVERTIME DETAILS
+   4.1 View Overtime Request Details
+   4.2 Cancel Overtime Request
+5. UPDATE OVERTIME REQUEST
+   5.1 Edit Overtime Request
+
+================================================================================
+1. OVERTIME MANAGEMENT MODULE OVERVIEW
+================================================================================
+
+Description: The Overtime Management module allows employees to manage their 
+overtime work requests including creating new requests, viewing existing 
+requests, updating pending requests, and canceling requests. The system 
+tracks overtime hours and manages approval workflow.
+
+Key Features:
+- View all overtime requests with status filtering
+- Create new overtime requests with time validation
+- View detailed information of each overtime request
+- Update pending overtime requests
+- Cancel overtime requests with reason
+- Automatic calculation of estimated overtime hours
+- Support for date and time selection
+- Status tracking (Pending/Approved/Rejected/Cancelled)
+
+================================================================================
+2. VIEW OVERTIME REQUESTS
+================================================================================
+
+2.1 View Overtime List
+--------------------------------------------------------------------------------
+
+Description: The Overtime List screen displays all overtime requests submitted 
+by the employee. Users can view the status, date, time, and hours of each 
+request. The list provides filtering options for easy navigation.
+
+Prerequisites:
+- User must be logged into the system
+- User must have access to Overtime Management feature
+
+[Figure 01 - Overtime List Screen]
+
+Step 1: Access Overtime Management
+   - From the Home screen or navigation menu, tap on "Overtime Management".
+   - The system navigates to the Overtime List screen.
+
+Step 2: View the Overtime List screen
+   - The system displays:
+     • "Overtime Management" title in app bar
+     • Filter button (top-right corner)
+     • Quick filter chips (All, Pending, Approved, Rejected, Cancelled)
+     • List of overtime requests sorted by date (newest first)
+     • Floating action button (+) to create new overtime request
+     • Pull-to-refresh functionality
+
+Step 3: View overtime request cards
+   - Each overtime request card shows:
+     • Status badge (Pending/Approved/Rejected/Cancelled) with color coding:
+       - Pending: Orange
+       - Approved: Green
+       - Rejected: Red
+       - Cancelled: Gray
+     • Overtime date (DD/MM/YYYY format)
+     • Start time and end time (HH:MM format)
+     • Estimated hours with icon
+     • Reason (truncated if long)
+     • Submission date
+   - Tap on any card to view full details.
+
+Step 4: Refresh the list
+   - Pull down on the list to refresh.
+   - The system fetches the latest overtime requests.
+   - A loading indicator appears during refresh.
+
+Notes:
+• The list automatically refreshes when returning from other screens.
+• Cards are color-coded by status for easy identification.
+• Empty state message appears if no requests exist.
+
+--------------------------------------------------------------------------------
+
+2.2 Filter Overtime Requests
+--------------------------------------------------------------------------------
+
+Description: The filter functionality allows users to narrow down the overtime 
+request list by status and date range. Quick filters provide one-tap access 
+to common filter options.
+
+Prerequisites:
+- User is on the Overtime List screen
+- Overtime requests exist in the system
+
+[Figure 02 - Overtime Filter Options]
+
+Step 1: Use quick filters
+   - At the top of the overtime list, filter chips are displayed:
+     • All - Shows all overtime requests
+     • Pending - Shows only pending requests
+     • Approved - Shows only approved requests
+     • Rejected - Shows only rejected requests
+     • Cancelled - Shows only cancelled requests
+   - Tap on any chip to apply that filter.
+   - The selected chip is highlighted.
+   - The list updates immediately to show filtered results.
+
+Step 2: Access advanced filters
+   - Tap the filter icon (funnel icon) in the top-right corner.
+   - A bottom sheet appears with advanced filter options.
+
+Step 3: View advanced filter options
+   - The filter bottom sheet displays:
+     • "Filter" title
+     • Status section with radio buttons (All/Pending/Approved/Rejected/Cancelled)
+     • Time section with From Date and To Date pickers
+     • Reset button to clear all filters
+     • Apply button to apply selected filters
+
+Step 4: Filter by status
+   - In the Status section, select one of the radio options:
+     • All - No status filter
+     • Pending - Only pending requests
+     • Approved - Only approved requests
+     • Rejected - Only rejected requests
+     • Cancelled - Only cancelled requests
+   - Only one status can be selected at a time.
+
+Step 5: Filter by date range
+   - In the Time section:
+     • Tap "From Date" to select start date of range
+     • Tap "To Date" to select end date of range
+   - A date picker appears for each selection.
+   - The filter will show requests with overtime dates within this range.
+   - Leave dates blank to show all dates.
+
+Step 6: Apply filters
+   - After selecting desired filters, tap "Apply" button.
+   - The bottom sheet closes.
+   - The list updates to show only matching requests.
+   - Active filters are displayed as chips below the quick filters.
+
+Step 7: Reset filters
+   - To clear all filters, tap "Reset" button in the filter bottom sheet.
+   - All filter selections are cleared.
+   - The list returns to showing all requests.
+
+Step 8: Remove individual filters
+   - Active filter chips are displayed below the quick filters.
+   - Each chip shows the active filter (e.g., "Status: Pending", "From: 01/12/2024").
+   - Tap the X icon on any chip to remove that specific filter.
+   - The list updates immediately.
+
+Notes:
+• Multiple filters can be combined (e.g., Pending + Date range).
+• Quick filters override status selection in advanced filters.
+• Filters persist while navigating within Overtime Management.
+• Filters reset when leaving Overtime Management module.
+
+================================================================================
+3. CREATE OVERTIME REQUEST
+================================================================================
+
+3.1 Submit New Overtime Request
+--------------------------------------------------------------------------------
+
+Description: The Create Overtime Request function allows employees to submit 
+new overtime work requests. The system validates the request and automatically 
+calculates estimated overtime hours based on start and end times.
+
+Prerequisites:
+- User must be logged into the system
+- User must know the date and time of overtime work
+- User must have a valid reason for overtime
+
+[Figure 03 - Create Overtime Request Screen]
+
+Step 1: Access Create Overtime Request screen
+   - From the Overtime List screen, tap the floating action button (+) at the 
+     bottom-right corner.
+   - The system navigates to the Create Overtime Request screen.
+
+Step 2: View the Create Overtime Request screen
+   - The system displays:
+     • "Create Overtime Request" title in app bar
+     • Back button (top-left corner)
+     • Overtime Date selector
+     • Start Time selector
+     • End Time selector
+     • Estimated Hours display (appears after selecting times)
+     • Reason text field (required)
+     • Create Request button
+
+Step 3: Select overtime date
+   - Tap on the "Overtime Date" field.
+   - A date picker calendar appears.
+   - Select the date when overtime work will be performed.
+   - The selected date displays in DD/MM/YYYY format.
+   - If no date is selected, the field shows "Select Date".
+   
+   Validation Rules:
+   • Overtime date must be selected
+   
+   Error Messages:
+   • "Please select date" - if date not selected
+
+Step 4: Select start time
+   - Tap on the "Start Time" field.
+   - A time picker appears.
+   - Select the time when overtime work will begin.
+   - The selected time displays in HH:MM format (e.g., "18:00").
+   - If no time is selected, the field shows "Select Time".
+   
+   Validation Rules:
+   • Start time must be selected
+   
+   Error Messages:
+   • "Please select start and end times" - if times not selected
+
+Step 5: Select end time
+   - Tap on the "End Time" field.
+   - A time picker appears.
+   - Select the time when overtime work will end.
+   - The selected time displays in HH:MM format (e.g., "21:00").
+   - End time must be at least 30 minutes after start time.
+   
+   Validation Rules:
+   • End time must be selected
+   • End time must be at least 30 minutes after start time
+   
+   Error Messages:
+   • "Please select start and end times" - if times not selected
+   • "End time must be at least 30 minutes after start time" - if duration too short
+
+Step 6: View estimated hours
+   - After selecting both start and end times, the system automatically 
+     calculates estimated overtime hours.
+   - An "Estimated Hours" section appears showing:
+     • Timer icon
+     • "Estimated Hours" label
+     • Calculated hours (e.g., "3.0 hours")
+   - The calculation is: (End Time - Start Time) in hours.
+   - This value updates automatically when you change start or end time.
+
+Step 7: Enter reason for overtime
+   - Tap on the "Reason" text field.
+   - Enter a detailed reason for your overtime request.
+   - The field supports multiple lines (up to 4 lines visible).
+   
+   Validation Rules:
+   • Reason cannot be empty
+   • Reason must contain meaningful text
+   
+   Error Messages:
+   • "Enter reason" - if field is empty
+
+Step 8: Review request details
+   - Before submitting, review all entered information:
+     • Overtime date selected
+     • Start and end times
+     • Estimated hours (automatically calculated)
+     • Reason provided
+
+Step 9: Submit the request
+   - Tap the "Create Request" button at the bottom.
+   - The system performs validation checks:
+     • All required fields are filled
+     • Date is selected
+     • Times are selected and valid
+     • End time is at least 30 minutes after start time
+     • Reason is provided
+   - If validation passes, the button text changes to "Creating Request..."
+   - The button becomes disabled during submission.
+
+Step 10: System processes the request
+   
+   Case A - Submission Success:
+   • The request is submitted to the system.
+   • Success message appears: "Overtime request created successfully"
+   • User is automatically returned to the Overtime List screen after 0.5 seconds.
+   • The new request appears in the list with "Pending" status.
+   
+   Case B - Submission Failure:
+   • Error message appears at the bottom of the screen.
+   • The message explains which validation rule failed.
+   • User remains on the Create Overtime Request screen.
+   • User can correct the information and resubmit.
+   • Common errors:
+     - Missing required fields
+     - Time validation failures (end time too close to start time)
+     - Network connection errors
+
+Step 11 (Optional): Cancel request creation
+   - To cancel at any time, tap the Back button (top-left).
+   - The system returns to the Overtime List screen.
+   - No overtime request is created.
+   - Entered data is not saved.
+
+Notes:
+• Overtime requests are created with "Pending" status by default.
+• Requests require approval from manager/HR.
+• You can edit or cancel pending requests (see sections 4.2 and 5.1).
+• Estimated hours are calculated automatically and cannot be manually edited.
+• The system validates that end time is at least 30 minutes after start time.
+
+================================================================================
+4. VIEW OVERTIME DETAILS
+================================================================================
+
+4.1 View Overtime Request Details
+--------------------------------------------------------------------------------
+
+Description: The Overtime Detail screen displays comprehensive information 
+about a specific overtime request including status, date, time, hours, 
+approval information, and action buttons for editing or canceling.
+
+Prerequisites:
+- User is on the Overtime List screen
+- At least one overtime request exists
+
+[Figure 04 - Overtime Detail Screen]
+
+Step 1: Access Overtime Detail screen
+   - From the Overtime List screen, tap on any overtime request card.
+   - The system navigates to the Overtime Detail screen.
+
+Step 2: View the Overtime Detail screen
+   - The system displays:
+     • "Overtime Detail" title in app bar
+     • Back button (top-left corner)
+     • Status badge with icon
+     • Overtime Information section
+     • Approval Information section (if approved/rejected)
+     • Edit button (if status is Pending)
+     • Cancel Request button (if status is Pending)
+     • Note about edit/cancel restrictions
+
+Step 3: View status information
+   - At the top of the detail section, the status is prominently displayed:
+     • Status badge with color coding:
+       - Pending: Orange background, clock icon
+       - Approved: Green background, checkmark icon
+       - Rejected: Red background, X icon
+       - Cancelled: Gray background, cancel icon
+     • Status text in English (Pending/Approved/Rejected/Cancelled)
+
+Step 4: View overtime information
+   - The Overtime Information section displays:
+     • Overtime ID: Unique identifier (e.g., "OT-2024-001")
+     • Employee Code: Your employee code
+     • Overtime Date: Date of overtime work (DD/MM/YYYY format)
+     • Start Time: When overtime begins (HH:MM format)
+     • End Time: When overtime ends (HH:MM format)
+     • Estimated Hours: Total overtime hours (e.g., "3.0 hours")
+     • Submitted At: Date and time request was submitted
+     • Reason: Full text of overtime reason
+
+Step 5: View approval information (if applicable)
+   - If the request has been approved or rejected, additional information shows:
+   
+   For Approved Requests:
+   • Approval Level: Level of approver (e.g., "Level 1", "Level 2")
+   • Approved At: Date and time of approval
+   • Approved Hours: Actual approved hours (may differ from estimated)
+   
+   For Rejected Requests:
+   • Approval Level: Level of approver who rejected
+   • Rejection Reason: Reason provided by approver
+   • If no reason provided, shows "No reason provided"
+
+Step 6: Understand action availability
+   - At the bottom of the screen, a note explains:
+     "You can only edit or cancel when status is 'Pending'"
+   
+   - Action buttons are only enabled if status is Pending:
+     • Edit button: Navigate to Update Overtime screen
+     • Cancel Request button: Show cancellation dialog
+   
+   - If status is Approved, Rejected, or Cancelled:
+     • Both buttons are disabled (grayed out)
+     • Cannot modify the request
+     • Can only view the information
+
+Step 7: Navigate to edit (if Pending)
+   - If status is Pending, tap the "Edit" button.
+   - The system navigates to Update Overtime screen.
+   - See Section 5.1 for edit instructions.
+
+Step 8: Initiate cancellation (if Pending)
+   - If status is Pending, tap the "Cancel Request" button.
+   - A cancellation dialog appears.
+   - See Section 4.2 for cancellation instructions.
+
+Step 9: Return to list
+   - Tap the Back button (top-left) to return to Overtime List screen.
+   - The list refreshes to show any changes.
+
+Notes:
+• Overtime details are read-only except for Pending status.
+• Approval information only appears after manager/HR action.
+• Approved hours may differ from estimated hours based on manager's decision.
+• Rejection reasons help understand why request was denied.
+
+--------------------------------------------------------------------------------
+
+4.2 Cancel Overtime Request
+--------------------------------------------------------------------------------
+
+Description: The Cancel Overtime Request function allows employees to cancel 
+their pending overtime requests. A cancellation reason must be provided. Only 
+requests with "Pending" status can be cancelled.
+
+Prerequisites:
+- User is on the Overtime Detail screen
+- Overtime request status is "Pending"
+- User has a valid reason for cancellation
+
+[Figure 05 - Cancel Overtime Request Dialog]
+
+Step 1: Initiate cancellation
+   - From the Overtime Detail screen, tap "Cancel Request" button.
+   - A dialog appears with cancellation form.
+
+Step 2: View cancellation dialog
+   - The dialog displays:
+     • "Cancel Overtime Request" title
+     • Instruction text: "Please provide a reason for cancellation:"
+     • Cancellation reason text field
+     • Close button (to dismiss without canceling)
+     • Confirm Cancel button (to proceed with cancellation)
+
+Step 3: Enter cancellation reason
+   - Tap on the text field in the dialog.
+   - Enter a clear reason for canceling the overtime request.
+   - Placeholder text: "Enter cancellation reason..."
+   - The field supports multiple lines.
+   
+   Examples of good cancellation reasons:
+   • "Work completed during regular hours"
+   • "Project deadline postponed"
+   • "No longer needed"
+   • "Submitted wrong date/time by mistake"
+   
+   Validation Rules:
+   • Cancellation reason cannot be empty
+   • Must contain meaningful text
+   
+   Error Messages:
+   • "Please enter a cancellation reason" - if field is empty
+
+Step 4: Confirm cancellation
+   - After entering the reason, tap "Confirm Cancel" button.
+   - The system validates the input.
+   - If validation passes, the button becomes disabled during processing.
+   - A loading indicator may appear.
+
+Step 5: System processes cancellation
+   
+   Case A - Successful Cancellation:
+   • The overtime request status is changed to "Cancelled".
+   • The cancellation reason is saved.
+   • Success message appears: "Overtime request cancelled successfully"
+   • The dialog closes automatically.
+   • User is returned to the Overtime List screen.
+   • The cancelled request appears with "Cancelled" status.
+   
+   Case B - Cancellation Failure:
+   • Error message appears in the dialog or as a snackbar.
+   • Common error messages:
+     - "Cannot cancel request with current status" - status changed
+     - "Network error" - connection problem
+     - "Unauthorized" - permission issue
+   • User remains in the dialog.
+   • User can retry or close the dialog.
+
+Step 6 (Optional): Close without canceling
+   - To dismiss the dialog without canceling, tap "Close" button.
+   - The dialog closes.
+   - No changes are made to the overtime request.
+   - User returns to the Overtime Detail screen.
+
+Notes:
+• Cancelled requests cannot be un-cancelled.
+• To resubmit, create a new overtime request.
+• Cancellation reason is visible to managers/HR.
+• Cancelled requests remain in your history for record keeping.
+
+================================================================================
+5. UPDATE OVERTIME REQUEST
+================================================================================
+
+5.1 Edit Overtime Request
+--------------------------------------------------------------------------------
+
+Description: The Update Overtime Request function allows employees to modify 
+their pending overtime requests. Users can change date, times, and reason. 
+Only requests with "Pending" status can be edited.
+
+Prerequisites:
+- User has an overtime request with "Pending" status
+- User is on the Overtime Detail screen or Overtime List screen
+- User wants to modify request details
+
+[Figure 06 - Update Overtime Request Screen]
+
+Step 1: Access Update Overtime Request screen
+   - From the Overtime Detail screen, tap the "Edit" button.
+   - The system navigates to the Update Overtime Request screen.
+   - Alternatively, tap "Edit" on a pending request card in the list (if available).
+
+Step 2: View the Update Overtime Request screen
+   - The system displays:
+     • "Update Overtime Request" title in app bar
+     • Back button (top-left corner)
+     • Overtime Date selector (pre-filled with current date)
+     • Start Time selector (pre-filled with current time)
+     • End Time selector (pre-filled with current time)
+     • Estimated Hours display (calculated from current times)
+     • Reason text field (pre-filled with current reason)
+     • Update button
+     • Cancel button (to cancel the overtime request)
+   
+   - All fields are pre-populated with the current request data.
+
+Step 3: Modify overtime date (if needed)
+   - Tap on the "Overtime Date" field.
+   - A date picker calendar appears.
+   - Select a new overtime date.
+   - The date displays in DD/MM/YYYY format.
+   - Same validation rules apply as Create screen.
+
+Step 4: Modify start time (if needed)
+   - Tap on the "Start Time" field.
+   - A time picker appears.
+   - Select a new start time.
+   - The time displays in HH:MM format.
+   - Estimated hours recalculate automatically.
+
+Step 5: Modify end time (if needed)
+   - Tap on the "End Time" field.
+   - A time picker appears.
+   - Select a new end time.
+   - End time must be at least 30 minutes after start time.
+   - Estimated hours recalculate automatically.
+
+Step 6: View updated estimated hours
+   - The estimated hours display updates automatically when you change times.
+   - The calculation is: (End Time - Start Time) in hours.
+   - This value cannot be manually edited.
+
+Step 7: Modify reason (if needed)
+   - Tap on the "Reason" text field.
+   - Edit the existing reason or enter a completely new one.
+   - The field supports multiple lines.
+   - Same validation rules apply as Create screen.
+
+Step 8: Review changes
+   - Before updating, review all modified information.
+   - Ensure all required fields are still filled.
+   - Verify date and times are correct.
+   - Check that estimated hours are as expected.
+   - Ensure reason is clear and accurate.
+
+Step 9: Submit the update
+   - Tap the "Update" button at the bottom.
+   - The system performs the same validation checks as Create screen:
+     • All required fields are filled
+     • Date is selected
+     • Times are selected and valid
+     • End time is at least 30 minutes after start time
+     • Reason is provided
+   - If validation passes, the button becomes disabled during submission.
+   - A loading indicator may appear.
+
+Step 10: System validates and processes update
+   
+   Case A - Update Success:
+   • The overtime request is updated with new information.
+   • Success message appears: "Overtime request updated successfully"
+   • User is automatically returned to the Overtime List screen.
+   • The updated request appears in the list with "Pending" status.
+   • Estimated hours reflect the new time range.
+   
+   Case B - Update Failure:
+   • Error message appears at the bottom of the screen.
+   • The message explains which validation rule failed.
+   • User remains on the Update Overtime Request screen.
+   • User can correct the information and resubmit.
+   • Common errors are the same as Create screen.
+
+Step 11: Cancel the overtime request (alternative action)
+   - At the bottom of the Update screen, there is also a "Cancel" button.
+   - This button allows you to cancel the overtime request entirely.
+   - Tap "Cancel" button to initiate cancellation.
+   - A cancellation dialog appears (same as Section 4.2).
+   - Enter cancellation reason and confirm.
+   - The request is cancelled and you return to the Overtime List screen.
+
+Step 12 (Optional): Discard changes
+   - To discard changes without updating, tap the Back button (top-left).
+   - The system returns to the Overtime Detail screen.
+   - No changes are saved to the overtime request.
+   - Original request data remains unchanged.
+
+Notes:
+• Only Pending requests can be edited.
+• Editing a request does not change its submission date.
+• Approval process restarts if request was partially approved.
+• If request is approved/rejected while you're editing, update will fail.
+• Refresh the detail screen to see current status before editing.
+• All validation rules are re-applied on update.
+• Estimated hours recalculate automatically based on new times.
+
+================================================================================
+CONTACT INFORMATION
+================================================================================
+
+For overtime-related questions or issues, please contact:
+
+Human Resources Department
+Email: [Contact your organization for HR email]
+Phone: [Contact your organization for HR phone]
+
+Your Direct Manager
+For overtime approval questions and urgent requests
+
+IT Support
+For technical issues with the overtime management system
+Email: [Contact your organization for IT support email]
+
+Business Hours: [Contact your organization for support hours]
+
+================================================================================
+END OF OVERTIME MANAGEMENT USER MANUAL
+================================================================================

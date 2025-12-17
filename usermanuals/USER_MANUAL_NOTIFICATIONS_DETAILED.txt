@@ -1,0 +1,1744 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                    USER MANUAL - NOTIFICATIONS (DETAILED)
+================================================================================
+
+Version: 1.0 (Detailed)
+Last Updated: December 11, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. NOTIFICATIONS OVERVIEW
+   1.1 Purpose and Features
+   1.2 Notification Types
+   1.3 Notification Priority Levels
+   1.4 Access Methods
+
+2. NOTIFICATIONS LIST SCREEN
+   2.1 Screen Layout and Components
+   2.2 Understanding the Interface
+   2.3 Navigation
+   2.4 Screen States
+
+3. VIEWING NOTIFICATIONS
+   3.1 Notification Card Components
+   3.2 Read vs Unread Indicators
+   3.3 Time Display Format
+   3.4 Priority Badges
+
+4. MANAGING NOTIFICATIONS
+   4.1 View Notification Details
+   4.2 Mark Single Notification as Read
+   4.3 Mark All Notifications as Read
+   4.4 Refresh Notification List
+   4.5 Load More Notifications (Pagination)
+
+5. NOTIFICATION TYPES AND ICONS
+   5.1 Leave Approval
+   5.2 Leave Rejection
+   5.3 Attendance Reminders
+   5.4 Leave Request
+   5.5 System Announcement
+   5.6 Other Notifications
+
+6. SCREEN BEHAVIORS
+   6.1 Loading State
+   6.2 Empty State
+   6.3 Error State
+   6.4 Pull-to-Refresh
+
+7. TROUBLESHOOTING
+   7.1 Common Issues
+   7.2 Error Messages
+   7.3 Solutions
+
+================================================================================
+1. NOTIFICATIONS OVERVIEW
+================================================================================
+
+1.1 Purpose and Features
+--------------------------------------------------------------------------------
+
+Description: The Notifications module is a centralized system that keeps employees updated on important work-related events, approvals, reminders, and announcements. It provides real-time alerts and a historical record of all communications.
+
+Key Features:
+    ✓ Real-time notification delivery
+    ✓ Multiple notification types with visual indicators
+    ✓ Priority levels (Low, Normal, High, Urgent)
+    ✓ Read/Unread status tracking
+    ✓ Detailed notification information
+    ✓ Mark as read functionality (individual and bulk)
+    ✓ Pull-to-refresh for latest updates
+    ✓ Infinite scroll pagination
+    ✓ Time-based display (relative and absolute)
+    ✓ Visual categorization by type
+    ✓ Empty state messaging
+    ✓ Error handling and retry mechanism
+
+1.2 Notification Types
+--------------------------------------------------------------------------------
+
+The system supports the following notification types:
+
+1. ATTENDANCE_REMINDER
+   Purpose: General attendance-related reminders
+   Icon: Clock icon (access_time)
+   Color: Warning (amber/orange)
+   Example: "Remember to check in for today's shift"
+
+2. CHECK_IN_REMINDER
+   Purpose: Reminder to check in at start of shift
+   Icon: Clock icon (access_time)
+   Color: Warning (amber/orange)
+   Example: "Please check in to start your work day"
+
+3. CHECK_OUT_REMINDER
+   Purpose: Reminder to check out at end of shift
+   Icon: Clock icon (access_time)
+   Color: Warning (amber/orange)
+   Example: "Don't forget to check out before leaving"
+
+4. LEAVE_REQUEST
+   Purpose: Notification about a new leave request
+   Icon: Calendar with note (event_note)
+   Color: Primary color (blue)
+   Example: "Your leave request has been submitted"
+
+5. LEAVE_APPROVAL
+   Purpose: Leave request approved by manager
+   Icon: Check circle (check_circle_outline)
+   Color: Success (green)
+   Example: "Your leave request for 15/12/2025 has been approved"
+
+6. LEAVE_REJECTION
+   Purpose: Leave request rejected by manager
+   Icon: Cancel circle (cancel_outlined)
+   Color: Error (red)
+   Example: "Your leave request has been rejected"
+
+7. SYSTEM_ANNOUNCEMENT
+   Purpose: Important system-wide announcements
+   Icon: Campaign/megaphone (campaign)
+   Color: Tertiary color (purple/pink)
+   Example: "System maintenance scheduled for tonight"
+
+8. OTHER
+   Purpose: General or uncategorized notifications
+   Icon: Info circle (info_outline)
+   Color: Secondary text (gray)
+   Example: Various general notifications
+
+1.3 Notification Priority Levels
+--------------------------------------------------------------------------------
+
+Notifications are assigned priority levels that affect their visual presentation:
+
+LOW
+    Visual: No special badge
+    Use case: Non-urgent informational messages
+    Example: General announcements
+
+NORMAL
+    Visual: No special badge (default)
+    Use case: Standard notifications
+    Example: Most leave requests and attendance reminders
+
+HIGH
+    Visual: Orange/amber priority badge
+    Badge text: "HIGH"
+    Use case: Important but not critical notifications
+    Example: Approaching deadlines
+
+URGENT
+    Visual: Red priority badge
+    Badge text: "URGENT"
+    Use case: Critical notifications requiring immediate attention
+    Example: Missed check-in, urgent policy changes
+
+1.4 Access Methods
+--------------------------------------------------------------------------------
+
+There are multiple ways to access the Notifications screen:
+
+Method 1: From Home Screen App Bar
+    Step 1: On the Home screen, locate the app bar at the top
+    Step 2: Tap the bell icon (notifications_outlined) in the top-right corner
+    Result: You are navigated to the Notifications List screen
+
+Method 2: From Home Screen Widget
+    Step 1: On the Home screen, scroll to the "Latest Notifications" section
+    Step 2: Tap the "View All" link in the section header
+    Result: You are navigated to the Notifications List screen
+
+Method 3: From Bottom Navigation
+    Step 1: From any screen with bottom navigation
+    Step 2: Tap the "Notifications" tab (bell icon)
+    Result: You are navigated to the Notifications List screen
+
+Method 4: Via Push Notification
+    Step 1: Receive a push notification on your device
+    Step 2: Tap the push notification
+    Result: App opens to the Notifications List screen
+
+================================================================================
+2. NOTIFICATIONS LIST SCREEN
+================================================================================
+
+2.1 Screen Layout and Components
+--------------------------------------------------------------------------------
+
+Figure 2.1: Notifications List Screen
+
+The Notifications List screen consists of the following components:
+
+APP BAR (Top Section)
+    Position: Top of screen
+    Background: Primary color (blue)
+    Height: Standard app bar height + subtitle
+    
+    Components:
+        1. Back Button
+           Position: Top-left corner
+           Icon: Back arrow (arrow_back)
+           Color: White
+           Action: Returns to Home screen
+        
+        2. Title Section (Centered)
+           Main Title: "Thông báo" (Notifications)
+           Font: Title2 style, white color
+           
+           Subtitle (Conditional): Unread count
+           Display: Only shows if unreadCount > 0
+           Format: "[number] chưa đọc" (e.g., "3 chưa đọc")
+           Font: BodyText2, size 12, white with 70% opacity
+           Example: "5 chưa đọc" (5 unread)
+        
+        3. Action Button (Conditional)
+           Position: Top-right corner
+           Display: Only shows if unreadCount > 0
+           Text: "Đọc tất cả" (Mark all as read)
+           Font: BodyText2, size 13, white color
+           Type: TextButton
+           Action: Opens "Mark all as read" confirmation dialog
+
+BODY SECTION (Main Content Area)
+    Background: Primary background color
+    Padding: 16 pixels on all sides
+    
+    Content: Dynamic based on state (see section 2.4)
+        - Notification cards list (normal state)
+        - Loading indicator (loading state)
+        - Empty state message (no notifications)
+        - Error message with retry button (error state)
+
+BOTTOM NAVIGATION BAR
+    Position: Bottom of screen
+    Current Tab: Notifications (index 2)
+    Tabs Available:
+        1. Home
+        2. Profile (or other tabs)
+        3. Notifications (highlighted)
+
+2.2 Understanding the Interface
+--------------------------------------------------------------------------------
+
+Unread Count Display:
+    The app bar dynamically displays the count of unread notifications.
+    
+    Case A - No Unread Notifications:
+        Only "Thông báo" title is shown
+        "Đọc tất cả" button is hidden
+        Clean, minimal header
+    
+    Case B - Has Unread Notifications:
+        Title: "Thông báo"
+        Subtitle: "X chưa đọc" (where X is the count)
+        "Đọc tất cả" button appears in top-right
+        Example: If you have 3 unread notifications:
+            Main title: "Thông báo"
+            Subtitle: "3 chưa đọc"
+
+Notification List:
+    Displays all notifications in reverse chronological order (newest first)
+    Each notification appears as a card (see section 3.1)
+    Scrollable vertically
+    Supports pull-to-refresh gesture
+    Automatically loads more when scrolling near bottom
+
+2.3 Navigation
+--------------------------------------------------------------------------------
+
+Entering the Screen:
+    Multiple entry points (see section 1.4)
+    Screen loads with animation
+    Automatically fetches notifications on init
+    Shows loading indicator during initial load
+
+Exiting the Screen:
+    Method 1: Tap back button in app bar
+        Result: Returns to Home screen (via go routing)
+    
+    Method 2: Use system back gesture/button
+        Intercepted by PopScope
+        Result: Returns to Home screen (via go routing)
+    
+    Method 3: Tap Home tab in bottom navigation
+        Result: Navigates to Home screen
+    
+    Method 4: Tap other bottom navigation tabs
+        Result: Navigates to respective screens
+
+2.4 Screen States
+--------------------------------------------------------------------------------
+
+The Notifications List screen can be in one of several states:
+
+STATE 1: LOADING (Initial Load)
+    Trigger: Screen first opens OR manual refresh initiated
+    Display:
+        Centered loading indicator
+        Circular progress spinner
+        Color: Primary color (blue)
+        Size: 40 pixels
+    User Action: Wait for data to load
+    Duration: Typically 1-3 seconds
+
+STATE 2: LOADED WITH DATA
+    Trigger: Successfully fetched notifications
+    Display:
+        List of notification cards
+        Each card shows notification details
+        Pull-to-refresh enabled
+        Scroll-to-load-more enabled
+    User Actions:
+        - Tap notification to view details
+        - Pull down to refresh
+        - Scroll to load more
+        - Mark all as read
+
+STATE 3: LOADED BUT EMPTY
+    Trigger: Successfully fetched but no notifications exist
+    Display:
+        Centered empty state message
+        Icon: Large bell with slash (notifications_none)
+        Icon size: 80 pixels
+        Icon color: Secondary text color (gray)
+        
+        Primary text: "Không có thông báo"
+        Font: Title2 style
+        
+        Secondary text: "Bạn đã xem hết tất cả!"
+        Font: BodyText1, secondary text color
+    User Action: No action needed; check back later
+
+STATE 4: ERROR
+    Trigger: Failed to load notifications (network error, server error, etc.)
+    Display:
+        Centered error state
+        Icon: Error symbol (error_outline)
+        Icon size: 64 pixels
+        Icon color: Error color (red)
+        
+        Title: "Lỗi tải thông báo"
+        Font: Title2 style
+        
+        Error message: Specific error description
+        Font: BodyText1, centered
+        Padding: 32 pixels horizontal
+        
+        Retry button:
+            Text: "Thử lại"
+            Icon: Refresh icon (white)
+            Color: Primary color
+            Height: 45 pixels
+            Padding: 24 pixels horizontal
+            Border radius: 8 pixels
+    User Action: Tap "Thử lại" to retry loading
+
+STATE 5: LOADING MORE (Pagination)
+    Trigger: User scrolls to bottom of list
+    Display:
+        Existing notifications remain visible
+        Small loading indicator at bottom of list
+        Size: 30 pixels
+        Padding: 16 pixels all around
+    User Action: Wait for more notifications to load
+    Condition: Only triggers if hasMore is true
+
+================================================================================
+3. VIEWING NOTIFICATIONS
+================================================================================
+
+3.1 Notification Card Components
+--------------------------------------------------------------------------------
+
+Figure 3.1: Notification Card Structure
+
+Each notification is displayed as a card with the following structure:
+
+CARD CONTAINER
+    Margin: 12 pixels bottom spacing between cards
+    Border Radius: 12 pixels (rounded corners)
+    Background: Secondary background color (white/light)
+    
+    Border:
+        Read notifications:
+            Width: 1 pixel
+            Color: Alternate color (light gray)
+        
+        Unread notifications:
+            Width: 2 pixels
+            Color: Primary color with 30% opacity
+    
+    Shadow:
+        Read notifications: No shadow
+        
+        Unread notifications:
+            Color: Primary color with 10% opacity
+            Blur radius: 8 pixels
+            Offset: 0 pixels horizontal, 2 pixels vertical
+
+CARD CONTENT (Left to Right)
+    Padding: 16 pixels all around
+    
+    1. ICON SECTION (Left Side)
+       Container:
+           Padding: 10 pixels
+           Shape: Circle
+           Background: Icon color with 10% opacity
+       
+       Icon:
+           Size: 24 pixels
+           Color: Type-specific (see section 5)
+           Type: Based on notification type
+    
+    2. CONTENT SECTION (Middle, Expandable)
+       Layout: Vertical column
+       Spacing: 6-8 pixels between elements
+       
+       a) Header Row:
+          Layout: Horizontal row
+          
+          Title Text:
+              Expands to fill available space
+              Font: BodyText1
+              Weight: Bold (unread) or SemiBold (read)
+              Color: Primary text color
+          
+          Priority Badge (if applicable):
+              Display: Only for HIGH or URGENT priority
+              Padding: 8px horizontal, 2px vertical
+              Border radius: 4 pixels
+              Background: Priority color with 10% opacity
+              
+              Badge Text:
+                  Content: "HIGH" or "URGENT"
+                  Font size: 10 pixels
+                  Weight: Bold
+                  Color: Matches priority (orange or red)
+          
+          Unread Indicator:
+              Display: Only if notification is unread
+              Shape: Small circle (8x8 pixels)
+              Color: Primary color (blue)
+              Position: Right side after priority badge
+       
+       b) Message Text (Optional, currently commented out):
+          Content: notification.message
+          Font: BodyText2
+          Color: Secondary text color
+          Lines: Can wrap to multiple lines
+       
+       c) Footer Row:
+          Layout: Horizontal row
+          
+          Time Icon:
+              Icon: Clock (access_time)
+              Size: 14 pixels
+              Color: Secondary text color
+          
+          Time Text:
+              Content: Relative time or absolute date
+              Font: BodyText2, size 12
+              Color: Secondary text color
+              Format: See section 3.3
+          
+          Chevron Icon (conditional):
+              Display: Only if relatedEntityType exists
+              Icon: Right chevron (chevron_right)
+              Size: 20 pixels
+              Color: Secondary text color
+              Position: Far right (uses Spacer)
+
+INTERACTION
+    Tap Effect:
+        Type: InkWell with ripple effect
+        Border radius: 12 pixels (matches card)
+    
+    Tap Action:
+        If unread: Marks notification as read
+        Always: Opens notification detail dialog
+
+3.2 Read vs Unread Indicators
+--------------------------------------------------------------------------------
+
+Visual Differences:
+
+UNREAD NOTIFICATIONS:
+    Border:
+        Width: 2 pixels (thicker)
+        Color: Primary color with 30% opacity (light blue)
+        Effect: More prominent outline
+    
+    Shadow:
+        Present: Yes
+        Color: Primary color with 10% opacity
+        Blur: 8 pixels
+        Offset: (0, 2)
+        Effect: Subtle elevation/lift
+    
+    Title Font Weight:
+        Weight: Bold (FontWeight.bold)
+        Effect: More prominent, easier to spot
+    
+    Blue Dot Indicator:
+        Display: Yes
+        Position: Top-right of card content
+        Size: 8x8 pixels circle
+        Color: Primary color (solid blue)
+        Effect: Clear visual indicator of unread status
+    
+    Contributes to Count:
+        Yes, adds to unread count in app bar
+
+READ NOTIFICATIONS:
+    Border:
+        Width: 1 pixel (thinner)
+        Color: Alternate color (light gray)
+        Effect: Subtle, less prominent
+    
+    Shadow:
+        Present: No
+        Effect: Appears flat, less emphasized
+    
+    Title Font Weight:
+        Weight: SemiBold (FontWeight.w600)
+        Effect: Still readable but less prominent
+    
+    Blue Dot Indicator:
+        Display: No
+        Effect: Clean appearance
+    
+    Contributes to Count:
+        No, does not add to unread count
+
+State Transition:
+    When tapped: Unread → Read
+    Animation: Smooth transition of border, shadow, and dot
+    Update: Unread count decreases by 1
+    Persistence: Status saved to backend
+
+3.3 Time Display Format
+--------------------------------------------------------------------------------
+
+The notification timestamp is displayed in a user-friendly format:
+
+Function: _getTimeAgo(DateTime timestamp)
+
+Time Display Rules:
+
+Rule 1: Less than 1 minute ago
+    Display: "Vừa xong"
+    Translation: "Just now"
+    Example: Notification received 30 seconds ago → "Vừa xong"
+
+Rule 2: 1 to 59 minutes ago
+    Display: "[X] phút trước"
+    Translation: "[X] minutes ago"
+    Example: 
+        5 minutes ago → "5 phút trước"
+        45 minutes ago → "45 phút trước"
+
+Rule 3: 1 to 23 hours ago
+    Display: "[X] giờ trước"
+    Translation: "[X] hours ago"
+    Example:
+        1 hour ago → "1 giờ trước"
+        12 hours ago → "12 giờ trước"
+
+Rule 4: 1 to 7 days ago
+    Display: "[X] ngày trước"
+    Translation: "[X] days ago"
+    Example:
+        1 day ago → "1 ngày trước"
+        5 days ago → "5 ngày trước"
+
+Rule 5: More than 7 days ago
+    Display: "DD/MM/YYYY"
+    Format: Date format with leading zeros
+    Example:
+        15 days ago → "01/12/2025"
+        2 months ago → "10/10/2025"
+
+Calculation Method:
+    Step 1: Get current date/time (DateTime.now())
+    Step 2: Calculate difference from notification.createdAt
+    Step 3: Check difference in order: days > hours > minutes
+    Step 4: Return appropriate format
+
+Display Location:
+    Position: Footer of notification card
+    Icon: Clock icon (14px) to the left
+    Font: BodyText2, size 12, secondary text color
+
+3.4 Priority Badges
+--------------------------------------------------------------------------------
+
+Priority badges provide visual indication of notification importance:
+
+URGENT Priority:
+    Criteria: notification.priority == NotificationPriority.urgent
+    
+    Visual Design:
+        Background: Error color with 10% opacity (light red)
+        Text: "URGENT"
+        Font size: 10 pixels
+        Font weight: Bold
+        Text color: Error color (red)
+        Padding: 8px horizontal, 2px vertical
+        Border radius: 4 pixels
+    
+    Position: Top-right of notification card content
+    Purpose: Immediate attention required
+    Example: "Missed check-in alert"
+
+HIGH Priority:
+    Criteria: notification.priority == NotificationPriority.high
+    
+    Visual Design:
+        Background: Warning color with 10% opacity (light orange)
+        Text: "HIGH"
+        Font size: 10 pixels
+        Font weight: Bold
+        Text color: Warning color (orange/amber)
+        Padding: 8px horizontal, 2px vertical
+        Border radius: 4 pixels
+    
+    Position: Top-right of notification card content
+    Purpose: Important, should be reviewed soon
+    Example: "Approaching deadline"
+
+NORMAL Priority:
+    Criteria: notification.priority == NotificationPriority.normal
+    Display: No badge shown
+    Purpose: Standard notifications
+    Example: Most day-to-day notifications
+
+LOW Priority:
+    Criteria: notification.priority == NotificationPriority.low
+    Display: No badge shown
+    Purpose: Informational only
+    Example: General announcements
+
+Badge Display Logic:
+    if (notification.priority == NotificationPriority.urgent) {
+        priorityColor = theme.error; // Red
+    } else if (notification.priority == NotificationPriority.high) {
+        priorityColor = theme.warning; // Orange
+    }
+    // If priorityColor is null, no badge is rendered
+
+================================================================================
+4. MANAGING NOTIFICATIONS
+================================================================================
+
+4.1 View Notification Details
+--------------------------------------------------------------------------------
+
+Description: Opening a notification displays its full details in a modal dialog, providing complete information about the notification.
+
+Instructions:
+
+Figure 4.1: Notification Detail Dialog
+
+Step 1: Tap a notification card
+    From the Notifications List screen
+    Tap anywhere on the desired notification card
+    The card has an InkWell ripple effect on tap
+    If the notification is unread, it is automatically marked as read
+
+Step 2: View the notification detail dialog
+    A modal dialog appears with the following components:
+    
+    DIALOG HEADER:
+        Layout: Horizontal row with icon and title
+        
+        Icon Container:
+            Padding: 8 pixels
+            Shape: Circle
+            Background: Icon color with 10% opacity
+            
+            Icon:
+                Type: Based on notification type (see section 5)
+                Size: 24 pixels
+                Color: Type-specific color
+        
+        Title:
+            Spacing: 12 pixels from icon
+            Font: Title3 style
+            Color: Primary text
+            Content: notification.title
+            Wrapping: Expands to multiple lines if needed
+    
+    DIALOG CONTENT:
+        Scrollable: Yes (SingleChildScrollView)
+        
+        Message Section:
+            Content: notification.message
+            Font: BodyText1
+            Color: Primary text
+            Wrapping: Full message with line breaks
+            
+            Spacing: 16 pixels below message
+        
+        Timestamp Section:
+            Layout: Horizontal row
+            
+            Clock Icon:
+                Icon: access_time
+                Size: 14 pixels
+                Color: Secondary text
+            
+            Date/Time Text:
+                Spacing: 4 pixels from icon
+                Format: "DD/MM/YYYY HH:MM"
+                Example: "11/12/2025 14:30"
+                Font: BodyText2, size 12
+                Color: Secondary text
+                Function: DateFormat('dd/MM/yyyy HH:mm').format()
+    
+    DIALOG ACTIONS:
+        Close Button:
+            Type: TextButton
+            Text: "Close"
+            Font: BodyText2
+            Color: Primary color
+            Weight: SemiBold (w600)
+            Action: Closes dialog and returns to list
+
+Step 3: Read the full notification
+    The dialog presents all notification information:
+        - Complete title
+        - Full message text (no truncation)
+        - Exact timestamp
+        - Visual type indicator via icon
+    
+    Scroll if the message is long
+    All text is selectable for copying (if needed)
+
+Step 4: Close the dialog
+    Method 1: Tap the "Close" button at bottom
+    Method 2: Tap outside the dialog (if enabled)
+    Method 3: Use system back gesture/button
+    
+    Result: Returns to Notifications List screen
+
+Post-Action State:
+    If the notification was unread:
+        ✓ Now marked as read
+        ✓ Blue dot indicator removed from card
+        ✓ Border becomes thinner and gray
+        ✓ Shadow removed
+        ✓ Font weight changes to semibold
+        ✓ Unread count in app bar decreases by 1
+
+Icon and Color by Type:
+    The dialog icon automatically adapts based on notification type:
+    
+    Leave Approval:
+        Icon: check_circle_outline
+        Color: Success (green)
+    
+    Leave Rejection:
+        Icon: cancel_outlined
+        Color: Error (red)
+    
+    Attendance/Check-in/Check-out Reminders:
+        Icon: access_time
+        Color: Warning (orange)
+    
+    Leave Request:
+        Icon: event_note
+        Color: Primary (blue)
+    
+    System Announcement:
+        Icon: campaign
+        Color: Tertiary (purple/pink)
+    
+    Other:
+        Icon: info_outline
+        Color: Secondary text (gray)
+
+4.2 Mark Single Notification as Read
+--------------------------------------------------------------------------------
+
+Description: Individual notifications are automatically marked as read when tapped, providing a natural interaction pattern.
+
+Instructions:
+
+Step 1: Identify an unread notification
+    Visual indicators:
+        ✓ Thicker border (2px, blue-tinted)
+        ✓ Subtle shadow effect
+        ✓ Bold title text
+        ✓ Blue dot in top-right corner
+        ✓ Counts toward unread total in app bar
+
+Step 2: Tap the notification
+    Tap anywhere on the notification card
+    InkWell provides visual feedback (ripple)
+    System processes the tap
+
+Step 3: Automatic mark as read
+    Behind the scenes:
+        Function: _handleNotificationTap(notification)
+        
+        Logic:
+            if (!notification.isRead) {
+                ref.read(notificationListControllerProvider.notifier)
+                   .markAsRead(notification.id);
+            }
+        
+        Process:
+            1. Check if notification is unread
+            2. If unread, call markAsRead with notification ID
+            3. Update local state
+            4. Send API request to backend
+            5. Update UI immediately (optimistic update)
+
+Step 4: View the detail dialog
+    After marking as read, detail dialog opens
+    Shows full notification information
+    Notification is already marked as read
+
+Step 5: Observe visual changes
+    After closing dialog, observe the card:
+        ✓ Border is now thinner (1px) and gray
+        ✓ Shadow is removed
+        ✓ Title font weight is semibold (not bold)
+        ✓ Blue dot indicator is removed
+        ✓ Unread count in app bar decreased by 1
+
+Note: This is an automatic process. You don't need to take any special action to mark a notification as read—simply viewing it marks it as read.
+
+4.3 Mark All Notifications as Read
+--------------------------------------------------------------------------------
+
+Description: Quickly mark all unread notifications as read in a single action, useful when you have many unread items.
+
+Instructions:
+
+Figure 4.3: Mark All as Read Confirmation Dialog
+
+Step 1: Check for unread notifications
+    View the app bar subtitle
+    If it shows "X chưa đọc", you have unread notifications
+    The "Đọc tất cả" button appears in top-right corner
+    
+    If no unread notifications exist:
+        Subtitle is hidden
+        "Đọc tất cả" button is hidden
+        This action is not available
+
+Step 2: Tap "Đọc tất cả" button
+    Location: Top-right corner of app bar
+    Appearance: Text button in white
+    Font size: 13 pixels
+    
+    Action: Taps opens confirmation dialog
+
+Step 3: View confirmation dialog
+    The system displays a confirmation dialog:
+    
+    Dialog Properties:
+        Background: Secondary background color
+        Border radius: 16 pixels
+        Shape: Rounded rectangle
+    
+    Dialog Title:
+        Text: "Đánh dấu tất cả đã đọc"
+        Translation: "Mark all as read"
+        Font: Title3 style
+    
+    Dialog Content:
+        Text: "Bạn có chắc chắn muốn đánh dấu tất cả thông báo là đã đọc?"
+        Translation: "Are you sure you want to mark all notifications as read?"
+        Font: BodyText1
+    
+    Dialog Actions (Two buttons):
+        1. Cancel Button (Left):
+           Text: "Hủy" (Cancel)
+           Type: TextButton
+           Color: Secondary text (gray)
+           Action: Closes dialog, no changes made
+        
+        2. Confirm Button (Right):
+           Text: "Đồng ý" (Confirm/Agree)
+           Type: FFButton
+           Color: Primary color (blue)
+           Height: 40 pixels
+           Padding: 20 pixels horizontal
+           Border radius: 8 pixels
+           Font weight: SemiBold
+           Text color: White
+           Action: Marks all as read and closes dialog
+
+Step 4: Choose an action
+    Option A: Confirm
+        Tap the "Đồng ý" button
+        Dialog closes immediately
+        System processes the request
+        Proceed to Step 5
+    
+    Option B: Cancel
+        Tap the "Hủy" button
+        Dialog closes
+        No changes are made
+        Returns to Notifications List screen
+        Process ends here
+
+Step 5: System processes the request (if confirmed)
+    Behind the scenes:
+        Function Called:
+            ref.read(notificationListControllerProvider.notifier)
+               .markAllAsRead();
+        
+        Process:
+            1. Identifies all unread notifications
+            2. Sends bulk mark-as-read API request to backend
+            3. Updates local state for all notifications
+            4. Triggers UI refresh
+
+Step 6: Observe the results
+    Visual changes to the screen:
+    
+    App Bar Changes:
+        Subtitle "X chưa đọc" disappears
+        "Đọc tất cả" button disappears
+        Only "Thông báo" title remains
+    
+    Notification Cards Changes:
+        All cards that were unread are now read:
+            ✓ Borders become thin (1px) and gray
+            ✓ Shadows are removed
+            ✓ Title fonts change to semibold
+            ✓ All blue dot indicators removed
+            ✓ Cards appear visually "flattened"
+    
+    Unread Count:
+        Changes from X → 0
+        Subtitle hidden
+        Action button hidden
+
+Step 7: Verify completion
+    Check that:
+        ✓ No notifications have blue dots
+        ✓ No unread count in app bar
+        ✓ "Đọc tất cả" button is gone
+        ✓ All cards have thin gray borders
+
+Use Cases:
+    - You've been away and have many notifications
+    - You want a clean slate
+    - You've reviewed notifications but didn't tap each one
+    - You're doing periodic notification cleanup
+
+Important Notes:
+    ⚠ This action affects ALL unread notifications, not just visible ones
+    ⚠ If you have notifications on multiple pages (via pagination), all will be marked
+    ⚠ This action cannot be undone
+    ⚠ A confirmation dialog prevents accidental activation
+
+4.4 Refresh Notification List
+--------------------------------------------------------------------------------
+
+Description: Pull-to-refresh functionality allows you to manually check for new notifications and update the list with the latest data.
+
+Instructions:
+
+Figure 4.4: Pull-to-Refresh Gesture
+
+Step 1: Initiate pull-to-refresh
+    Position: At the top of the notification list
+    Gesture: Touch and drag down
+    
+    Method:
+        1. Place finger on the notification list
+        2. Pull down (swipe down gesture)
+        3. Drag beyond a certain threshold
+        4. Visual feedback appears (refresh indicator)
+
+Step 2: View loading indicator
+    While refreshing:
+        A circular loading indicator appears at top
+        Color: Primary color (blue)
+        Animation: Rotating spinner
+        Position: Top of the list
+        
+    The existing notifications remain visible
+    You can observe the loading animation
+
+Step 3: System fetches latest data
+    Behind the scenes:
+        Function Called:
+            ref.read(notificationListControllerProvider.notifier)
+               .loadNotifications(refresh: true);
+        
+        Process:
+            1. API request sent to backend
+            2. Fetches latest notifications
+            3. Replaces current list with new data
+            4. Updates unread count
+            5. Refreshes UI state
+
+Step 4: View updated list
+    After successful refresh:
+        Loading indicator disappears
+        List updates with latest notifications
+        New notifications appear at top (newest first)
+        Unread count updates if new notifications arrived
+        
+    If no new notifications:
+        List remains the same
+        Loading indicator simply disappears
+        No visual change to cards
+
+Step 5: Handle refresh scenarios
+    Scenario A: New notifications available
+        New cards appear at top of list
+        Smooth animation as they insert
+        New unread notifications show blue dots
+        Unread count increases
+        User can scroll to see new items
+    
+    Scenario B: No new notifications
+        List remains unchanged
+        Existing cards stay in place
+        Unread count remains the same
+        Message (optional): No new items
+    
+    Scenario C: Network error during refresh
+        Error is handled silently or with a snackbar
+        List shows last successfully loaded data
+        User can try again
+
+When to Use Pull-to-Refresh:
+    ✓ You expect a new notification
+    ✓ Someone told you they sent something
+    ✓ You want to check for updates manually
+    ✓ It's been a while since you opened the screen
+    ✓ You're not receiving push notifications
+    ✓ You want to ensure you have the latest data
+
+Behavior Notes:
+    - Pull-to-refresh is only available when status is "loaded"
+    - Does not work during initial loading
+    - Does not work in error state (use retry button instead)
+    - Refresh is fast (1-2 seconds typically)
+    - Data is completely replaced (not appended)
+
+Refresh Indicator Properties:
+    Widget: RefreshIndicator
+    Color: theme.primaryColor
+    onRefresh: Async function returning Future<void>
+    Child: ListView with notification cards
+
+4.5 Load More Notifications (Pagination)
+--------------------------------------------------------------------------------
+
+Description: The notification list uses infinite scroll pagination to load older notifications as you scroll down, improving performance and user experience.
+
+Instructions:
+
+Figure 4.5: Loading More Notifications
+
+Step 1: Understand pagination
+    The system does not load all notifications at once
+    Initial load: Limited number (e.g., 20-50 notifications)
+    More are loaded as you scroll
+    Improves performance and reduces initial load time
+
+Step 2: Scroll down through the list
+    Start: At the top of the notification list
+    Action: Scroll down by swiping up
+    Continue: Keep scrolling through notifications
+    Watch: Observe the bottom of the list
+
+Step 3: Trigger automatic loading
+    Pagination Trigger:
+        When you scroll to within 200 pixels of the bottom
+        
+        Code Logic:
+            _scrollController.addListener(_onScroll);
+            
+            void _onScroll() {
+                if (_scrollController.position.pixels >=
+                    _scrollController.position.maxScrollExtent - 200) {
+                    ref.read(notificationListControllerProvider.notifier)
+                       .loadMore();
+                }
+            }
+        
+        Automatic: Triggers without user action
+        Smart: Only loads if hasMore is true
+
+Step 4: View loading indicator
+    At the bottom of the list:
+        A small loading indicator appears
+        Type: Circular progress spinner
+        Color: Primary color
+        Size: 30 pixels (smaller than main loading)
+        Padding: 16 pixels all around
+        
+    Position:
+        After the last notification card
+        Before any subsequent items
+        Visible while loading
+
+Step 5: New notifications load
+    Behind the scenes:
+        Function: loadMore()
+        Process:
+            1. Check if already loading (prevent duplicates)
+            2. Check if hasMore is true
+            3. Fetch next page of notifications
+            4. Append to existing list (not replace)
+            5. Update hasMore flag
+            6. Remove loading indicator
+    
+    Result:
+        More notification cards appear below
+        Smooth appearance animation
+        Total item count increases
+        Can continue scrolling
+
+Step 6: Repeat or complete
+    If more notifications exist:
+        hasMore remains true
+        Can continue scrolling
+        Process repeats when near bottom again
+    
+    If no more notifications:
+        hasMore becomes false
+        Loading indicator won't appear again
+        You've reached the end of the list
+        (Optional): "No more notifications" message
+
+Pagination State Indicators:
+
+    Item Count in ListView.builder:
+        itemCount: state.notifications.length + (state.hasMore ? 1 : 0)
+        
+        Explanation:
+            - Base count: Number of loaded notifications
+            - +1: If more exist (for loading indicator item)
+            - No +1: If all loaded (end of list)
+
+    Loading Item Display:
+        if (index == state.notifications.length) {
+            // Show loading indicator
+            return LoadingIndicator;
+        }
+        // Otherwise show notification card
+
+Benefits of Pagination:
+    ✓ Faster initial load time
+    ✓ Reduced memory usage
+    ✓ Better performance with large datasets
+    ✓ Smooth scrolling experience
+    ✓ Automatic and seamless
+    ✓ No manual "Load More" button needed
+
+Edge Cases:
+
+    Case 1: Very few notifications
+        If total notifications < one page
+        hasMore is false from the start
+        No loading indicator ever appears
+        No pagination needed
+    
+    Case 2: Rapid scrolling
+        Prevents multiple simultaneous loads
+        Loading flag prevents duplicate requests
+        Only one load request at a time
+    
+    Case 3: Network error during load more
+        Current notifications remain visible
+        Loading indicator may show error
+        Can retry by scrolling up and down again
+    
+    Case 4: All notifications loaded
+        hasMore = false
+        No more loading will occur
+        Reached the end of history
+
+================================================================================
+5. NOTIFICATION TYPES AND ICONS
+================================================================================
+
+This section details the visual appearance and meaning of each notification type.
+
+5.1 Leave Approval
+--------------------------------------------------------------------------------
+
+Type: LEAVE_APPROVAL
+Purpose: Notify that a leave request has been approved by manager
+
+Visual Design:
+    Icon: check_circle_outline (circle with checkmark)
+    Icon Color: Success (green) - theme.success
+    Icon Background: Success color with 10% opacity
+    
+Card Appearance:
+    Same standard card structure
+    Green circular icon on left
+    Title typically includes: "approved", "phê duyệt"
+    May include leave dates and duration
+
+Example Messages:
+    "Your leave request for 15/12/2025 has been approved"
+    "Đơn xin nghỉ phép của bạn đã được phê duyệt"
+    "Leave approved: 20-22/12/2025 (3 days)"
+
+Common Priority: NORMAL or HIGH
+
+User Action:
+    Tap to view full approval details
+    Check leave dates and manager comments
+    Plan accordingly
+
+5.2 Leave Rejection
+--------------------------------------------------------------------------------
+
+Type: LEAVE_REJECTION
+Purpose: Notify that a leave request has been rejected by manager
+
+Visual Design:
+    Icon: cancel_outlined (circle with X)
+    Icon Color: Error (red) - theme.error
+    Icon Background: Error color with 10% opacity
+
+Card Appearance:
+    Same standard card structure
+    Red circular icon on left
+    Title typically includes: "rejected", "từ chối"
+    May require attention
+
+Example Messages:
+    "Your leave request has been rejected"
+    "Đơn xin nghỉ phép của bạn đã bị từ chối"
+    "Leave request rejected: Insufficient leave balance"
+
+Common Priority: NORMAL or HIGH
+
+User Action:
+    Tap to view rejection reason
+    Check manager's comments
+    Consider resubmitting with changes
+
+5.3 Attendance Reminders
+--------------------------------------------------------------------------------
+
+Types: ATTENDANCE_REMINDER, CHECK_IN_REMINDER, CHECK_OUT_REMINDER
+Purpose: Remind employees about attendance-related actions
+
+Visual Design:
+    Icon: access_time (clock)
+    Icon Color: Warning (amber/orange) - theme.warning
+    Icon Background: Warning color with 10% opacity
+
+Card Appearance:
+    Same standard card structure
+    Orange/amber clock icon on left
+    Title indicates urgency
+    Time-sensitive
+
+Example Messages:
+    Check-in Reminder:
+        "Please check in to start your work day"
+        "Nhắc nhở: Vui lòng check-in"
+        "Don't forget to check in!"
+    
+    Check-out Reminder:
+        "Don't forget to check out before leaving"
+        "Nhắc nhở: Vui lòng check-out"
+        "Time to check out for the day"
+    
+    General Attendance:
+        "Remember to check in for today's shift"
+        "Attendance reminder: Your shift starts in 15 minutes"
+
+Common Priority: NORMAL or HIGH (approaching URGENT if late)
+
+User Action:
+    Take immediate action (check in/out)
+    Navigate to attendance screen
+    Complete required action promptly
+
+5.4 Leave Request
+--------------------------------------------------------------------------------
+
+Type: LEAVE_REQUEST
+Purpose: Notify about leave request status changes or confirmations
+
+Visual Design:
+    Icon: event_note (calendar with note)
+    Icon Color: Primary (blue) - theme.primaryColor
+    Icon Background: Primary color with 10% opacity
+
+Card Appearance:
+    Same standard card structure
+    Blue calendar icon on left
+    Title about leave request
+    Informational
+
+Example Messages:
+    "Your leave request has been submitted"
+    "Đơn xin nghỉ phép đã được gửi"
+    "Leave request pending approval"
+    "Manager has viewed your leave request"
+
+Common Priority: NORMAL
+
+User Action:
+    Tap to view request details
+    Check status
+    Wait for approval
+
+5.5 System Announcement
+--------------------------------------------------------------------------------
+
+Type: SYSTEM_ANNOUNCEMENT
+Purpose: Important system-wide announcements and notices
+
+Visual Design:
+    Icon: campaign (megaphone)
+    Icon Color: Tertiary (purple/pink) - theme.tertiaryColor
+    Icon Background: Tertiary color with 10% opacity
+
+Card Appearance:
+    Same standard card structure
+    Purple/pink megaphone icon on left
+    Title for announcements
+    Often important information
+
+Example Messages:
+    "System maintenance scheduled for tonight"
+    "Thông báo: Hệ thống bảo trì vào 23:00"
+    "New policy update: Remote work guidelines"
+    "Holiday schedule announced"
+    "Important: Update your app to the latest version"
+
+Common Priority: NORMAL to URGENT (depending on importance)
+
+User Action:
+    Read important information
+    Take note of changes
+    Share with team if needed
+
+5.6 Other Notifications
+--------------------------------------------------------------------------------
+
+Type: OTHER
+Purpose: General or uncategorized notifications
+
+Visual Design:
+    Icon: info_outline (information circle)
+    Icon Color: Secondary text (gray) - theme.secondaryText
+    Icon Background: Secondary color with 10% opacity
+
+Card Appearance:
+    Same standard card structure
+    Gray info icon on left
+    Generic appearance
+    Catch-all category
+
+Example Messages:
+    Various general notifications
+    Profile updates
+    Settings changes
+    General information
+
+Common Priority: LOW to NORMAL
+
+User Action:
+    Review information
+    Take appropriate action if needed
+
+================================================================================
+6. SCREEN BEHAVIORS
+================================================================================
+
+6.1 Loading State
+--------------------------------------------------------------------------------
+
+Initial Loading:
+    Trigger: Screen opens for first time
+    Display:
+        Full-screen centered loading indicator
+        Circular progress spinner
+        Size: 40 pixels
+        Color: Primary color (blue)
+    Duration: 1-3 seconds typically
+    User action: Wait
+
+Background Loading (Refresh):
+    Trigger: Pull-to-refresh gesture
+    Display:
+        RefreshIndicator at top of list
+        Existing content remains visible
+        Rotating spinner
+    Duration: 1-2 seconds
+    User action: Wait, can scroll if needed
+
+Pagination Loading:
+    Trigger: Scroll near bottom when hasMore is true
+    Display:
+        Small loading indicator at list bottom
+        Size: 30 pixels
+        Padding: 16 pixels
+        Existing notifications remain
+    Duration: 1-2 seconds
+    User action: Continue scrolling or wait
+
+6.2 Empty State
+--------------------------------------------------------------------------------
+
+Condition: Successfully loaded but no notifications exist
+
+Display:
+    Background: Primary background
+    Content: Centered column
+    
+    Icon:
+        Type: notifications_none (bell with slash)
+        Size: 80 pixels
+        Color: Secondary text (gray)
+        
+    Primary Text:
+        Content: "Không có thông báo"
+        Translation: "No notifications"
+        Font: Title2 style
+        
+    Secondary Text:
+        Content: "Bạn đã xem hết tất cả!"
+        Translation: "You've seen them all!"
+        Font: BodyText1
+        Color: Secondary text
+
+Meaning:
+    ✓ You have no notifications at all, OR
+    ✓ You've marked all as read and they've been archived
+
+User Action:
+    None required
+    Check back later for new notifications
+
+When It Appears:
+    - First time user with no notifications
+    - All notifications have been read and cleared
+    - After marking all as read (if system archives read ones)
+
+6.3 Error State
+--------------------------------------------------------------------------------
+
+Condition: Failed to load notifications
+
+Display:
+    Background: Primary background
+    Content: Centered column
+    
+    Icon:
+        Type: error_outline
+        Size: 64 pixels
+        Color: Error color (red)
+    
+    Title:
+        Content: "Lỗi tải thông báo"
+        Translation: "Error loading notifications"
+        Font: Title2 style
+    
+    Error Message:
+        Content: Specific error description
+        Font: BodyText1
+        Alignment: Center
+        Padding: 32 pixels horizontal
+    
+    Retry Button:
+        Text: "Thử lại"
+        Translation: "Try again"
+        Icon: Refresh icon (white)
+        Icon size: 20 pixels
+        Background: Primary color
+        Height: 45 pixels
+        Padding: 24 pixels horizontal
+        Border radius: 8 pixels
+        Text style: Subtitle2, white
+        Elevation: 2
+
+Common Error Messages:
+    "Network error"
+    "Server error"
+    "Connection timeout"
+    "Unable to load notifications"
+
+User Action:
+    Tap "Thử lại" button to retry
+    System attempts to reload notifications
+    If successful, transitions to loaded state
+    If failed again, error state persists
+
+Troubleshooting:
+    1. Check internet connection
+    2. Verify server status
+    3. Try again later
+    4. Contact support if persists
+
+6.4 Pull-to-Refresh
+--------------------------------------------------------------------------------
+
+Purpose: Manually refresh notification list
+
+Interaction:
+    Gesture: Pull down from top of list
+    Feedback: Refresh indicator appears
+    Action: Fetches latest notifications
+
+Process:
+    Step 1: User pulls down on list
+    Step 2: RefreshIndicator activates
+    Step 3: onRefresh callback triggered
+    Step 4: loadNotifications(refresh: true) called
+    Step 5: API request sent
+    Step 6: Response received
+    Step 7: List updated
+    Step 8: Indicator disappears
+
+Visual Feedback:
+    Indicator color: Primary color
+    Animation: Rotating spinner
+    Position: Top of list
+
+Result:
+    Success: List updates with latest data
+    Failure: Error handled, list unchanged
+
+Notes:
+    ✓ Available in loaded state only
+    ✓ Cannot use during initial loading
+    ✓ Cannot use in error state
+    ✓ Fast operation (1-2 seconds)
+    ✓ Replaces data (not appends)
+
+================================================================================
+7. TROUBLESHOOTING
+================================================================================
+
+7.1 Common Issues
+--------------------------------------------------------------------------------
+
+Issue 1: Notifications Not Loading
+
+    Symptoms:
+        - Error state appears
+        - Loading indicator stays forever
+        - Screen is blank
+
+    Possible Causes:
+        - No internet connection
+        - Server is down
+        - API endpoint changed
+        - Authentication token expired
+
+    Solutions:
+        1. Check your internet connection
+        2. Try pull-to-refresh
+        3. Tap "Thử lại" button
+        4. Restart the app
+        5. Log out and log back in
+        6. Contact IT support
+
+Issue 2: Unread Count Not Updating
+
+    Symptoms:
+        - Tapped notification but still shows as unread
+        - Unread count doesn't decrease
+        - Blue dot remains
+
+    Possible Causes:
+        - Network issue during mark as read
+        - API request failed
+        - State not synced
+
+    Solutions:
+        1. Pull down to refresh the list
+        2. Close and reopen the screen
+        3. Check internet connection
+        4. Try again in a few moments
+
+Issue 3: New Notifications Not Appearing
+
+    Symptoms:
+        - Expecting notification but not in list
+        - Push notification received but not in app
+        - Other users got notification but you didn't
+
+    Possible Causes:
+        - List needs refresh
+        - Notification delivery delay
+        - Filtering issue
+
+    Solutions:
+        1. Pull down to refresh
+        2. Close and reopen screen
+        3. Check notification settings
+        4. Verify with sender
+
+Issue 4: Cannot Load More Notifications
+
+    Symptoms:
+        - Scrolling doesn't load more
+        - Stuck at certain number
+        - Loading indicator doesn't appear
+
+    Possible Causes:
+        - Reached end of list
+        - hasMore flag is false
+        - Network issue
+
+    Solutions:
+        1. Check if you've reached the end
+        2. Pull to refresh entire list
+        3. Check internet connection
+
+Issue 5: Notifications Disappear
+
+    Symptoms:
+        - Notifications were there, now gone
+        - List suddenly empty
+        - Lost notification history
+
+    Possible Causes:
+        - Auto-archiving of old read notifications
+        - Data sync issue
+        - Account issue
+
+    Solutions:
+        1. Pull to refresh
+        2. Check notification preferences
+        3. Contact IT support
+        4. Check with administrator
+
+7.2 Error Messages
+--------------------------------------------------------------------------------
+
+"Lỗi tải thông báo" (Error Loading Notifications)
+    Meaning: Failed to fetch notification data
+    Action: Tap "Thử lại" to retry
+    If persists: Check connection or contact support
+
+"Network error"
+    Meaning: No internet connection
+    Action: Check WiFi/mobile data
+    Action: Move to area with better signal
+
+"Server error"
+    Meaning: Backend server issue
+    Action: Wait and try again later
+    Action: Contact IT if urgent
+
+"Connection timeout"
+    Meaning: Request took too long
+    Action: Check internet speed
+    Action: Retry operation
+
+"Không có thông báo" (No Notifications)
+    Meaning: No notifications to display
+    Action: None needed (normal state)
+
+7.3 Solutions
+--------------------------------------------------------------------------------
+
+General Troubleshooting Steps:
+
+Step 1: Refresh
+    Pull down on the notification list
+    Wait for refresh to complete
+    Check if issue resolved
+
+Step 2: Navigate Away and Back
+    Go to Home screen
+    Return to Notifications
+    Check if data reloads
+
+Step 3: Check Connection
+    Verify internet connectivity
+    Try loading other screens
+    Switch between WiFi and mobile data
+
+Step 4: Restart App
+    Close app completely
+    Reopen app
+    Navigate to Notifications
+
+Step 5: Re-login
+    Log out of account
+    Log back in
+    Check notifications again
+
+Step 6: Clear Cache (if available)
+    Go to app settings
+    Clear cache
+    Restart app
+
+Step 7: Update App
+    Check for app updates
+    Install latest version
+    Reopen app
+
+Step 8: Contact Support
+    Document the issue
+    Take screenshots if possible
+    Contact IT support or help desk
+    Provide error details
+
+Performance Tips:
+
+✓ Refresh periodically to stay updated
+✓ Mark notifications as read to reduce clutter
+✓ Clear old notifications if available
+✓ Ensure good internet connection
+✓ Keep app updated
+✓ Report persistent issues
+
+Best Practices:
+
+✓ Check notifications daily
+✓ Act on urgent/high priority items promptly
+✓ Use pull-to-refresh before important tasks
+✓ Keep your notification preferences updated
+✓ Don't ignore attendance reminders
+✓ Review leave notifications carefully
+
+================================================================================
+END OF NOTIFICATIONS USER MANUAL (DETAILED)
+================================================================================
+
+For additional assistance, please contact your system administrator or IT support team.
+
+Document Version: 1.0
+Last Updated: December 11, 2025
+Application: Employee Attendance Management System
+Module: Notifications

@@ -1,0 +1,181 @@
+================================================================================
+                    EMPLOYEE ATTENDANCE MANAGEMENT SYSTEM
+                          USER MANUAL - NOTIFICATIONS
+================================================================================
+
+Version: 1.0 (English)
+Last Updated: December 12, 2025
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. NOTIFICATIONS SCREEN
+2. NOTIFICATION TYPES
+
+================================================================================
+1. NOTIFICATIONS SCREEN
+================================================================================
+
+Description: The Notifications screen keeps you updated on important work-related events such as leave approvals, attendance reminders, and system announcements.
+
+Instructions:
+
+Figure 1: Notifications Screen
+
+Step 1: View the Notifications Screen
+    The system displays:
+        App Bar:
+            Title: "Notifications"
+            Unread count: Shows "X unread" if you have unread notifications
+            "Mark All as Read" button: Appears if you have unread items
+            Back button: Returns to Home screen
+        
+        Notification List:
+            Notification cards displayed from newest to oldest
+            Each card shows:
+                - Color-coded icon (green ✓, red ✗, orange 🕐, blue 📅, purple 📢)
+                - Title (bold if unread, semibold if read)
+                - Time ("Just now", "X minutes ago", "X hours ago", "X days ago", or "DD/MM/YYYY")
+                - Priority badge ("HIGH" in orange or "URGENT" in red, if applicable)
+                - Blue dot indicator on unread notifications
+            
+            Unread notifications: Thicker blue border with shadow effect
+            Read notifications: Thin gray border without shadow
+
+Step 2: View Notification Details
+    Tap any notification card to view full details.
+    
+    A dialog appears showing:
+        - Color-coded icon
+        - Full title
+        - Complete message content
+        - Exact timestamp (DD/MM/YYYY HH:MM)
+    
+    Tap "Close" to return to the list.
+    
+    Note: Tapping a notification automatically marks it as read.
+
+Step 3: Mark All Notifications as Read
+    If you have unread notifications:
+        Tap the "Mark All as Read" button in the top-right corner.
+        A confirmation dialog appears asking: "Are you sure you want to mark all notifications as read?"
+        Tap "Confirm" to proceed.
+        
+    Result:
+        All notifications are marked as read.
+        Blue dot indicators disappear.
+        Unread count becomes 0.
+
+Step 4: Refresh Notification List
+    To check for new notifications:
+        Pull down from the top of the list and release.
+        A loading spinner appears at the top.
+        New notifications (if any) will appear at the top of the list.
+
+Step 5: Load Older Notifications
+    The system automatically loads older notifications as you scroll.
+    
+    Simply scroll down through the list.
+    When you reach near the bottom (200 pixels from end), older notifications load automatically.
+    A small loading spinner appears while loading more items.
+
+Step 6: Understand Screen States
+    Loading State:
+        Blue circular spinner appears while loading data.
+        Wait for the notifications to load.
+    
+    Empty State:
+        Bell icon with "No Notifications" message appears.
+        Subtitle: "You're all caught up!"
+        This means you have no notifications at this time.
+    
+    Error State:
+        Error icon with "Error loading notifications" message appears.
+        Tap the "Retry" button to attempt loading again.
+
+================================================================================
+2. NOTIFICATION TYPES
+================================================================================
+
+Description: Understanding different notification types and their visual indicators.
+
+Instructions:
+
+Leave Approval
+    Icon: Green checkmark (✓)
+    Meaning: Your leave request has been approved by your manager.
+    Example: "Your leave request for 15/12/2025 has been approved"
+    Action: Review the approved dates in the message.
+
+Leave Rejection
+    Icon: Red X mark (✗)
+    Meaning: Your leave request has been rejected by your manager.
+    Example: "Your leave request has been rejected"
+    Action: Check the rejection reason and resubmit if needed.
+
+Attendance Reminders
+    Icon: Orange clock (🕐)
+    Types: Attendance Reminder, Check-in Reminder, Check-out Reminder
+    Meaning: Reminder to check in at the start of your shift or check out at the end.
+    Examples: 
+        "Please check in to start your work day"
+        "Don't forget to check out before leaving"
+    Action: Complete the check-in or check-out action immediately.
+
+Leave Request
+    Icon: Blue calendar (📅)
+    Meaning: Confirmation that your leave request has been submitted.
+    Example: "Your leave request has been submitted"
+    Action: Wait for manager approval.
+
+System Announcement
+    Icon: Purple megaphone (📢)
+    Meaning: Important system-wide or company announcements.
+    Examples: 
+        "System maintenance scheduled for tonight"
+        "New policy update: Remote work guidelines"
+    Action: Read carefully and take note of the information.
+
+Other Notifications
+    Icon: Gray info symbol (ℹ)
+    Meaning: General notifications that don't fit other categories.
+    Action: Review the notification content as needed.
+
+================================================================================
+TIPS & TROUBLESHOOTING
+================================================================================
+
+Tips for Best Experience:
+    ✓ Check your notifications daily to stay updated on important events.
+    ✓ Act promptly on urgent notifications marked with a red "URGENT" badge.
+    ✓ Tap each notification to mark it as read and keep your list organized.
+    ✓ Use the "Mark All as Read" button to quickly clear many unread notifications.
+    ✓ Pull down to refresh before important tasks to ensure you have the latest updates.
+
+Common Issues and Solutions:
+
+Problem: Notifications won't load
+    Solution 1: Pull down from the top to refresh the list.
+    Solution 2: Check your internet connection (WiFi or mobile data).
+    Solution 3: Tap the "Retry" button if an error message appears.
+    Solution 4: Close and restart the app.
+
+Problem: Unread count is not updating
+    Solution 1: Pull down from the top to refresh the list.
+    Solution 2: Close and reopen the Notifications screen.
+    Solution 3: Wait a few moments and try again.
+
+Problem: Not receiving new notifications
+    Solution 1: Pull down to refresh and check for new items.
+    Solution 2: Verify your notification settings in the app.
+    Solution 3: Contact your manager or IT support if the issue persists.
+
+Problem: Cannot load more notifications
+    Solution 1: You may have reached the end of your notification history.
+    Solution 2: Pull down to refresh the entire list.
+    Solution 3: Check your internet connection.
+
+================================================================================
+END OF NOTIFICATIONS USER MANUAL
+================================================================================

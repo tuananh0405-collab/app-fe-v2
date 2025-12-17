@@ -7,7 +7,7 @@ class OvertimeLocalizations {
 
   static final Map<String, Map<String, String>> _translations = {
     'en': {
-      'manage_overtime': 'Manage Overtime',
+      'manage_overtime': 'Overtime Management',
       'no_overtime_requests': 'No overtime requests yet',
       'create_overtime': 'Create Overtime',
       'overtime_request_number': 'Overtime Request #',
@@ -72,6 +72,7 @@ class OvertimeLocalizations {
       'rejection_reason': 'Rejection Reason',
       'not_found': 'Overtime request not found',
       'edit_cancel_hint': 'You can only edit or cancel when status is "Pending"',
+      'time_validation_error': 'End time must be at least 30 minutes after start time',
     },
     'vi': {
       'manage_overtime': 'Quản lý làm thêm giờ',
@@ -139,6 +140,7 @@ class OvertimeLocalizations {
       'rejection_reason': 'Lý do từ chối',
       'not_found': 'Không tìm thấy thông tin đơn làm thêm',
       'edit_cancel_hint': 'Chỉ có thể chỉnh sửa hoặc hủy khi trạng thái là "Chờ duyệt"',
+      'time_validation_error': 'Giờ kết thúc phải lớn hơn giờ bắt đầu ít nhất 30 phút',
     },
   };
 
@@ -211,4 +213,5 @@ class OvertimeLocalizations {
   String get rejectionReason => translate('rejection_reason');
   String get notFound => translate('not_found');
   String get editCancelHint => translate('edit_cancel_hint');
+  String get timeValidationError => translate('time_validation_error');
 }

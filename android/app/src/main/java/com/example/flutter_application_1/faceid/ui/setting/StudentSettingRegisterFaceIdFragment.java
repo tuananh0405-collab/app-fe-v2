@@ -307,11 +307,11 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                 if (!isAnalyzing) {
                     // Hiển thị UI thông báo
                     stateManager.transitionTo(FaceRegistrationState.ANALYZING,
-                            "Đang phân tích khuôn mặt...");
+                            "Analyzing face...");
 
                     // Cập nhật UI để người dùng biết đang phân tích
                     if (binding != null && binding.tvStatusMessage != null) {
-                        binding.tvStatusMessage.setText("Đang phân tích khuôn mặt...");
+                        binding.tvStatusMessage.setText("Analyzing face...");
                     }
 
                     // Bắt đầu phân tích
@@ -351,7 +351,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
 
                 // Hiển thị UI cho liveness challenge
                 if (binding != null && binding.tvStatusMessage != null) {
-                    binding.tvStatusMessage.setText("Hãy nhìn vào camera và nhấp mắt");
+                    binding.tvStatusMessage.setText("Look at camera and blink");
                 }
                 if (faceOverlayView != null) {
                     faceOverlayView.setOvalColor(ContextCompat.getColor(requireContext(), R.color.primary));
@@ -1151,9 +1151,10 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         }
 
         // Add detailed error information if available
-        final String detailedMessage = hasDetailedError ?
-                message + "\n\n--- DETAILED ERROR INFORMATION ---\n" + lastDetailedErrorMessage : message;
+        // Simply use the message without detailed error information
+        // final String detailedMessage = message;
 
+        final String detailedMessage = "Register Failed";  
         // For other errors, show regular retry dialog with detailed information
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
                 .setTitle(title)
@@ -1620,7 +1621,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
             analysisOverlay.setVisibility(View.VISIBLE);
         }
 
-        stateManager.transitionTo(FaceRegistrationState.ANALYZING, "Đang phân tích... Giữ nguyên");
+        stateManager.transitionTo(FaceRegistrationState.ANALYZING, "Analyzing... Hold still");
 
 
         // Hiển thị và cập nhật progressBar
@@ -1655,7 +1656,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                 secondsLeft[0]--;
                 if (secondsLeft[0] > 0) {
                     // Update countdown message and UI
-                    String message = "Đang phân tích... " + secondsLeft[0] + "s";
+                    String message = "Analyzing... " + secondsLeft[0] + "s";
                     stateManager.transitionTo(FaceRegistrationState.ANALYZING, message);
 
                     // Cập nhật text đếm ngược
@@ -1725,11 +1726,11 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
             // Different paths based on quality assessment
             if (isHighQuality && isConsistent) {
                 stateManager.transitionTo(FaceRegistrationState.PROCESSING,
-                        "Kiểm tra chất lượng đạt. Đang đăng ký...");
+                        "Quality check passed. Registering...");
                 captureAndRegisterFace();
             } else if (isAcceptableQuality) {
                 stateManager.transitionTo(FaceRegistrationState.PROCESSING,
-                        "Chất lượng chấp nhận được. Đang tiến hành đăng ký...");
+                        "Quality acceptable. Registering...");
                 captureAndRegisterFace();
             } else {
                 String feedbackMessage = generateQualityFeedback(averageScore, variance);
@@ -1794,26 +1795,14 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
      * Generate specific feedback based on detected quality issues
      */
     private String generateQualityFeedback(float averageScore, float variance) {
-        StringBuilder feedback = new StringBuilder();
-
+        // Simple English error messages as requested
         if (variance > 0.05) {
-            feedback.append("Phát hiện khuôn mặt không ổn định. Vui lòng giữ khuôn mặt ổn định hơn và thử lại.");
-            feedback.append("\n\nLỗi chi tiết: Chỉ số biến thiên (variance) = ").append(String.format(Locale.US, "%.5f", variance));
-            feedback.append(" (vượt quá ngưỡng 0.05)");
-        } else if (averageScore < 0.4f) {
-            feedback.append("Chất lượng phát hiện rất thấp. Vui lòng thử lại trong điều kiện ánh sáng tốt hơn.");
-            feedback.append("\n\nLỗi chi tiết: Điểm trung bình = ").append(String.format(Locale.US, "%.3f", averageScore));
-            feedback.append(" (thấp hơn ngưỡng tối thiểu 0.4)");
+            return "Face is unstable. Please hold still.";
         } else if (averageScore < 0.6f) {
-            feedback.append("Chất lượng phát hiện thấp. Cải thiện ánh sáng và giảm chuyển động khuôn mặt.");
-            feedback.append("\n\nLỗi chi tiết: Điểm trung bình = ").append(String.format(Locale.US, "%.3f", averageScore));
-            feedback.append(" (thấp hơn ngưỡng khuyến nghị 0.6)");
+            return "Low quality. Please improve lighting and hold still.";
         } else {
-            feedback.append("Không thể có được hình ảnh đủ rõ ràng. Vui lòng thử lại với ánh sáng và vị trí tốt hơn.");
-            feedback.append("\n\nLỗi chi tiết: Kết hợp giữa điểm phát hiện và độ ổn định không đáp ứng yêu cầu");
+            return "Cannot capture clear image. Please try again.";
         }
-
-        return feedback.toString();
     }
 
     /**
@@ -1854,13 +1843,17 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         Log.d(TAG, " Starting face registration API call...");
 
         AuthManager authManager = AuthManager.getInstance(requireContext());
-        String tempUserId = authManager.getUserId();
+        // Use employeeId instead of userId as requested
+        String tempUserId = authManager.getEmployeeId();
         
         if (tempUserId == null || tempUserId.isEmpty()) {
+            // Try to get from intent if not in AuthManager
             if (getActivity() != null && getActivity().getIntent() != null) {
-                tempUserId = getActivity().getIntent().getStringExtra("userId");
-                if (tempUserId != null && !tempUserId.isEmpty()) {
-                    authManager.setUserId(tempUserId);
+                String intentEmployeeId = getActivity().getIntent().getStringExtra("employeeId");
+                if (intentEmployeeId != null && !intentEmployeeId.isEmpty()) {
+                    tempUserId = intentEmployeeId;
+                    // Also save to AuthManager for future use
+                    authManager.setEmployeeId(tempUserId);
                 }
             }
         }
@@ -1871,7 +1864,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
             hasStartedRegistration = false;
             
             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
-                    "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
+                    "Không tìm thấy mã nhân viên (Employee ID). Vui lòng đăng nhập lại.");
             return;
         }
         
@@ -1893,7 +1886,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                 
                 //  Transition to SUCCESS state - handleSuccessState() will navigate to success screen
                 stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
-                        "Đăng ký Face ID thành công!");
+                        "Face ID registered successfully!");
                 
                 //  Reset flag - navigation is handled by handleSuccessState()
                 isRegistering = false;
@@ -1937,9 +1930,11 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                 stopCamera();
                 
                 stateManager.transitionTo(FaceRegistrationState.ALREADY_REGISTERED, 
-                        "Bạn đã đăng ký Face ID rồi");
+                        "Face ID is already registered");
                 
+                // Comment out Update flow as requested
                 // Show dialog asking if user wants to update
+                /*
                 mainHandler.post(() -> {
                     if (!isAdded() || getActivity() == null || getActivity().isFinishing()) {
                         Log.w(TAG, "Cannot show dialog: fragment not attached or activity finishing");
@@ -2020,6 +2015,14 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                             requireActivity().finish();
                         }
                     }
+                });
+                */
+                // Just show message that it is already registered
+                mainHandler.post(() -> {
+                     if (isAdded() && getActivity() != null) {
+                          Toast.makeText(requireContext(), "Face ID is already registered.", Toast.LENGTH_LONG).show();
+                           requireActivity().finish();
+                     }
                 });
             }
         });

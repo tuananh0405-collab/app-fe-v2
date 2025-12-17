@@ -9,20 +9,25 @@ class FaceIdService {
   /// Save user info to native SharedPreferences (for Face ID integration)
   /// 
   /// [userId] - The user ID
+  /// [employeeId] - The employee ID (optional)
   /// [userName] - The user's full name (optional)
   /// [authToken] - The authentication token (optional)
   /// 
   /// Returns a Future that completes with true if successful
   static Future<bool> saveUserInfo({
     required String userId,
+    String? employeeId,
     String? userName,
     String? authToken,
+    String? refreshToken,
   }) async {
     try {
       await _channel.invokeMethod('saveUserInfo', {
         'userId': userId,
+        'employeeId': employeeId ?? '',
         'userName': userName ?? '',
         'authToken': authToken ?? '',
+        'refreshToken': refreshToken ?? '',
       });
       return true;
     } on PlatformException catch (e) {

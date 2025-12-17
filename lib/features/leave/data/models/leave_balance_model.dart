@@ -8,6 +8,7 @@ class LeaveBalanceModel extends LeaveBalanceEntity {
     required super.leaveTypeName,
     required super.totalDays,
     required super.usedDays,
+    required super.pendingDays,
     required super.remainingDays,
     required super.year,
     super.createdAt,
@@ -22,6 +23,7 @@ class LeaveBalanceModel extends LeaveBalanceEntity {
       leaveTypeName: json['leave_type_name']?.toString() ?? 'Unknown',
       totalDays: (json['total_days'] as num).toDouble(),
       usedDays: (json['used_days'] as num).toDouble(),
+      pendingDays: (json['pending_days'] as num?)?.toDouble() ?? 0.0,
       remainingDays: (json['remaining_days'] as num).toDouble(),
       year: (json['year'] as num).toInt(),
       createdAt: json['created_at'] != null
@@ -41,6 +43,7 @@ class LeaveBalanceModel extends LeaveBalanceEntity {
       'leave_type_name': leaveTypeName,
       'total_days': totalDays,
       'used_days': usedDays,
+      'pending_days': pendingDays,
       'remaining_days': remainingDays,
       'year': year,
       if (createdAt != null) 'created_at': createdAt!.toIso8601String(),

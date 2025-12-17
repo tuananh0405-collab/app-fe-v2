@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
 import '../../providers/leave_providers.dart';
+import '../../../auth/providers/auth_providers.dart';
 
 class CreateLeaveScreen extends ConsumerStatefulWidget {
   const CreateLeaveScreen({super.key});
@@ -19,10 +20,6 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
   final _reasonController = TextEditingController();
   final _supportingDocUrlController = TextEditingController();
 
-  // Mock data - will be replaced with actual data later
-  final int  _employeeId = 7;
-  final String _employeeCode = 'EMP001';
-  final int _departmentId = 1;
   int? _leaveTypeId;
 
   DateTime? _startDate;
@@ -37,6 +34,7 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
     // Fetch leave types when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(leaveControllerProvider.notifier).getLeaveTypes();
+      ref.read(leaveControllerProvider.notifier).getLeaveBalance();
     });
 
     // Setup animations
@@ -92,6 +90,28 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
     final l10n = AppLocalizations.of(context);
     final leave = l10n.leave;
 
+    // Get logged-in user data
+    final authState = ref.read(loginControllerProvider);
+    final user = authState.user;
+
+    // Validate user is logged in
+    if (user == null) {
+      showSnackbar(context, 'Please login first');
+      return;
+    }
+
+    // Validate employee ID exists
+    if (user.employeeId == null || user.employeeId!.isEmpty) {
+      showSnackbar(context, 'Employee ID not found. Please contact administrator.');
+      return;
+    }
+
+    final employeeId = int.tryParse(user.employeeId!);
+    if (employeeId == null) {
+      showSnackbar(context, 'Invalid employee ID format.');
+      return;
+    }
+
     if (_formKey.currentState!.validate()) {
       if (_startDate == null || _endDate == null) {
         showSnackbar(context, leave.pleaseSelectDates);
@@ -135,14 +155,14 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
         // Check max consecutive days
         if (selected.maxConsecutiveDays != null && requestedDays > selected.maxConsecutiveDays!) {
           showSnackbar(context,
-              'Yêu cầu: $requestedDays ngày. Giới hạn tối đa liên tiếp: ${selected.maxConsecutiveDays} ngày.');
+              leave.validationMaxConsecutiveDays(requestedDays, selected.maxConsecutiveDays!));
           return;
         }
 
         // Check max days per year (basic check using requested days only)
         if (selected.maxDaysPerYear != null && requestedDays > selected.maxDaysPerYear!) {
           showSnackbar(context,
-              'Yêu cầu: $requestedDays ngày. Giới hạn mỗi năm: ${selected.maxDaysPerYear} ngày.');
+              leave.validationMaxDaysPerYear(requestedDays, selected.maxDaysPerYear!));
           return;
         }
 
@@ -151,13 +171,13 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
         final daysUntilStart = _startDate!.difference(DateTime(nowDate.year, nowDate.month, nowDate.day)).inDays;
         if (selected.minNoticeDays > 0 && daysUntilStart < selected.minNoticeDays) {
           showSnackbar(context,
-              'Cần thông báo trước ít nhất ${selected.minNoticeDays} ngày.');
+              leave.validationMinNoticeDays(selected.minNoticeDays));
           return;
         }
 
         // Check requires document
         if (selected.requiresDocument && _supportingDocUrlController.text.trim().isEmpty) {
-          showSnackbar(context, 'Loại nghỉ này yêu cầu tài liệu hỗ trợ. Vui lòng cung cấp URL tài liệu.');
+          showSnackbar(context, leave.validationDocumentRequired);
           return;
         }
       }
@@ -165,9 +185,9 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
       ref
           .read(leaveControllerProvider.notifier)
           .createLeaveRequest(
-            employeeId: _employeeId,
-            employeeCode: _employeeCode,
-            departmentId: _departmentId,
+            employeeId: employeeId,
+            employeeCode: user.employeeId!, // Using employeeId as employeeCode for now
+            departmentId: 1, // TODO: Get from user profile when available
             leaveTypeId: _leaveTypeId!,
             startDate: _startDate!,
             endDate: _endDate!,
@@ -304,7 +324,7 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              'Loading leave types...',
+                              leave.loadingLeaveTypes,
                               style: theme.bodyText2.override(
                                 color: theme.secondaryText,
                               ),
@@ -331,6 +351,14 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                           ),
                         ),
                         items: leaveState.leaveTypes
+                            .where((leaveType) {
+                              final balances = leaveState.leaveBalances
+                                  .where((b) => b.leaveTypeId == leaveType.id);
+                              if (balances.isNotEmpty) {
+                                return balances.first.remainingDays > 0;
+                              }
+                              return true;
+                            })
                             .map((leaveType) => DropdownMenuItem(
                                   value: leaveType.id,
                                   child: Text(leaveType.leaveTypeName),

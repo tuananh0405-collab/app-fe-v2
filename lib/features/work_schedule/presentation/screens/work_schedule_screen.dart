@@ -60,7 +60,7 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
       backgroundColor: theme.primaryBackground,
       appBar: AppBar(
         title: Text(
-          'Work Schedule',
+          'View Schedule',
           style: theme.title2.override(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -197,8 +197,29 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
             shape: BoxShape.circle,
           ),
         ),
+        calendarBuilders: CalendarBuilders(
+          defaultBuilder: (context, day, focusedDay) {
+            return _buildCalendarDay(theme, controller, day, false, false);
+          },
+          selectedBuilder: (context, day, focusedDay) {
+            return _buildCalendarDay(theme, controller, day, true, false);
+          },
+          todayBuilder: (context, day, focusedDay) {
+            return _buildCalendarDay(theme, controller, day, false, true);
+          },
+        ),
         eventLoader: (day) {
-          return controller.getShiftsForDate(day);
+          // Don't show shift markers if there's leave or holiday
+          final holidayInfo = controller.getHolidayInfoForDate(day);
+          final leaveInfo = controller.getLeaveInfoForDate(day);
+          
+          if (holidayInfo != null || leaveInfo != null) {
+            return [];
+          }
+          
+          final shifts = controller.getShiftsForDate(day);
+          // Limit to maximum 4 dots per day
+          return shifts.take(4).toList();
         },
         onDaySelected: (selectedDay, focusedDay) {
           setState(() {
@@ -227,6 +248,87 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
             );
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildCalendarDay(
+    FlutterFlowTheme theme,
+    dynamic controller,
+    DateTime day,
+    bool isSelected,
+    bool isToday,
+  ) {
+    final holidayInfo = controller.getHolidayInfoForDate(day);
+    final leaveInfo = controller.getLeaveInfoForDate(day);
+    
+    Color? backgroundColor;
+    Color? borderColor;
+    Color? indicatorColor;
+    
+    // Determine styling based on leave or holiday
+    if (leaveInfo != null) {
+      try {
+        final colorHex = leaveInfo['color'] as String?;
+        if (colorHex != null && colorHex.isNotEmpty) {
+          indicatorColor = Color(int.parse('0xFF${colorHex.substring(1)}'));
+        }
+      } catch (e) {
+        // Fallback to default leave color if parsing fails
+        indicatorColor = theme.error;
+      }
+      indicatorColor ??= theme.error;
+    } else if (holidayInfo != null) {
+      indicatorColor = const Color(0xFF6B7280); // gray-500
+    }
+    
+    // Override for selected/today
+    if (isSelected) {
+      backgroundColor = theme.primaryColor;
+      borderColor = theme.primaryColor;
+    } else if (isToday) {
+      backgroundColor = theme.primaryColor.withValues(alpha: 0.5);
+      borderColor = theme.primaryColor;
+    }
+    
+    return Container(
+      margin: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        shape: BoxShape.circle,
+        border: borderColor != null
+            ? Border.all(color: borderColor, width: 2)
+            : null,
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Center(
+            child: Text(
+              '${day.day}',
+              style: theme.bodyText1.override(
+                color: isSelected || isToday
+                    ? Colors.white
+                    : theme.primaryText,
+                fontWeight: isSelected || isToday
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+            ),
+          ),
+          if (indicatorColor != null && !isSelected)
+            Positioned(
+              bottom: 4,
+              child: Container(
+                width: 12,
+                height: 2,
+                decoration: BoxDecoration(
+                  color: isToday ? Colors.white : indicatorColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -347,6 +449,12 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
     DateTime selectedDate,
   ) {
     final dateFormat = DateFormat('EEEE, MMM dd, yyyy');
+    final controller = ref.read(workScheduleControllerProvider.notifier);
+    
+    // Get holiday, leave, and overtime info for selected date
+    final holidayInfo = controller.getHolidayInfoForDate(selectedDate);
+    final leaveInfo = controller.getLeaveInfoForDate(selectedDate);
+    final overtimes = controller.getOvertimesForDate(selectedDate);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -362,39 +470,297 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 12),
-          if (shifts.isEmpty)
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.event_busy,
-                      size: 64,
-                      color: theme.secondaryText.withValues(alpha: 0.5),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No shifts scheduled',
-                      style: theme.bodyText1.override(
-                        color: theme.secondaryText,
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.only(top: 4),
+              children: [
+                // Show holiday if exists
+                if (holidayInfo != null) ...[
+                  _buildHolidayCard(theme, holidayInfo),
+                  const SizedBox(height: 12),
+                ],
+                
+                // Show leave if exists
+                if (leaveInfo != null) ...[
+                  _buildLeaveCard(theme, leaveInfo),
+                  const SizedBox(height: 12),
+                ],
+                
+                // Show overtime requests
+                ...overtimes.map((overtime) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildOvertimeCard(theme, overtime),
+                  );
+                }).toList(),
+                
+                // Show shifts (only if no holiday or leave)
+                if (holidayInfo == null && leaveInfo == null) ...[
+                  if (shifts.isEmpty)
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.event_busy,
+                            size: 64,
+                            color: theme.secondaryText.withValues(alpha: 0.5),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No shifts scheduled',
+                            style: theme.bodyText1.override(
+                              color: theme.secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    ...shifts.map((shift) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildShiftDetailCard(theme, shift),
+                      );
+                    }).toList(),
+                ],
+                
+                // Show message if holiday or leave exists
+                if ((holidayInfo != null || leaveInfo != null) && shifts.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: theme.secondaryBackground,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: theme.secondaryText.withValues(alpha: 0.2),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            )
-          else
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(top: 4),
-                itemCount: shifts.length,
-                itemBuilder: (context, index) {
-                  final shift = shifts[index];
-                  return _buildShiftDetailCard(theme, shift);
-                },
-              ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 16,
+                          color: theme.secondaryText,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Shifts are not displayed due to ${holidayInfo != null ? "holiday" : "leave"}',
+                            style: theme.bodyText2.override(
+                              fontSize: 12,
+                              color: theme.secondaryText,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHolidayCard(FlutterFlowTheme theme, Map<String, dynamic> holidayInfo) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE5E7EB), // gray-200
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF9CA3AF), // gray-400
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF9CA3AF).withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.celebration,
+              size: 24,
+              color: Color(0xFF1F2937), // gray-800
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  holidayInfo['label'] as String,
+                  style: theme.subtitle2.override(
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1F2937), // gray-800
+                  ),
+                ),
+                if (holidayInfo['holiday']?.description != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      holidayInfo['holiday'].description,
+                      style: theme.bodyText2.override(
+                        fontSize: 12,
+                        color: const Color(0xFF1F2937).withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeaveCard(FlutterFlowTheme theme, Map<String, dynamic> leaveInfo) {
+    Color color;
+    Color bgColor;
+    
+    try {
+      final colorHex = leaveInfo['color'] as String?;
+      if (colorHex != null && colorHex.isNotEmpty) {
+        color = Color(int.parse('0xFF${colorHex.substring(1)}'));
+        bgColor = Color(int.parse('0x33${colorHex.substring(1)}')); // 20% opacity
+      } else {
+        // Fallback colors
+        color = theme.error;
+        bgColor = theme.error.withValues(alpha: 0.2);
+      }
+    } catch (e) {
+      // Fallback colors if parsing fails
+      color = theme.error;
+      bgColor = theme.error.withValues(alpha: 0.2);
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.event_busy,
+              size: 24,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  leaveInfo['label'] as String,
+                  style: theme.subtitle2.override(
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+                if (leaveInfo['leave']?.reason != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      leaveInfo['leave'].reason,
+                      style: theme.bodyText2.override(
+                        fontSize: 12,
+                        color: color.withValues(alpha: 0.8),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOvertimeCard(FlutterFlowTheme theme, dynamic overtime) {
+    final timeFormat = DateFormat('HH:mm');
+    
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEDD5), // orange-100
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFFDBA74), // orange-300
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFDBA74).withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.timer_outlined,
+              size: 24,
+              color: Color(0xFF7C2D12), // orange-900
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Overtime',
+                  style: theme.subtitle2.override(
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF7C2D12), // orange-900
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${timeFormat.format(overtime.startTime)} - ${timeFormat.format(overtime.endTime)}',
+                  style: theme.bodyText2.override(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF7C2D12),
+                  ),
+                ),
+                if (overtime.reason != null && overtime.reason.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      overtime.reason,
+                      style: theme.bodyText2.override(
+                        fontSize: 11,
+                        color: const Color(0xFF7C2D12).withValues(alpha: 0.8),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -435,7 +801,7 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
             children: [
               Flexible(
                 child: Text(
-                  'Shift #${shift.id}',
+                  shift.scheduleName ?? 'Shift #${shift.id}',
                   style: theme.subtitle2.override(
                     fontWeight: FontWeight.w600,
                   ),
@@ -496,12 +862,12 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
             ),
           
           // Work Hours
-          _buildDetailRow(
-            theme,
-            Icons.work_outline,
-            'Work Hours',
-            '${shift.workHours.toStringAsFixed(1)}h',
-          ),
+          // _buildDetailRow(
+          //   theme,
+          //   Icons.work_outline,
+          //   'Work Hours',
+          //   '${shift.workHours.toStringAsFixed(1)}h',
+          // ),
           
           if (shift.overtimeHours > 0)
             Padding(
@@ -623,6 +989,8 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
     switch (status) {
       case ShiftStatus.scheduled:
         return theme.warning;
+      case ShiftStatus.inProgress:
+        return theme.primaryColor;
       case ShiftStatus.completed:
         return theme.success;
       case ShiftStatus.absent:
@@ -635,7 +1003,9 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
   String _getStatusText(ShiftStatus status) {
     switch (status) {
       case ShiftStatus.scheduled:
-        return 'Scheduled';
+        return 'In Coming';
+      case ShiftStatus.inProgress:
+        return 'In Progress';
       case ShiftStatus.completed:
         return 'Completed';
       case ShiftStatus.absent:

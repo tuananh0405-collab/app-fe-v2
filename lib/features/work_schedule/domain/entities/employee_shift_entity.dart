@@ -1,5 +1,6 @@
 enum ShiftStatus {
   scheduled,
+  inProgress,
   completed,
   absent,
   cancelled,
@@ -23,6 +24,7 @@ class EmployeeShiftEntity {
   final int earlyLeaveMinutes;
   final ShiftStatus status;
   final String? notes;
+  final String? scheduleName;
 
   const EmployeeShiftEntity({
     required this.id,
@@ -42,6 +44,7 @@ class EmployeeShiftEntity {
     this.earlyLeaveMinutes = 0,
     required this.status,
     this.notes,
+    this.scheduleName,
   });
 
   @override

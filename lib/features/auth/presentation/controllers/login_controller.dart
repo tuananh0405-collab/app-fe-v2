@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../core/services/face_id_service.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../providers/auth_providers.dart';
@@ -52,16 +53,40 @@ class LoginController extends Notifier<LoginState> {
     );
   }
 
-  /// Lưu user info vào native SharedPreferences (cho Face ID)
+  /// Lưu user info vào native SharedPreferences (cho Face ID) và Hive (cho background handlers)
   Future<void> _saveUserInfoToNative(dynamic loginResponse) async {
     try {
+      // Save to native SharedPreferences for Face ID
       await FaceIdService.saveUserInfo(
         userId: loginResponse.user.id,
+        employeeId: loginResponse.user.employeeId,
         userName: loginResponse.user.fullName,
         authToken: loginResponse.accessToken,
+        refreshToken: loginResponse.refreshToken,
+      );
+      
+      // Save to Hive for background handlers (e.g., push notifications)
+      await _saveTokensToHive(
+        accessToken: loginResponse.accessToken,
+        refreshToken: loginResponse.refreshToken,
       );
     } catch (e) {
       debugPrint('⚠️ Failed to save user info to native: $e');
+    }
+  }
+  
+  /// Lưu tokens vào Hive để background handlers có thể truy cập
+  Future<void> _saveTokensToHive({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    try {
+      final box = await Hive.openBox('auth');
+      await box.put('accessToken', accessToken);
+      await box.put('refreshToken', refreshToken);
+      debugPrint('✅ Saved tokens to Hive');
+    } catch (e) {
+      debugPrint('❌ Failed to save tokens to Hive: $e');
     }
   }
 
@@ -78,10 +103,36 @@ class LoginController extends Notifier<LoginState> {
       accessToken: accessToken,
       refreshToken: refreshToken,
     );
+    // Also update native storage and Hive so background handlers can use the latest tokens
+    try {
+      FaceIdService.saveUserInfo(
+        userId: state.user?.id ?? '',
+        userName: state.user?.fullName ?? '',
+        authToken: accessToken,
+        refreshToken: refreshToken,
+      );
+      
+      // Update Hive as well
+      _saveTokensToHive(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      );
+    } catch (_) {}
   }
 
   void reset() {
     state = const LoginState();
+    
+    // Clear tokens from Hive
+    try {
+      Hive.openBox('auth').then((box) {
+        box.delete('accessToken');
+        box.delete('refreshToken');
+        debugPrint('✅ Cleared tokens from Hive');
+      });
+    } catch (e) {
+      debugPrint('❌ Failed to clear tokens from Hive: $e');
+    }
   }
 }
 

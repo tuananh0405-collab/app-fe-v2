@@ -725,7 +725,11 @@ public class FaceIdService {
                     logEmbeddingDebug(embedding, buffer.array(), "verify_request");
                     saveEmbeddingDebug(buffer.array(), "verify_request");
 
-                    RequestBody userIdPart = RequestBody.create(MediaType.parse("text/plain"), userId);
+                    // 🔧 Use employeeId from AuthManager instead of userId for API call
+                    String employeeId = authManager.getEmployeeId();
+                    String userIdForApi = (employeeId != null && !employeeId.isEmpty()) ? employeeId : userId;
+
+                    RequestBody userIdPart = RequestBody.create(MediaType.parse("text/plain"), userIdForApi);
                     RequestBody thresholdPart = threshold != null ?
                             RequestBody.create(MediaType.parse("text/plain"), String.valueOf(threshold)) :
                             null;
@@ -818,10 +822,14 @@ public class FaceIdService {
                 // Save a debug copy of the exact embedding being sent
                 saveEmbeddingDebug(buffer.array(), "register");
                 
+                // 🔧 Use employeeId from AuthManager instead of userId for API call
+                String employeeId = authManager.getEmployeeId();
+                String userIdForApi = (employeeId != null && !employeeId.isEmpty()) ? employeeId : userId;
+                
                 // Create userId as form field (text/plain)
                 RequestBody userIdPart = RequestBody.create(
                         MediaType.parse("text/plain"), 
-                        userId);
+                        userIdForApi);
                 
                 // Create embedding as binary file
                 RequestBody embeddingPart = RequestBody.create(
@@ -1003,10 +1011,14 @@ public class FaceIdService {
                     MultipartBody.Part filePart = MultipartBody.Part.createFormData(
                             "embedding", "embedding.bin", embeddingPart);
                     
+                    // 🔧 Use employeeId from AuthManager instead of userId for API call
+                    String employeeId = authManager.getEmployeeId();
+                    String userIdForApi = (employeeId != null && !employeeId.isEmpty()) ? employeeId : userId;
+                    
                     // Create userId as RequestBody
                     RequestBody userIdBody = RequestBody.create(
                             MediaType.parse("text/plain"), 
-                            userId);
+                            userIdForApi);
                     
                     // Make API call
                     Call<FaceIdResponse> call = faceIdApiController.updateFaceId(filePart, userIdBody);
@@ -1153,8 +1165,12 @@ public class FaceIdService {
                     MultipartBody.Part filePart = MultipartBody.Part.createFormData(
                             "embedding", "embedding.bin", embeddingPart);
                     
+                    // 🔧 Use employeeId from AuthManager instead of userId for API call
+                    String employeeId = authManager.getEmployeeId();
+                    String userIdForApi = (employeeId != null && !employeeId.isEmpty()) ? employeeId : userId;
+                    
                     RequestBody userIdPart = RequestBody.create(
-                            MediaType.parse("text/plain"), userId);
+                            MediaType.parse("text/plain"), userIdForApi);
                     
                     // Call ad-hoc verification API
                     FaceIdApiController api = ApiClient.getClient(context).create(FaceIdApiController.class);

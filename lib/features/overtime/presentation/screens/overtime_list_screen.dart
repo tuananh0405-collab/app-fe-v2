@@ -17,6 +17,11 @@ class OvertimeListScreen extends ConsumerStatefulWidget {
 
 class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
     with TickerProviderStateMixin, AnimationControllerMixin {
+  // Filter state
+  String? _selectedStatus;
+  DateTime? _startDate;
+  DateTime? _endDate;
+
   @override
   void initState() {
     super.initState();
@@ -97,8 +102,14 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   children: [
+                    // Quick Filter Bar
+                    _buildQuickFilterBar(context, theme, overtime, overtimeState),
+                    
+                    // Active Filters
+                    _buildActiveFilters(context, theme, overtime),
+                    
                     // Overtime Requests List
-                    if (overtimeState.overtimeRequests.isEmpty)
+                    if (_getFilteredOvertimeRequests(overtimeState.overtimeRequests).isEmpty)
                       Padding(
                         padding: const EdgeInsets.all(32.0),
                         child: Center(
@@ -114,10 +125,10 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
                       ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: overtimeState.overtimeRequests.length,
+                        itemCount: _getFilteredOvertimeRequests(overtimeState.overtimeRequests).length,
                         itemBuilder: (context, index) {
                           final overtimeRequest =
-                              overtimeState.overtimeRequests[index];
+                              _getFilteredOvertimeRequests(overtimeState.overtimeRequests)[index];
                           return _buildOvertimeCard(
                             context,
                             theme,
@@ -350,5 +361,429 @@ class _OvertimeListScreenState extends ConsumerState<OvertimeListScreen>
       default:
         return overtime.statusCanceled;
     }
+  }
+
+  // Filter overtime requests locally
+  List<dynamic> _getFilteredOvertimeRequests(List<dynamic> requests) {
+    return requests.where((request) {
+      // Filter by status
+      if (_selectedStatus != null && request.status?.toUpperCase() != _selectedStatus?.toUpperCase()) {
+        return false;
+      }
+
+      // Filter by date range
+      if (_startDate != null) {
+        final requestDate = DateTime(
+          request.overtimeDate.year,
+          request.overtimeDate.month,
+          request.overtimeDate.day,
+        );
+        final filterStartDate = DateTime(
+          _startDate!.year,
+          _startDate!.month,
+          _startDate!.day,
+        );
+        if (requestDate.isBefore(filterStartDate)) {
+          return false;
+        }
+      }
+
+      if (_endDate != null) {
+        final requestDate = DateTime(
+          request.overtimeDate.year,
+          request.overtimeDate.month,
+          request.overtimeDate.day,
+        );
+        final filterEndDate = DateTime(
+          _endDate!.year,
+          _endDate!.month,
+          _endDate!.day,
+        );
+        if (requestDate.isAfter(filterEndDate)) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
+  }
+
+  void _showFilterBottomSheet(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final overtime = l10n.overtime;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.6,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Filter',
+                        style: theme.title2.override(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Status Filter
+                          Text(
+                            overtime.status,
+                            style: theme.subtitle2.override(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              'PENDING',
+                              'APPROVED',
+                              'REJECTED',
+                              'CANCELED'
+                            ].map((status) {
+                              final isSelected = _selectedStatus == status;
+                              return ChoiceChip(
+                                label: Text(_getStatusText(status)),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    _selectedStatus = selected ? status : null;
+                                  });
+                                },
+                                selectedColor: theme.primaryColor,
+                                labelStyle: theme.bodyText2.override(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : theme.primaryText,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Date Range Filter
+                          Text(
+                            'Date Range',
+                            style: theme.subtitle2.override(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: _startDate ?? DateTime.now(),
+                                      firstDate: DateTime(2000),
+                                      lastDate: DateTime(2100),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        _startDate = picked;
+                                      });
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      _startDate != null
+                                          ? DateFormat('dd/MM/yyyy')
+                                              .format(_startDate!)
+                                          : 'From Date',
+                                      style: theme.bodyText2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: _endDate ?? DateTime.now(),
+                                      firstDate: DateTime(2000),
+                                      lastDate: DateTime(2100),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        _endDate = picked;
+                                      });
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      _endDate != null
+                                          ? DateFormat('dd/MM/yyyy')
+                                              .format(_endDate!)
+                                          : 'To Date',
+                                      style: theme.bodyText2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedStatus = null;
+                              _startDate = null;
+                              _endDate = null;
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: BorderSide(color: theme.primaryColor),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'Reset',
+                            style: TextStyle(color: theme.primaryColor),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            // Update local state to reflect changes
+                            this.setState(() {});
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickFilterBar(BuildContext context, FlutterFlowTheme theme,
+      dynamic overtime, dynamic overtimeState) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.primaryColor.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          // Status Dropdown
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: theme.primaryBackground,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: DropdownButton<String>(
+                value: _selectedStatus,
+                isExpanded: true,
+                underline: const SizedBox(),
+                hint: Text(
+                  overtime.status,
+                  style: theme.bodyText2.override(
+                    color: theme.secondaryText,
+                    fontSize: 13,
+                  ),
+                ),
+                items: [
+                  DropdownMenuItem<String>(
+                    value: null,
+                    child: Text(
+                      overtime.status,
+                      style: theme.bodyText2.override(fontSize: 13),
+                    ),
+                  ),
+                  ...['PENDING', 'APPROVED', 'REJECTED', 'CANCELED'].map(
+                    (status) => DropdownMenuItem<String>(
+                      value: status,
+                      child: Text(
+                        _getStatusText(status),
+                        style: theme.bodyText2.override(fontSize: 13),
+                      ),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedStatus = value;
+                  });
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // More Filters Button
+          IconButton(
+            icon: Icon(
+              Icons.tune,
+              color: theme.primaryColor,
+              size: 20,
+            ),
+            onPressed: () => _showFilterBottomSheet(context),
+            tooltip: 'More Filters',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveFilters(BuildContext context, FlutterFlowTheme theme,
+      dynamic overtime) {
+    if (_selectedStatus == null &&
+        _startDate == null &&
+        _endDate == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      height: 50,
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          if (_selectedStatus != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Chip(
+                label: Text(
+                    '${overtime.status}: ${_getStatusText(_selectedStatus)}'),
+                backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
+                labelStyle: theme.bodyText2.override(color: theme.primaryColor),
+                onDeleted: () {
+                  setState(() {
+                    _selectedStatus = null;
+                  });
+                },
+                deleteIconColor: theme.primaryColor,
+              ),
+            ),
+          if (_startDate != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Chip(
+                label: Text(
+                    'From: ${DateFormat('dd/MM/yyyy').format(_startDate!)}'),
+                backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
+                labelStyle: theme.bodyText2.override(color: theme.primaryColor),
+                onDeleted: () {
+                  setState(() {
+                    _startDate = null;
+                  });
+                },
+                deleteIconColor: theme.primaryColor,
+              ),
+            ),
+          if (_endDate != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Chip(
+                label: Text(
+                    'To: ${DateFormat('dd/MM/yyyy').format(_endDate!)}'),
+                backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
+                labelStyle: theme.bodyText2.override(color: theme.primaryColor),
+                onDeleted: () {
+                  setState(() {
+                    _endDate = null;
+                  });
+                },
+                deleteIconColor: theme.primaryColor,
+              ),
+            ),
+          Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedStatus = null;
+                      _startDate = null;
+                      _endDate = null;
+                    });
+                  },
+                  child: Chip(
+                    label: const Text('Reset'),
+                    backgroundColor: theme.secondaryBackground,
+                    labelStyle: theme.bodyText2,
+                  )))
+        ],
+      ),
+    );
   }
 }

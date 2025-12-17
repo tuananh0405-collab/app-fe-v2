@@ -17,15 +17,19 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "saveUserInfo" -> {
                     val userId = call.argument<String>("userId")
+                    val employeeId = call.argument<String>("employeeId")
                     val userName = call.argument<String>("userName")
                     val authToken = call.argument<String>("authToken")
+                    val refreshToken = call.argument<String>("refreshToken")
 
                     if (userId != null) {
                         // Save to SharedPreferences via AuthManager
                         val authManager = com.example.flutter_application_1.auth.AuthManager.getInstance(this)
                         authManager.setUserId(userId)
+                        if (employeeId != null) authManager.setEmployeeId(employeeId)
                         if (userName != null) authManager.setCurrentUserName(userName)
                         if (authToken != null) authManager.setAuthToken(authToken)
+                        if (refreshToken != null) authManager.setRefreshToken(refreshToken)
                         result.success(true)
                     } else {
                         result.error("INVALID_ARGUMENT", "userId is required", null)

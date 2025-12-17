@@ -70,21 +70,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               context: context,
               theme: theme,
               icon: Icons.person_outline,
-              title: 'View Profile Details',
+              title: 'View Profile Detail',
               subtitle: 'See your personal information',
               onTap: () => context.push(AppRoutePath.profileView),
             ),
             const SizedBox(height: 8),
-            _buildMenuItem(
-              context: context,
-              theme: theme,
-              icon: Icons.description_outlined,
-              title: 'View Contract',
-              subtitle: 'Employment contract details',
-              onTap: () => context.push(AppRoutePath.profileContract),
-            ),
+            // _buildMenuItem(
+            //   context: context,
+            //   theme: theme,
+            //   icon: Icons.description_outlined,
+            //   title: 'View Contract',
+            //   subtitle: 'Employment contract details',
+            //   onTap: () => context.push(AppRoutePath.profileContract),
+            // ),
 
-            const SizedBox(height: 24),
+            // const SizedBox(height: 24),
 
             // Devices Section
             _buildSectionHeader(context, theme, 'Devices & Security'),
@@ -95,6 +95,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               title: 'Manage Devices',
               subtitle: 'View and manage registered devices',
               onTap: () => context.push(AppRoutePath.devices),
+            ),
+            const SizedBox(height: 8),
+            _buildMenuItem(
+              context: context,
+              theme: theme,
+              icon: Icons.location_on,
+              title: 'Location History',
+              subtitle: 'View your location history',
+              onTap: () => context.push(AppRoutePath.locationHistory),
             ),
             const SizedBox(height: 8),
             _buildMenuItem(
@@ -126,15 +135,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               subtitle: 'Vibration, Sound, etc',
               onTap: () => context.push(AppRoutePath.settings),
             ),
-            const SizedBox(height: 8),
-            _buildMenuItem(
-              context: context,
-              theme: theme,
-              icon: Icons.notifications_outlined,
-              title: 'Notification Settings',
-              subtitle: 'Manage notification preferences',
-              onTap: () => context.push(AppRoutePath.notificationsManage),
-            ),
+            // const SizedBox(height: 8),
+            // _buildMenuItem(
+            //   context: context,
+            //   theme: theme,
+            //   icon: Icons.notifications_outlined,
+            //   title: 'Notification Settings',
+            //   subtitle: 'Manage notification preferences',
+            //   onTap: () => context.push(AppRoutePath.notificationsManage),
+            // ),
 
             const SizedBox(height: 24),
 
@@ -152,7 +161,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ),
           ],
         ),
-        bottomNavigationBar: const BottomNavigation(currentIndex: 3),
+  bottomNavigationBar: const BottomNavigation(currentIndex: 4),
       ),
     );
   }

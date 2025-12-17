@@ -44,6 +44,9 @@ public class ApiClient {
                 Log.d("ApiClient", "No Authorization header added"); // Debug log for missing token
                 return chain.proceed(original);
             });
+            
+            // Add token authenticator for automatic token refresh on 401
+            httpClient.authenticator(new TokenAuthenticator(context));
 
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)

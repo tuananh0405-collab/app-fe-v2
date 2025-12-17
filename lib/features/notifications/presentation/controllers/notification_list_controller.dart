@@ -19,7 +19,7 @@ class NotificationListController extends Notifier<NotificationListState> {
     return const NotificationListState();
   }
 
-  Future<void> loadNotifications({bool refresh = false}) async {
+  Future<void> loadNotifications({bool refresh = false, int limit = 20, int offset = 0}) async {
     if (refresh) {
       state = const NotificationListState(status: NotificationListStatus.loading);
     } else if (state.status == NotificationListStatus.initial) {
@@ -27,7 +27,7 @@ class NotificationListController extends Notifier<NotificationListState> {
     }
 
     final result = await _getNotificationsUseCase(
-      const GetNotificationsParams(limit: 20, offset: 0),
+      GetNotificationsParams(limit: limit, offset: offset),
     );
 
     result.fold(

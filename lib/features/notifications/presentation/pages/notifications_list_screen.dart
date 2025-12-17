@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/widgets/bottom_navigation.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
@@ -63,6 +64,7 @@ class _NotificationsListScreenState
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final state = ref.watch(notificationListControllerProvider);
+    final l10n = AppLocalizations.of(context);
 
     return PopScope(
       canPop: false,
@@ -79,12 +81,12 @@ class _NotificationsListScreenState
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Thông báo',
+                l10n.notification.notifications,
                 style: theme.title2.override(color: Colors.white),
               ),
               if (state.unreadCount > 0)
                 Text(
-                  '${state.unreadCount} chưa đọc',
+                  '${state.unreadCount} ${l10n.notification.unreadCount}',
                   style: theme.bodyText2.override(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
@@ -108,7 +110,7 @@ class _NotificationsListScreenState
                   _showMarkAllAsReadDialog();
                 },
                 child: Text(
-                  'Đọc tất cả',
+                  l10n.notification.markAllRead,
                   style: theme.bodyText2.override(
                     color: Colors.white,
                     fontSize: 13,
@@ -184,6 +186,7 @@ class _NotificationsListScreenState
 
   Widget _buildEmptyState() {
     final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
     
     return Center(
       child: Column(
@@ -196,12 +199,12 @@ class _NotificationsListScreenState
           ),
           const SizedBox(height: 16),
           Text(
-            'Không có thông báo',
+            l10n.notification.noNotifications,
             style: theme.title2,
           ),
           const SizedBox(height: 8),
           Text(
-            'Bạn đã xem hết tất cả!',
+            l10n.notification.allCaughtUp,
             style: theme.bodyText1.override(
               color: theme.secondaryText,
             ),
@@ -213,6 +216,7 @@ class _NotificationsListScreenState
 
   Widget _buildError(String message) {
     final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
     
     return Center(
       child: Column(
@@ -225,7 +229,7 @@ class _NotificationsListScreenState
           ),
           const SizedBox(height: 16),
           Text(
-            'Lỗi tải thông báo',
+            l10n.notification.errorLoadingNotifications,
             style: theme.title2,
           ),
           const SizedBox(height: 8),
@@ -239,7 +243,7 @@ class _NotificationsListScreenState
           ),
           const SizedBox(height: 24),
           FFButton(
-            text: 'Thử lại',
+            text: l10n.common.retry,
             icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
             onPressed: () {
               ref
@@ -273,6 +277,7 @@ class _NotificationsListScreenState
 
   void _showNotificationDetailDialog(NotificationEntity notification) {
     final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
     
     // Get icon and color based on notification type
     IconData icon;
@@ -366,7 +371,7 @@ class _NotificationsListScreenState
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
-              'Close',
+              l10n.notification.close,
               style: theme.bodyText2.override(
                 color: theme.primaryColor,
                 fontWeight: FontWeight.w600,
@@ -380,6 +385,7 @@ class _NotificationsListScreenState
 
   void _showMarkAllAsReadDialog() {
     final theme = FlutterFlowTheme.of(context);
+    final l10n = AppLocalizations.of(context);
     
     showDialog(
       context: context,
@@ -389,23 +395,23 @@ class _NotificationsListScreenState
           borderRadius: BorderRadius.circular(16),
         ),
         title: Text(
-          'Đánh dấu tất cả đã đọc',
+          l10n.notification.markAllReadTitle,
           style: theme.title3,
         ),
         content: Text(
-          'Bạn có chắc chắn muốn đánh dấu tất cả thông báo là đã đọc?',
+          l10n.notification.markAllReadConfirm,
           style: theme.bodyText1,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
-              'Hủy',
+              l10n.common.cancel,
               style: theme.bodyText2.override(color: theme.secondaryText),
             ),
           ),
           FFButton(
-            text: 'Đồng ý',
+            text: l10n.common.confirm,
             onPressed: () {
               Navigator.of(dialogContext).pop();
               ref
@@ -430,7 +436,7 @@ class _NotificationsListScreenState
   }
 }
 
-class _NotificationCard extends StatelessWidget {
+class _NotificationCard extends ConsumerWidget {
   final NotificationEntity notification;
   final VoidCallback onTap;
 
@@ -440,9 +446,10 @@ class _NotificationCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = FlutterFlowTheme.of(context);
-    final timeAgo = _getTimeAgo(notification.createdAt);
+    final l10n = AppLocalizations.of(context);
+    final timeAgo = _getTimeAgo(notification.createdAt, l10n);
 
     IconData icon;
     Color iconColor;
@@ -614,20 +621,20 @@ class _NotificationCard extends StatelessWidget {
     );
   }
 
-  String _getTimeAgo(DateTime timestamp) {
+  String _getTimeAgo(DateTime timestamp, AppLocalizations l10n) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
 
     if (difference.inDays > 7) {
       return DateFormat('dd/MM/yyyy').format(timestamp);
     } else if (difference.inDays > 0) {
-      return '${difference.inDays} ngày trước';
+      return '${difference.inDays} ${l10n.notification.daysAgo}';
     } else if (difference.inHours > 0) {
-      return '${difference.inHours} giờ trước';
+      return '${difference.inHours} ${l10n.notification.hoursAgo}';
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} phút trước';
+      return '${difference.inMinutes} ${l10n.notification.minutesAgo}';
     } else {
-      return 'Vừa xong';
+      return l10n.notification.justNow;
     }
   }
 }

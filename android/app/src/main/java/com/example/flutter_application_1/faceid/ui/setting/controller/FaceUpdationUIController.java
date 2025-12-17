@@ -87,7 +87,7 @@ public class FaceUpdationUIController {
         updateScreenForState(state);
 
         // Log cập nhật UI để debug
-        System.out.println("UI đã cập nhật cho trạng thái: " + state + " với thông báo: " + message);
+        // System.out.println("UI đã cập nhật cho trạng thái: " + state + " với thông báo: " + message);
     }
 
     /**

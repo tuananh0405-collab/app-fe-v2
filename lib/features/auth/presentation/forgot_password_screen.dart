@@ -61,7 +61,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         showSnackbar(context, next.errorMessage!);
       }
       if (next.isSuccess) {
-        showSnackbar(context, 'Mật khẩu mới đã được gửi vào email của bạn');
+        showSnackbar(context, 'A new password has been sent to your email');
         context.pop();
         ref.read(forgotPasswordControllerProvider.notifier).reset();
       }
@@ -99,13 +99,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                   ).animateOnPageLoad(animationsMap['logoOnPageLoad']!),
                   const SizedBox(height: 24),
                   Text(
-                    'Quên mật khẩu',
+                    'Forgot password',
                     style: theme.title1,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Nhập email của bạn để nhận mật khẩu mới',
+                    'Enter your email to receive a new password',
                     style: theme.bodyText2,
                     textAlign: TextAlign.center,
                   ),
@@ -134,11 +134,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Vui lòng nhập email';
+                        return 'Please enter your email';
                       }
                       if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                           .hasMatch(value)) {
-                        return 'Email không hợp lệ';
+                        return 'Invalid email format';
                       }
                       return null;
                     },
@@ -146,7 +146,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                   const SizedBox(height: 32),
                   FFButton(
                     onPressed: state.isLoading ? null : _handleSubmit,
-                    text: 'Gửi yêu cầu',
+                    text: 'Send Request',
                     options: FFButtonOptions(
                       width: double.infinity,
                       height: 56,

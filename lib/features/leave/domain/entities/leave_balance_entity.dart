@@ -5,6 +5,7 @@ class LeaveBalanceEntity {
   final String leaveTypeName;
   final double totalDays;
   final double usedDays;
+  final double pendingDays;
   final double remainingDays;
   final int year;
   final DateTime? createdAt;
@@ -17,6 +18,7 @@ class LeaveBalanceEntity {
     required this.leaveTypeName,
     required this.totalDays,
     required this.usedDays,
+    required this.pendingDays,
     required this.remainingDays,
     required this.year,
     this.createdAt,

@@ -54,4 +54,5 @@
     <color name="info">#2196F3</color>
     <color name="error_red">#F44336</color>
     <color name="success_green">#4CAF50</color>
+	<color name="ic_launcher_background">#FFFFFF</color>
 </resources>
