@@ -14,9 +14,13 @@ import 'gps_tracking_service.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    // Initialize Firebase only if not already initialized
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      debugPrint('🔥 [BACKGROUND] Firebase initialized');
+    }
     
     debugPrint('📩 [BACKGROUND] Received message: ${message.messageId}');
     debugPrint('   Data: ${message.data}');
