@@ -107,10 +107,8 @@ class GpsTrackingService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final result = response.data;
         debugPrint('✅ GPS verification completed');
-        debugPrint('   Valid: ${result['is_valid']}');
-        debugPrint('   Distance: ${result['distance_from_office_meters']}m');
+        debugPrint('===========> response: ${response}');
 
         await _saveScanRecord(GpsScanRecord(
                   timestamp: DateTime.now(),
@@ -122,10 +120,10 @@ class GpsTrackingService {
                   responseData: response.data is Map ? response.data.cast<String, dynamic>() : null,
                 ));
 
-        if (result['is_valid'] == true) {
+        if (response.data['is_valid'] == true) {
           debugPrint('   ✅ GPS within office geofence');
         } else {
-          debugPrint('   ⚠️ GPS outside office geofence: ${result['message']}');
+          debugPrint('   ⚠️ GPS outside office geofence: ${response.data['message']}');
         }
 
         return true;
@@ -183,7 +181,7 @@ class GpsTrackingService {
       }
       final box = Hive.box('gps_history');
       await box.add(record.toJson());
-      debugPrint('💾 Saved GPS scan record: ${record.toJson()}');
+      // debugPrint('💾 Saved GPS scan record: ${record.toJson()}');
     } catch (e) {
       debugPrint('❌ Failed to save GPS scan record: $e');
     }

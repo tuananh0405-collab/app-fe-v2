@@ -21,15 +21,33 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       );
     }
     
-    debugPrint('📩 [BACKGROUND] Received message: ${message.messageId}');
-    debugPrint('   Data: ${message.data}');
+    debugPrint('\n' + '='*80);
+    debugPrint('📩 [BACKGROUND NOTIFICATION RECEIVED]');
+    debugPrint('='*80);
+    debugPrint('Message ID: ${message.messageId}');
+    debugPrint('Sent Time: ${message.sentTime}');
+    debugPrint('\n--- Notification ---');
+    if (message.notification != null) {
+      debugPrint('Title: ${message.notification!.title}');
+      debugPrint('Body: ${message.notification!.body}');
+      debugPrint('Android Channel ID: ${message.notification!.android?.channelId}');
+    } else {
+      debugPrint('No notification payload (data-only message)');
+    }
+    debugPrint('\n--- Data Payload ---');
+    message.data.forEach((key, value) {
+      debugPrint('  $key: $value (${value.runtimeType})');
+    });
     
     // Check if this is a GPS check request (silent push)
     final messageType = message.data['type'] as String?;
     final silent = message.data['silent']?.toString(); // Convert to string for comparison
     final action = message.data['action'] as String?; // New: check action field
     
-    debugPrint('📩 [BACKGROUND] Type: $messageType, Silent: $silent, Action: $action');
+    debugPrint('\n--- Message Classification ---');
+    debugPrint('Type: $messageType');
+    debugPrint('Silent: $silent');
+    debugPrint('Action: $action');
     
     // Check both old and new format
     final isGpsCheck = messageType == 'GPS_CHECK_REQUEST' && 
@@ -222,8 +240,24 @@ class PushNotificationService {
 
   /// Handle foreground messages
   void _handleForegroundMessage(RemoteMessage message) {
-    debugPrint('📩 [FOREGROUND] Received message: ${message.messageId}');
-    debugPrint('   Data: ${message.data}');
+    debugPrint('\n' + '='*80);
+    debugPrint('📩 [FOREGROUND NOTIFICATION RECEIVED]');
+    debugPrint('='*80);
+    debugPrint('Message ID: ${message.messageId}');
+    debugPrint('Sent Time: ${message.sentTime}');
+    debugPrint('\n--- Notification ---');
+    if (message.notification != null) {
+      debugPrint('Title: ${message.notification!.title}');
+      debugPrint('Body: ${message.notification!.body}');
+      debugPrint('Android Channel ID: ${message.notification!.android?.channelId}');
+      debugPrint('iOS Sound: ${message.notification!.apple?.sound}');
+    } else {
+      debugPrint('No notification payload (data-only message)');
+    }
+    debugPrint('\n--- Data Payload ---');
+    message.data.forEach((key, value) {
+      debugPrint('  $key: $value (${value.runtimeType})');
+    });
     
     // Check if this is a GPS check request (silent push)
     final messageType = message.data['type'] as String?;
@@ -290,11 +324,33 @@ class PushNotificationService {
 
   /// Handle notification tap
   void _handleNotificationTap(RemoteMessage message) {
+    debugPrint('\n' + '='*80);
+    debugPrint('👆 [NOTIFICATION TAPPED]');
+    debugPrint('='*80);
+    debugPrint('Message ID: ${message.messageId}');
+    if (message.notification != null) {
+      debugPrint('Title: ${message.notification!.title}');
+      debugPrint('Body: ${message.notification!.body}');
+    }
+    debugPrint('\n--- Data Payload ---');
+    message.data.forEach((key, value) {
+      debugPrint('  $key: $value');
+    });
+    debugPrint('='*80 + '\n');
+    
     onNotificationTapped?.call(message);
   }
 
   /// Handle local notification tap
   void _onLocalNotificationTapped(NotificationResponse response) {
+    debugPrint('\n' + '='*80);
+    debugPrint('👆 [LOCAL NOTIFICATION TAPPED]');
+    debugPrint('='*80);
+    debugPrint('Notification ID: ${response.id}');
+    debugPrint('Action ID: ${response.actionId}');
+    debugPrint('Input: ${response.input}');
+    debugPrint('Payload: ${response.payload}');
+    debugPrint('='*80 + '\n');
     // Parse payload and handle accordingly
   }
 
