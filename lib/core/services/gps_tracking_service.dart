@@ -98,11 +98,7 @@ class GpsTrackingService {
       // 4. Tăng presence_verification_rounds_completed
       // 5. Gửi notification nếu GPS ngoài vùng
       final response = await _dio.post(
-<<<<<<< HEAD
-        '/gps/check',  // ✅ FIXED: Đúng endpoint theo GpsController
-=======
         '/attendance/attendance-check/gps-webhook/verify',
->>>>>>> 5f97020bccd226388fa509c4b5d61239500baf44
         data: {
           'latitude': position.latitude,
           'longitude': position.longitude,

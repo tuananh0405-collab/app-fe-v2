@@ -113,21 +113,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         actions: [
           FFIconButton(
             icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () async {
-              final now = DateTime.now();
-              final start = DateTime(now.year, now.month, now.day);
-              final end = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
-              await Future.wait([
-                ref.read(notificationListControllerProvider.notifier).loadNotifications(limit: 3, refresh: true),
-                ref.read(attendanceControllerProvider.notifier).loadAttendance(),
-                ref.read(workScheduleControllerProvider.notifier).loadShifts(fromDate: start, toDate: end),
-                ref.read(overtimeControllerProvider.notifier).getMyOvertimeRequests(),
-              ]);
-
-              if (context.mounted) {
-                context.push(AppRoutePath.notifications);
-              }
+            onPressed: () {
+              context.push(AppRoutePath.notifications);
             },
           ),
         ],

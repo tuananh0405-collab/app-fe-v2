@@ -1610,36 +1610,52 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private void handleNetworkError(String errorMessage) {
         if (!isAdded()) return;
 
-        // Create alert dialog with retry option
+        // Inflate custom dialog layout
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_error, null);
+        
+        // Find views
+        TextView tvTitle = dialogView.findViewById(R.id.tvErrorTitle);
+        TextView tvMessage = dialogView.findViewById(R.id.tvErrorMessage);
+        View btnTryAgain = dialogView.findViewById(R.id.btnTryAgain);
+        View btnCancel = dialogView.findViewById(R.id.btnCancel);
+        
+        // Set content
+        tvTitle.setText("Network Connection Issue");
+        tvMessage.setText("Cannot connect to the server. Please check your internet connection and try again.");
+        
+        // Create dialog
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setTitle("Network Connection Issue")
-                .setMessage("Cannot connect to the server. Please check your internet connection and try again.")
-                .setPositiveButton("Try Again", (d, which) -> {
-                    // Check if fragment is still attached before proceeding
-                    if (!isAdded()) {
-                        Log.w(TAG, "Fragment not attached, cannot retry registration");
-                        return;
-                    }
-
-                    // Dismiss dialog and reset
-                    currentErrorDialog = null;
-                    resetComponents();
-                    startFaceRegistration();
-                })
-                .setNegativeButton("Cancel", (d, which) -> {
-                    // Check if fragment is still attached before proceeding
-                    if (!isAdded()) {
-                        Log.w(TAG, "Fragment not attached, cannot handle cancel");
-                        return;
-                    }
-
-                    // Dismiss dialog and go back
-                    currentErrorDialog = null;
-                    requireActivity().onBackPressed();
-                })
+                .setView(dialogView)
                 .setCancelable(false)
                 .create();
-                
+        
+        // Make dialog background transparent for rounded corners
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        
+        // Set button click listeners
+        btnTryAgain.setOnClickListener(v -> {
+            if (!isAdded()) {
+                Log.w(TAG, "Fragment not attached, cannot retry registration");
+                return;
+            }
+            dialog.dismiss();
+            currentErrorDialog = null;
+            resetComponents();
+            startFaceRegistration();
+        });
+        
+        btnCancel.setOnClickListener(v -> {
+            if (!isAdded()) {
+                Log.w(TAG, "Fragment not attached, cannot handle cancel");
+                return;
+            }
+            dialog.dismiss();
+            currentErrorDialog = null;
+            requireActivity().onBackPressed();
+        });
+        
         // Store reference and show dialog
         currentErrorDialog = dialog;
         dialog.show();
@@ -1683,32 +1699,56 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             }
         }
 
-        // Create alert dialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("Try Again", (dialog, which) -> {
-                     if (!isAdded()) return;
+        // Inflate custom dialog layout
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_error, null);
+        
+        // Find views
+        TextView tvTitle = dialogView.findViewById(R.id.tvErrorTitle);
+        TextView tvMessage = dialogView.findViewById(R.id.tvErrorMessage);
+        View btnTryAgain = dialogView.findViewById(R.id.btnTryAgain);
+        View btnCancel = dialogView.findViewById(R.id.btnCancel);
+        
+        // Set content
+        tvTitle.setText(title);
+        tvMessage.setText(message);
+        
+        // Create dialog
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setCancelable(false)
+                .create();
+        
+        // Make dialog background transparent for rounded corners
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        
+        // Set button click listeners
+        btnTryAgain.setOnClickListener(v -> {
+            if (!isAdded()) return;
+            
+            dialog.dismiss();
+            
+            // Reset error tracking
+            hasDetailedError = false;
+            lastDetailedErrorMessage = "";
+            lastStateMessage = "";
+            currentErrorDialog = null;
 
-                    // Reset error tracking
-                    hasDetailedError = false;
-                    lastDetailedErrorMessage = "";
-                    lastStateMessage = "";
-                    currentErrorDialog = null;
-
-                    resetComponents();
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        if (isAdded()) startFaceRegistration();
-                    }, 500);
-                })
-                .setNegativeButton("Cancel", (d, which) -> {
-                     if (!isAdded()) return;
-                    currentErrorDialog = null;
-                    requireActivity().onBackPressed();
-                })
-                .setCancelable(false);
-
-        AlertDialog dialog = builder.create();
+            resetComponents();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (isAdded()) startFaceRegistration();
+            }, 500);
+        });
+        
+        btnCancel.setOnClickListener(v -> {
+            if (!isAdded()) return;
+            dialog.dismiss();
+            currentErrorDialog = null;
+            requireActivity().onBackPressed();
+        });
+        
+        // Store reference and show dialog
         currentErrorDialog = dialog;
         dialog.show();
     }

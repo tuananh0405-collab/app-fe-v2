@@ -19,10 +19,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-<<<<<<< HEAD
-      debugPrint('🔥 [BACKGROUND] Firebase initialized');
-=======
->>>>>>> 5f97020bccd226388fa509c4b5d61239500baf44
     }
     
     debugPrint('📩 [BACKGROUND] Received message: ${message.messageId}');
