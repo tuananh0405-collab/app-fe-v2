@@ -36,6 +36,7 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
     // Fetch leave types when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(leaveControllerProvider.notifier).getLeaveTypes();
+      ref.read(leaveControllerProvider.notifier).getLeaveBalance();
     });
     
     // Initialize form with existing leave data
@@ -334,6 +335,15 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
                           fillColor: theme.secondaryBackground,
                         ),
                         items: leaveState.leaveTypes
+                            .where((leaveType) {
+                              if (_leaveTypeId == leaveType.id) return true;
+                              final balances = leaveState.leaveBalances
+                                  .where((b) => b.leaveTypeId == leaveType.id);
+                              if (balances.isNotEmpty) {
+                                return balances.first.remainingDays > 0;
+                              }
+                              return true;
+                            })
                             .map((leaveType) => DropdownMenuItem(
                                   value: leaveType.id,
                                   child: Text(leaveType.leaveTypeName),

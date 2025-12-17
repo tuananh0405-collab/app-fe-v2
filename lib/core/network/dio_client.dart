@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../constants/api_constants.dart';
 import 'dio_interceptor.dart';
+import 'custom_dio_logger.dart';
 
 class DioClient {
   final Ref ref;
@@ -23,15 +23,7 @@ class DioClient {
     // Add interceptors
     _dio.interceptors.addAll([
       AuthInterceptor(ref), // Auto add token
-      PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: false,
-        error: true,
-        compact: true,
-        maxWidth: 90,
-      ),
+      CustomDioLogger(), // Lightweight logger - only logs URLs and errors
     ]);
   }
 

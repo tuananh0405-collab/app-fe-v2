@@ -34,6 +34,7 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
     // Fetch leave types when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(leaveControllerProvider.notifier).getLeaveTypes();
+      ref.read(leaveControllerProvider.notifier).getLeaveBalance();
     });
 
     // Setup animations
@@ -350,6 +351,14 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                           ),
                         ),
                         items: leaveState.leaveTypes
+                            .where((leaveType) {
+                              final balances = leaveState.leaveBalances
+                                  .where((b) => b.leaveTypeId == leaveType.id);
+                              if (balances.isNotEmpty) {
+                                return balances.first.remainingDays > 0;
+                              }
+                              return true;
+                            })
                             .map((leaveType) => DropdownMenuItem(
                                   value: leaveType.id,
                                   child: Text(leaveType.leaveTypeName),

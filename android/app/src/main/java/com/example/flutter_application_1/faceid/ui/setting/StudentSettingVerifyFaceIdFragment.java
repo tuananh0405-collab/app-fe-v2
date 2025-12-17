@@ -1673,6 +1673,8 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                     message = "Beacon signal not found. Please ensure you are within range of the office beacon.";
                 } else if (lastStateMessage.contains("Location") || lastStateMessage.contains("GPS")) {
                     message = "Location verification failed. Please ensure GPS is enabled and you are at the correct location.";
+                } else if (lastStateMessage.contains("No active shift available")) {
+                     message = "No active shift available for check-in/check-out at this time.";
                 } else {
                     message = "Verification failed. Please try again.";
                 }
