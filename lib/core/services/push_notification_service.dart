@@ -13,16 +13,17 @@ import 'gps_tracking_service.dart';
 /// Background message handler - MUST be a top-level function
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // ✅ CRITICAL: This function is called when app is killed/terminated
+  debugPrint('🚀 [BACKGROUND] ========== HANDLER TRIGGERED ==========');
+  debugPrint('🚀 [BACKGROUND] App was KILLED/TERMINATED and woke up!');
+  
   try {
     // Initialize Firebase only if not already initialized
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-<<<<<<< HEAD
       debugPrint('🔥 [BACKGROUND] Firebase initialized');
-=======
->>>>>>> 5f97020bccd226388fa509c4b5d61239500baf44
     }
     
     debugPrint('📩 [BACKGROUND] Received message: ${message.messageId}');

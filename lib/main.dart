@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/localization/app_localizations.dart';
 import 'core/services/push_notification_providers.dart';
+import 'core/services/push_notification_service.dart';
 import 'faceid_channel.dart';
 import 'flutter_flow/flutter_flow.dart';
 import 'features/face_id/face_id_success_handler.dart';
@@ -33,6 +35,10 @@ void main() async {
       rethrow;
     }
   }
+  
+  // ✅ CRITICAL FIX: Register background message handler BEFORE runApp()
+  // This allows app to handle messages even when killed/terminated
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   
   // Initialize DI
   await di.init();
