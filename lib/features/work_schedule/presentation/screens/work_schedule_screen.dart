@@ -28,9 +28,9 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
     _focusedDay = now;
     _selectedDay = now;
     _rangeStart = DateTime(now.year, now.month, 1);
-    _rangeEnd = DateTime(now.year, now.month + 2, 0);
+    _rangeEnd = DateTime(now.year, now.month + 1, 0); // Changed from +2 to +1 (1 month instead of 3)
 
-    // Load shifts for the next 3 months
+    // Load shifts for current month only (faster initial load)
     Future.microtask(() {
       ref.read(workScheduleControllerProvider.notifier).loadShifts(
             fromDate: _rangeStart,

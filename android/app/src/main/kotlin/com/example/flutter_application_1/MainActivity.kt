@@ -62,6 +62,37 @@ class MainActivity : FlutterActivity() {
                         result.error("INVALID_ARGUMENT", "userId is required", null)
                     }
                 }
+                "checkGps" -> {
+                    val latitude = call.argument<Double>("latitude")
+                    val longitude = call.argument<Double>("longitude")
+                    val accuracy = call.argument<Double>("accuracy")
+                    
+                    if (latitude != null && longitude != null && accuracy != null) {
+                        // Call Dart GPS tracking service via method channel
+                        val gpsChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.flutter_application_1/gps")
+                        gpsChannel.invokeMethod("handleGpsCheck", mapOf(
+                            "latitude" to latitude,
+                            "longitude" to longitude,
+                            "accuracy" to accuracy
+                        ), object : MethodChannel.Result {
+                            override fun success(gpsResult: Any?) {
+                                // GPS check succeeded
+                                result.success(true)
+                            }
+                            
+                            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                                // GPS check failed
+                                result.error(errorCode, errorMessage, errorDetails)
+                            }
+                            
+                            override fun notImplemented() {
+                                result.error("NOT_IMPLEMENTED", "GPS check not implemented", null)
+                            }
+                        })
+                    } else {
+                        result.error("INVALID_ARGUMENT", "latitude, longitude, and accuracy are required", null)
+                    }
+                }
                 else -> {
                     result.notImplemented()
                 }

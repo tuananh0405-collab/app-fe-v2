@@ -36,6 +36,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.FlutterEngineCache;
+import io.flutter.plugin.common.MethodChannel;
+
 import com.example.flutter_application_1.R;
 import com.example.flutter_application_1.auth.AuthManager;
 import com.example.flutter_application_1.databinding.FragmentStudentSettingVerifyFaceIdBinding;
@@ -1494,45 +1498,68 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 if (!isAdded()) return;
                 Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
 
-                // 🔍 Generate face embedding from captured image
-                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Generating face embedding...");
+                // Step 1.5: Check GPS location via Flutter method channel
+                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Verifying GPS location...");
+                Log.d(TAG, "📍 Calling GPS check via method channel...");
                 
-                String faceEmbeddingBase64 = faceIdService.extractFaceEmbeddingBase64(faceImage);
-                if (faceEmbeddingBase64 == null) {
-                    Log.e(TAG, "❌ Failed to generate face embedding");
-                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Failed to generate face embedding");
-                    return;
-                }
-                
-                Log.d(TAG, "✅ Face embedding generated: " + faceEmbeddingBase64.length() + " chars");
-
-                // Step 2: Request Face Verification WITH face embedding
-                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Submitting face verification...");
-                String verifyType = attendanceType != null ? attendanceType : "check_in";
-                attendanceService.requestFaceVerification(verifyType, latitude, longitude, accuracy, deviceId, faceEmbeddingBase64,
-                    new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse>() {
+                try {
+                    // Get Flutter engine - try multiple approaches
+                    FlutterEngine flutterEngine = null;
+                    
+                    // Approach 1: Try to get from FlutterEngineCache
+                    try {
+                        flutterEngine = io.flutter.embedding.engine.FlutterEngineCache
+                                .getInstance()
+                                .get("main_engine");
+                    } catch (Exception e) {
+                        Log.d(TAG, "Engine not in cache with ID 'main_engine'");
+                    }
+                    
+                    // Approach 2: Fallback - skip GPS check and proceed directly
+                    if (flutterEngine == null) {
+                        Log.w(TAG, "⚠️ Flutter engine not available, skipping GPS check via method channel");
+                        Log.d(TAG, "📍 Proceeding directly to face verification");
+                        
+                        // Continue with face verification directly
+                        performFaceVerification(beaconResult, latitude, longitude, accuracy, deviceId, faceImage, attendanceService);
+                        return;
+                    }
+                    
+                    MethodChannel channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "com.example.flutter_application_1/faceid");
+                    
+                    java.util.HashMap<String, Object> args = new java.util.HashMap<>();
+                    args.put("latitude", latitude);
+                    args.put("longitude", longitude);
+                    args.put("accuracy", accuracy);
+                    
+                    channel.invokeMethod("checkGps", args, new MethodChannel.Result() {
                         @Override
-                        public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse verifyResult) {
+                        public void success(Object result) {
                             if (!isAdded()) return;
-                            Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
-                            Log.d(TAG, "Step 2 ✅ - ShiftId: " + verifyResult.getShift_id());
-                            Log.d(TAG, "✅ Face verification submitted! Waiting for backend processing via RabbitMQ...");
-
-                            // ✅ DONE! Backend will handle verification via event-driven flow:
-                            // Attendance Service → RabbitMQ → Face Service → Verify → Publish event → Update check_in_time
-                            stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
-                                "Face verification submitted successfully! Check-in time will be updated shortly.");
+                            Log.d(TAG, "Step 1.5 ✅ - GPS check passed");
+                            
+                            // GPS check succeeded, now proceed to face verification
+                            performFaceVerification(beaconResult, latitude, longitude, accuracy, deviceId, faceImage, attendanceService);
                         }
-
+                        
                         @Override
-                        public void onFailure(String error) {
+                        public void error(String errorCode, String errorMessage, Object errorDetails) {
                             if (!isAdded()) return;
-                            Log.e(TAG, "❌ Step 2 failed: " + error);
-                            lastDetailedErrorMessage = "Request face verification failed:\n" + error;
-                            hasDetailedError = true;
-                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 2 failed: " + error);
+                            Log.e(TAG, "❌ Step 1.5 failed - GPS check: " + errorCode + ": " + errorMessage);
+                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "GPS verification failed: " + (errorMessage != null ? errorMessage : "Please ensure you are at the correct location"));
+                        }
+                        
+                        @Override
+                        public void notImplemented() {
+                            if (!isAdded()) return;
+                            Log.e(TAG, "❌ GPS check not implemented");
+                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "GPS check not available");
                         }
                     });
+                } catch (Exception e) {
+                    Log.e(TAG, "❌ Error calling GPS check", e);
+                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "GPS check failed: " + e.getMessage());
+                }
             }
             
             @Override
@@ -1542,6 +1569,61 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 1 failed: " + error);
             }
         });
+    }
+
+    /**
+     * Helper method to perform face verification after beacon (and optionally GPS) validation
+     */
+    private void performFaceVerification(
+            com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse beaconResult,
+            double latitude,
+            double longitude,
+            double accuracy,
+            String deviceId,
+            Bitmap faceImage,
+            com.example.flutter_application_1.attendance.data.service.AttendanceService attendanceService) {
+        
+        if (!isAdded()) return;
+        
+        // 🔍 Generate face embedding from captured image
+        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Generating face embedding...");
+        
+        String faceEmbeddingBase64 = faceIdService.extractFaceEmbeddingBase64(faceImage);
+        if (faceEmbeddingBase64 == null) {
+            Log.e(TAG, "❌ Failed to generate face embedding");
+            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Failed to generate face embedding");
+            return;
+        }
+        
+        Log.d(TAG, "✅ Face embedding generated: " + faceEmbeddingBase64.length() + " chars");
+
+        // Step 2: Request Face Verification WITH face embedding
+        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Submitting face verification...");
+        String verifyType = attendanceType != null ? attendanceType : "check_in";
+        attendanceService.requestFaceVerification(verifyType, latitude, longitude, accuracy, deviceId, faceEmbeddingBase64,
+            new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse>() {
+                @Override
+                public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse verifyResult) {
+                    if (!isAdded()) return;
+                    Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
+                    Log.d(TAG, "Step 2 ✅ - ShiftId: " + verifyResult.getShift_id());
+                    Log.d(TAG, "✅ Face verification submitted! Waiting for backend processing via RabbitMQ...");
+
+                    // ✅ DONE! Backend will handle verification via event-driven flow:
+                    // Attendance Service → RabbitMQ → Face Service → Verify → Publish event → Update check_in_time
+                    stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
+                        "Face verification submitted successfully! Check-in time will be updated shortly.");
+                }
+
+                @Override
+                public void onFailure(String error) {
+                    if (!isAdded()) return;
+                    Log.e(TAG, "❌ Step 2 failed: " + error);
+                    lastDetailedErrorMessage = "Request face verification failed:\n" + error;
+                    hasDetailedError = true;
+                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 2 failed: " + error);
+                }
+            });
     }
 
     /**
