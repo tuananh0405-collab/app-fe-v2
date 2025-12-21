@@ -228,6 +228,13 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
 
             /// Balance List
             ...leaveState.leaveBalances.map<Widget>((b) {
+              // Find the leave type name from leaveTypes list
+              final leaveType = leaveState.leaveTypes.firstWhere(
+                (type) => type.id == b.leaveTypeId,
+                orElse: () => null as dynamic,
+              );
+              final leaveTypeName = leaveType?.leaveTypeName ?? 'Unknown';
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.all(16),
@@ -241,17 +248,17 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Text(
-                    //   b.leaveTypeName,
-                    //   style: theme.subtitle1.override(
-                    //     color: Colors.black87,
-                    //     fontWeight: FontWeight.bold,
-                    //   ),
-                    // ),
-                    // Divider(
-                    //   height: 24,
-                    //   color: Colors.grey.withValues(alpha: 0.2),
-                    // ),
+                    Text(
+                      leaveTypeName,
+                      style: theme.subtitle1.override(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Divider(
+                      height: 24,
+                      color: Colors.grey.withValues(alpha: 0.2),
+                    ),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

@@ -483,12 +483,18 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                       color: theme.primaryColor,
                     ),
                   ),
+                  // validator: (value) {
+                  //   if (value == null || value.trim().isEmpty) {
+                  //     return l10n.pleaseEnterReason;
+                  //   }
+                  //   if (value.trim().length < 10) {
+                  //     return l10n.reasonMinLength;
+                  //   }
+                  //   return null;
+                  // },
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return l10n.pleaseEnterReason;
-                    }
-                    if (value.trim().length < 10) {
-                      return l10n.reasonMinLength;
+                      return l10n.enterReason;
                     }
                     return null;
                   },

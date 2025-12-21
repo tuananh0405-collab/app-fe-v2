@@ -487,7 +487,11 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         if (apiResponse.data == null) {
           throw const ServerException('Leave types data is null');
         }
-        return apiResponse.data!;
+        // Filter to only return ACTIVE leave types
+        final activeLeaveTypes = apiResponse.data!
+            .where((leaveType) => leaveType.status.toUpperCase() == 'ACTIVE')
+            .toList();
+        return activeLeaveTypes;
       } else if (response.statusCode == 401) {
         throw UnauthorizedException(apiResponse.message);
       } else {

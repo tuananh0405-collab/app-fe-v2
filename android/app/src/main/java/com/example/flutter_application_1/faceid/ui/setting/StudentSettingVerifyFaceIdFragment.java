@@ -206,7 +206,13 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             }
         };
         android.content.IntentFilter filter = new android.content.IntentFilter("com.example.flutter_application_1.BEACON_FOUND");
-        requireActivity().registerReceiver(beaconReceiver, filter);
+        
+        // Register receiver with RECEIVER_NOT_EXPORTED flag for Android 13+ compatibility
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(beaconReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            requireActivity().registerReceiver(beaconReceiver, filter);
+        }
     }
 
     private void setupVerificationWindowFromArgs() {
@@ -1767,6 +1773,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         } else {
             // Check for specific Beacon or GPS errors
             if (lastStateMessage != null) {
+                Log.d(TAG, "Last state message: " + lastStateMessage);
                 if (lastStateMessage.contains("Beacon")) {
                     message = "Beacon signal not found. Please ensure you are within range of the office beacon.";
                 } else if (lastStateMessage.contains("Location") || lastStateMessage.contains("GPS")) {
