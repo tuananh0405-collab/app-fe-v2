@@ -11,7 +11,7 @@ class JwtHelper {
     try {
       final parts = token.split('.');
       if (parts.length != 3) {
-        debugPrint('⚠️ Invalid JWT token format');
+        debugPrint('Invalid JWT token format');
         return null;
       }
 
@@ -57,7 +57,7 @@ class JwtHelper {
       final accessToken = box.get('accessToken') as String?;
       
       if (accessToken == null) {
-        debugPrint('⚠️ No access token found in storage');
+        debugPrint('No access token found in storage');
         return null;
       }
 

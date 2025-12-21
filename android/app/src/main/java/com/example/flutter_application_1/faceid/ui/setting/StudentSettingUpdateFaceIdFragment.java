@@ -193,7 +193,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
      */
     private void onStateChanged(FaceRegistrationState state, String message) {
         if (!isAdded() || binding == null) {
-            Log.w(TAG, "⚠️ Fragment not valid for state change: " + state);
+            Log.w(TAG, "Fragment not valid for state change: " + state);
             return;
         }
 
@@ -261,7 +261,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
     private void handleStateActions(FaceRegistrationState state) {
         // Kiểm tra xem fragment có còn hoạt động không
         if (!isAdded() || getActivity() == null) {
-            Log.w(TAG, "⚠️ Fragment not valid for state action: " + state);
+            Log.w(TAG, "Fragment not valid for state action: " + state);
             return;
         }
 
@@ -518,7 +518,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
             }
             Log.d(TAG, " SpoofDetectionManager initialized with oval boundary");
         } else {
-            Log.w(TAG, "⚠️ FaceSpoofDetector not available, using fallback detection");
+            Log.w(TAG, "FaceSpoofDetector not available, using fallback detection");
         }
     }
 
@@ -1023,7 +1023,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
     }
 
     if (currentFrameBitmap == null || currentFaceRect == null) {
-        Log.w(TAG, "⚠️ Cannot capture - no frame or face rect");
+        Log.w(TAG, "Cannot capture - no frame or face rect");
         stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
                 "Capture failed - no data available");
         return;
@@ -1150,7 +1150,7 @@ String userId;
                         return;
                     }
                     
-                    Log.w(TAG, "⚠️ Unexpected onAlreadyRegistered callback during update");
+                    Log.w(TAG, "Unexpected onAlreadyRegistered callback during update");
                     stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
                             "Face ID updated successfully!");
                     
@@ -1186,7 +1186,7 @@ String userId;
                 bitmapPath = saveBitmapToTempFile(currentFrameBitmap);
                 Log.d(TAG, " Bitmap saved to: " + bitmapPath);
             } else {
-                Log.w(TAG, "⚠️ currentFrameBitmap is null");
+                Log.w(TAG, "currentFrameBitmap is null");
             }
         } catch (Exception e) {
             Log.e(TAG, " Error saving bitmap", e);

@@ -26,7 +26,7 @@ class GpsTrackingService {
     // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      debugPrint('⚠️ Location services are disabled.');
+      debugPrint('Location services are disabled.');
       return false;
     }
 
@@ -35,13 +35,13 @@ class GpsTrackingService {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        debugPrint('⚠️ Location permissions are denied');
+        debugPrint('Location permissions are denied');
         return false;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      debugPrint('⚠️ Location permissions are permanently denied');
+      debugPrint('Location permissions are permanently denied');
       return false;
     }
 
@@ -123,12 +123,12 @@ class GpsTrackingService {
         if (response.data['is_valid'] == true) {
           debugPrint('   ✅ GPS within office geofence');
         } else {
-          debugPrint('   ⚠️ GPS outside office geofence: ${response.data['message']}');
+          debugPrint('   GPS outside office geofence: ${response.data['message']}');
         }
 
         return true;
       } else {
-        debugPrint('⚠️ GPS verification failed with status: ${response.statusCode}');
+        debugPrint('GPS verification failed with status: ${response.statusCode}');
         // Persist a failed scan record (server returned non-200)
         await _saveScanRecord(GpsScanRecord(
           timestamp: DateTime.now(),
@@ -214,14 +214,14 @@ class GpsTrackingService {
       
       // Validate request
       if (type != 'GPS_CHECK_REQUEST' || action != 'BACKGROUND_GPS_SYNC') {
-        debugPrint('⚠️ Invalid GPS check request type or action');
+        debugPrint('Invalid GPS check request type or action');
         return;
       }
 
       // Get current location
       final position = await getCurrentLocation();
       if (position == null) {
-        debugPrint('⚠️ Could not get current location');
+        debugPrint('Could not get current location');
         return;
       }
 

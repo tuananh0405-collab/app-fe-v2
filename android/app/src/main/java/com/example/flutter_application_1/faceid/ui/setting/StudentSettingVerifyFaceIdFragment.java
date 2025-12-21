@@ -271,7 +271,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             Log.d(TAG, " Initializing Face ID request: " + requestId + " for session: " + sessionId);
             requestManager.initializeRequest(requestId, sessionId, deadline);
         } else {
-            Log.d(TAG, "⚠️ No requestId/sessionId found, using legacy verification mode");
+            Log.d(TAG, "No requestId/sessionId found, using legacy verification mode");
         }
 
         // 🔄 NEW: Check for attendance_type in Intent/Args and update UI logic
@@ -423,7 +423,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
      */
     private void onStateChanged(FaceRegistrationState state, String message) {
         if (!isAdded() || binding == null) {
-            Log.w(TAG, "⚠️ Fragment not valid for state change: " + state);
+            Log.w(TAG, "Fragment not valid for state change: " + state);
             return;
         }
 
@@ -494,7 +494,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private void handleStateActions(FaceRegistrationState state) {
         // Kiểm tra xem fragment có còn hoạt động không
         if (!isAdded() || getActivity() == null) {
-            Log.w(TAG, "⚠️ Fragment not valid for state action: " + state);
+            Log.w(TAG, "Fragment not valid for state action: " + state);
             return;
         }
 
@@ -750,7 +750,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             }
             Log.d(TAG, " SpoofDetectionManager initialized with oval boundary");
         } else {
-            Log.w(TAG, "⚠️ FaceSpoofDetector not available, using fallback detection");
+            Log.w(TAG, "FaceSpoofDetector not available, using fallback detection");
         }
     }
 
@@ -1338,7 +1338,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private void captureAndVerifyFace() {
         // Check if verification has already completed successfully
         if (verificationCompleted) {
-            Log.w(TAG, "⚠️ Verification already completed, ignoring duplicate request");
+            Log.w(TAG, "Verification already completed, ignoring duplicate request");
             return;
         }
         
@@ -1349,7 +1349,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         }
 
         if (currentFrameBitmap == null || currentFaceRect == null) {
-            Log.w(TAG, "⚠️ Cannot capture - no frame or face rect");
+            Log.w(TAG, "Cannot capture - no frame or face rect");
             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
                     "Capture failed - no data available");
             return;
@@ -1433,7 +1433,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             // Kiểm tra permission
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "⚠️ Location permission not granted");
+                Log.w(TAG, "Location permission not granted");
                 return;
             }
             
@@ -1488,7 +1488,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         if (currentLocation != null) {
             Log.d(TAG, "📍 Using current GPS location: lat=" + latitude + ", lng=" + longitude + ", accuracy=" + accuracy);
         } else {
-            Log.w(TAG, "⚠️ GPS location not available, using default coordinates");
+            Log.w(TAG, "GPS location not available, using default coordinates");
         }
 
         final String deviceId = android.provider.Settings.Secure.getString(requireContext().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
@@ -1523,7 +1523,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                     
                     // Approach 2: Fallback - skip GPS check and proceed directly
                     if (flutterEngine == null) {
-                        Log.w(TAG, "⚠️ Flutter engine not available, skipping GPS check via method channel");
+                        Log.w(TAG, "Flutter engine not available, skipping GPS check via method channel");
                         Log.d(TAG, "📍 Proceeding directly to face verification");
                         
                         // Continue with face verification directly

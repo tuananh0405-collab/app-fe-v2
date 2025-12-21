@@ -67,7 +67,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final accessToken = authBox.get('accessToken') as String?;
       
       if (accessToken == null || accessToken.isEmpty) {
-        debugPrint('⚠️ [BACKGROUND] No access token found - skipping GPS check');
+        debugPrint('[BACKGROUND] No access token found - skipping GPS check');
         return;
       }
       
@@ -270,7 +270,7 @@ class PushNotificationService {
       if (gpsTrackingService != null) {
         gpsTrackingService!.handleGpsCheckRequest(message.data);
       } else {
-        debugPrint('⚠️ GPS tracking service not available');
+        debugPrint('GPS tracking service not available');
       }
       
       // Don't show notification for silent GPS requests

@@ -73,7 +73,7 @@ class LoginController extends Notifier<LoginState> {
         user: loginResponse.user,
       );
     } catch (e) {
-      debugPrint('⚠️ Failed to save user info to native: $e');
+      debugPrint('Failed to save user info to native: $e');
     }
   }
   
@@ -142,7 +142,7 @@ class LoginController extends Notifier<LoginState> {
         
         debugPrint('✅ Session restored for user: ${user.fullName}');
       } else {
-        debugPrint('⚠️ Incomplete user data in storage, cannot restore session');
+        debugPrint('Incomplete user data in storage, cannot restore session');
       }
     } catch (e) {
       debugPrint('❌ Failed to restore session: $e');

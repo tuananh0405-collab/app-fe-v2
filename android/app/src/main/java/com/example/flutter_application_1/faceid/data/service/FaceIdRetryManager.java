@@ -63,7 +63,7 @@ public class FaceIdRetryManager {
             callback.onSuccess(result);
             
         } catch (Exception e) {
-            Log.w(TAG, "⚠️ Task failed on attempt " + (attempt + 1) + ": " + e.getMessage());
+            Log.w(TAG, "Task failed on attempt " + (attempt + 1) + ": " + e.getMessage());
             
             if (attempt < maxRetries) {
                 long delay = calculateDelay(attempt);

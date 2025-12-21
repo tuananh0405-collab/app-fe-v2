@@ -151,7 +151,7 @@ public class FaceIdRequestManager {
                 if (response.isSuccessful() && response.body() != null) {
                     handleStatusResponse(response.body());
                 } else {
-                    Log.w(TAG, "⚠️ Failed to get request status: HTTP " + response.code());
+                    Log.w(TAG, "Failed to get request status: HTTP " + response.code());
                     handlePollingError("HTTP " + response.code());
                 }
             }
@@ -169,7 +169,7 @@ public class FaceIdRequestManager {
      */
     private void handleStatusResponse(FaceIdRequestStatusResponse response) {
         if (response.getData() == null) {
-            Log.w(TAG, "⚠️ Invalid status response data");
+            Log.w(TAG, "Invalid status response data");
             return;
         }
         
@@ -266,7 +266,7 @@ public class FaceIdRequestManager {
      * Xử lý lỗi khi polling
      */
     private void handlePollingError(String error) {
-        Log.w(TAG, "⚠️ Polling error: " + error);
+        Log.w(TAG, "Polling error: " + error);
         
         if (statusCallback != null) {
             mainHandler.post(() -> statusCallback.onRequestFailed(error));
@@ -324,7 +324,7 @@ public class FaceIdRequestManager {
                     Log.d(TAG, " Request cancelled successfully");
                     handleRequestCancelled();
                 } else {
-                    Log.w(TAG, "⚠️ Failed to cancel request: HTTP " + response.code());
+                    Log.w(TAG, "Failed to cancel request: HTTP " + response.code());
                 }
             }
             
