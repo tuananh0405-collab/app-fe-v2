@@ -107,14 +107,39 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private static final float MAX_CENTER_MOVE_RATIO = 0.03f; // 3% of face size
     private static final float MAX_SIZE_DELTA_RATIO = 0.02f;  // 2% size change
 
-    // 🔄 HANDLERS
+    // 🚨 ERROR MESSAGE CONSTANTS
+    // Error Titles
+    private static final String ERROR_TITLE_NETWORK = "Network Error";
+    private static final String ERROR_TITLE_GPS = "GPS Error";
+    private static final String ERROR_TITLE_BEACON = "Beacon Error";
+    private static final String ERROR_TITLE_FACE = "Face Verification Failed";
+    private static final String ERROR_TITLE_NO_SHIFT = "No Shift Found";
+    private static final String ERROR_TITLE_GENERAL = "Verification Failed";
+    
+    // Error Messages
+    private static final String ERROR_MSG_NETWORK = "Weak signal or no internet connection. Please check and try again.";
+    private static final String ERROR_MSG_GPS = "Location verification failed. Please ensure GPS is enabled and you are at the correct location.";
+    private static final String ERROR_MSG_BEACON = "Beacon signal not found. Please ensure you are within range of the office beacon.";
+    private static final String ERROR_MSG_FACE = "Unable to verify face. Please make sure you are in good lighting and try again.";
+    private static final String ERROR_MSG_NO_SHIFT = "No active shift available for check-in/check-out at this time.";
+    private static final String ERROR_MSG_GENERAL = "Verification failed. Please try again.";
+    
+    // Error Detection Keywords
+    private static final String KEYWORD_GPS = "GPS";
+    private static final String KEYWORD_LOCATION = "Location";
+    private static final String KEYWORD_LOCATION_LOWER = "location";
+    private static final String KEYWORD_BEACON = "Beacon";
+    private static final String KEYWORD_BEACON_LOWER = "beacon";
+    private static final String KEYWORD_NO_SHIFT = "No active shift available";
+
+    // HANDLERS
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     // LOCATION
     private LocationManager locationManager;
     private Location currentLocation;
 
-    // 📡 BEACON DATA (stored as instance variables to avoid fragment lifecycle issues)
+    // BEACON DATA (stored as instance variables to avoid fragment lifecycle issues)
     private String beaconUuid;
     private int beaconMajor = -1;
     private int beaconMinor = -1;
@@ -123,8 +148,11 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     // SUCCESS FLAG - Prevent processing after successful verification
     private boolean verificationCompleted = false;
 
-    // 🕒 ATTENDANCE TYPE
+    //  ATTENDANCE TYPE
     private String attendanceType = "check_in"; // Default to check-in
+    
+    //  GPS CHECK FLAG
+    private boolean gpsCheckEnabled = false;
 
     // Verification window control
     private long verifyDeadlineMs = 0L;
@@ -274,7 +302,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             Log.d(TAG, "No requestId/sessionId found, using legacy verification mode");
         }
 
-        // 🔄 NEW: Check for attendance_type in Intent/Args and update UI logic
+        // NEW: Check for attendance_type in Intent/Args and update UI logic
         if (args != null && args.containsKey("attendance_type")) {
             attendanceType = args.getString("attendance_type");
         } else if (getActivity() != null && getActivity().getIntent() != null && getActivity().getIntent().hasExtra("attendance_type")) {
@@ -282,6 +310,15 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         }
         
         Log.d(TAG, "Attendance Type: " + attendanceType);
+        
+        //  NEW: Check for gps_flag in Intent/Args
+        // if (args != null && args.containsKey("gps_flag")) {
+        //     gpsCheckEnabled = args.getBoolean("gps_flag", true);
+        // } else if (getActivity() != null && getActivity().getIntent() != null && getActivity().getIntent().hasExtra("gps_flag")) {
+        //     gpsCheckEnabled = getActivity().getIntent().getBooleanExtra("gps_flag", true);
+        // }
+        
+        // Log.d(TAG, "GPS Check Enabled: " + gpsCheckEnabled);
         
         // Update Button Text
         if (binding != null && binding.btnGetStarted != null) {
@@ -419,7 +456,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
 
     /**
-     * 🔄 State change callback from StateManager
+     * State change callback from StateManager
      */
     private void onStateChanged(FaceRegistrationState state, String message) {
         if (!isAdded() || binding == null) {
@@ -571,7 +608,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
             case LIVENESS_CHALLENGE:
                 // Hiển thị UI cho liveness challenge
-                Log.d(TAG, "🔄 Activating Liveness Challenge");
+                Log.d(TAG, "Activating Liveness Challenge");
                 if (binding != null && binding.tvStatusMessage != null) {
                     binding.tvStatusMessage.setText("Look at the camera and blink");
                 }
@@ -1504,7 +1541,14 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 if (!isAdded()) return;
                 Log.d(TAG, "Step 1 - Beacon validated, session_token: " + beaconResult.getSession_token());
 
-                // Step 1.5: Check GPS location via Flutter method channel
+                // Step 1.5: Check GPS location via Flutter method channel (only if GPS flag is enabled)
+                if (!gpsCheckEnabled) {
+                    Log.d(TAG, "GPS check is disabled by flag, skipping GPS verification");
+                    // Skip GPS check and proceed directly to face verification
+                    performFaceVerification(beaconResult, latitude, longitude, accuracy, deviceId, faceImage, attendanceService);
+                    return;
+                }
+                
                 stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Verifying GPS location...");
                 Log.d(TAG, "Calling GPS check via method channel...");
                 
@@ -1761,31 +1805,41 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             return;
         }
 
-        // Handle all errors in a unified way w/ Simple Messages
-        String title = "Verification Failed";
+        // Handle all errors with specific titles and messages
+        String title;
         String message;
 
-        // Set simple English message based on error type
+        // Set specific title and message based on error type
         if (state == FaceRegistrationState.FAILED_NETWORK) {
-            message = "Weak signal or no internet connection. Please check and try again.";
+            title = ERROR_TITLE_NETWORK;
+            message = ERROR_MSG_NETWORK;
         } else if (state == FaceRegistrationState.FAILED_SPOOF) {
-            message = "Unable to verify face. Please make sure you are in good lighting and try again.";
+            title = ERROR_TITLE_FACE;
+            message = ERROR_MSG_FACE;
         } else {
             // Check for specific GPS, Beacon, or other errors
             // GPS check comes first since it happens after beacon validation in the flow
             if (lastStateMessage != null) {
                 Log.d(TAG, "Last state message: " + lastStateMessage);
-                if (lastStateMessage.contains("GPS") || lastStateMessage.contains("Location") || lastStateMessage.contains("location")) {
-                    message = "Location verification failed. Please ensure GPS is enabled and you are at the correct location.";
-                } else if (lastStateMessage.contains("Beacon") || lastStateMessage.contains("beacon")) {
-                    message = "Beacon signal not found. Please ensure you are within range of the office beacon.";
-                } else if (lastStateMessage.contains("No active shift available")) {
-                     message = "No active shift available for check-in/check-out at this time.";
+                if (lastStateMessage.contains(KEYWORD_GPS) || 
+                    lastStateMessage.contains(KEYWORD_LOCATION) || 
+                    lastStateMessage.contains(KEYWORD_LOCATION_LOWER)) {
+                    title = ERROR_TITLE_GPS;
+                    message = ERROR_MSG_GPS;
+                } else if (lastStateMessage.contains(KEYWORD_BEACON) || 
+                           lastStateMessage.contains(KEYWORD_BEACON_LOWER)) {
+                    title = ERROR_TITLE_BEACON;
+                    message = ERROR_MSG_BEACON;
+                } else if (lastStateMessage.contains(KEYWORD_NO_SHIFT)) {
+                    title = ERROR_TITLE_NO_SHIFT;
+                    message = ERROR_MSG_NO_SHIFT;
                 } else {
-                    message = "Verification failed. Please try again.";
+                    title = ERROR_TITLE_GENERAL;
+                    message = ERROR_MSG_GENERAL;
                 }
             } else {
-                message = "Verification failed. Please try again.";
+                title = ERROR_TITLE_GENERAL;
+                message = ERROR_MSG_GENERAL;
             }
         }
 
@@ -2185,7 +2239,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             mainHandler.removeCallbacksAndMessages(null);
         }
 
-        Log.d(TAG, "🔄 All components reset");
+        Log.d(TAG, "All components reset");
     }
 
     @Override
@@ -2524,7 +2578,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                                             com.example.flutter_application_1.faceid.data.model.response.FaceIdRequestStatusResponse response) {
                 if (!isAdded()) return;
                 
-                Log.d(TAG, "🔄 Request status updated: " + state);
+                Log.d(TAG, "Request status updated: " + state);
                 
                 switch (state) {
                     case VERIFIED:

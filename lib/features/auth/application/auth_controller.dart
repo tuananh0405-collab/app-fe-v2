@@ -41,7 +41,7 @@ class AuthController extends Notifier<AuthState> {
   /// Khôi phục session từ Hive storage khi app khởi động
   Future<void> _restoreSession() async {
     try {
-      debugPrint('🔄 Attempting to restore session from storage...');
+      debugPrint('Attempting to restore session from storage...');
       
       final box = await Hive.openBox('auth');
       final accessToken = box.get('accessToken') as String?;

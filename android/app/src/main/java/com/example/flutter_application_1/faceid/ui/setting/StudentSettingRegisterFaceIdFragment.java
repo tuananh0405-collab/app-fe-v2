@@ -188,7 +188,7 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
     }
 
     /**
-     * 🔄 State change callback from StateManager
+     * State change callback from StateManager
      */
     private void onStateChanged(FaceRegistrationState state, String message) {
         if (!isAdded() || binding == null) {

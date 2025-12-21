@@ -56,7 +56,7 @@ public class FaceIdRetryManager {
      */
     private <T> void executeWithRetryInternal(Supplier<T> task, RetryCallback<T> callback, int attempt) {
         try {
-            Log.d(TAG, "🔄 Executing task, attempt " + (attempt + 1) + "/" + (maxRetries + 1));
+            Log.d(TAG, "Executing task, attempt " + (attempt + 1) + "/" + (maxRetries + 1));
             
             T result = task.get();
             Log.d(TAG, " Task completed successfully on attempt " + (attempt + 1));

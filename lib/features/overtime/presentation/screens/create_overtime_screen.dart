@@ -122,6 +122,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
         return;
       }
 
+
       // Combine date with time - create local DateTime first
       final localStartDateTime = DateTime(
         _overtimeDate!.year,
@@ -138,6 +139,13 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
         _endTime!.hour,
         _endTime!.minute,
       );
+
+      // Validate overtime start time is not in the past
+      if (localStartDateTime.isBefore(DateTime.now())) {
+        showSnackbar(context, 'Cannot create overtime request in the past. Please select a time from now onwards.');
+        return;
+      }
+
 
       // Convert to UTC by subtracting the local timezone offset
       // This ensures the actual time value stays the same but is marked as UTC

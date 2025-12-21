@@ -92,7 +92,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
     private static final float MAX_CENTER_MOVE_RATIO = 0.03f; // 3% of face size
     private static final float MAX_SIZE_DELTA_RATIO = 0.02f;  // 2% size change
 
-    // 🔄 HANDLERS
+    // HANDLERS
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Nullable
@@ -189,7 +189,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
     }
 
     /**
-     * 🔄 State change callback from StateManager
+     * State change callback from StateManager
      */
     private void onStateChanged(FaceRegistrationState state, String message) {
         if (!isAdded() || binding == null) {
@@ -338,7 +338,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
 
             case LIVENESS_CHALLENGE:
                 // Hiển thị UI cho liveness challenge
-                Log.d(TAG, "🔄 Activating Liveness Challenge");
+                Log.d(TAG, "Activating Liveness Challenge");
                 if (binding != null && binding.tvStatusMessage != null) {
                     binding.tvStatusMessage.setText("Look at the camera and blink");
                 }
@@ -1435,7 +1435,7 @@ String userId;
      */
     private void backToSetup() {
         try {
-            Log.d(TAG, "🔄 Returning to setup screen");
+            Log.d(TAG, "Returning to setup screen");
 
             // Stop camera and fully reset to cancel any pending operations
             stopCamera();
@@ -1751,7 +1751,7 @@ String userId;
             mainHandler.removeCallbacksAndMessages(null);
         }
 
-        Log.d(TAG, "🔄 All components reset");
+        Log.d(TAG, "All components reset");
     }
 
     @Override

@@ -107,6 +107,7 @@ class _CompactLeaveBalanceCardState extends State<CompactLeaveBalanceCard> {
                   balance,
                   leaveTypeName,
                   color,
+                  leaveType,
                 ),
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
@@ -188,6 +189,7 @@ class _CompactLeaveBalanceCardState extends State<CompactLeaveBalanceCard> {
     LeaveBalanceEntity balance,
     String leaveTypeName,
     Color color,
+    LeaveTypeEntity? leaveType,
   ) {
     showDialog(
       context: context,
@@ -281,6 +283,54 @@ class _CompactLeaveBalanceCardState extends State<CompactLeaveBalanceCard> {
                   const Expanded(child: SizedBox()),
                 ],
               ),
+              
+              // Leave Type Details
+              if (leaveType != null) ...[
+                const SizedBox(height: 16),
+                // Divider(color: theme.secondaryText.withValues(alpha: 0.2)),
+                // const SizedBox(height: 16),
+                // Text(
+                //   'Leave Type Details',
+                //   style: theme.subtitle2.override(
+                //     color: theme.primaryText,
+                //     fontWeight: FontWeight.w600,
+                //     fontSize: 14,
+                //   ),
+                // ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildSimpleDetailItem(
+                        theme,
+                        'Max Consecutive Days',
+                        leaveType.maxConsecutiveDays?.toString() ?? 'N/A',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildSimpleDetailItem(
+                        theme,
+                        'Min Notice Days',
+                        '${leaveType.minNoticeDays}',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildSimpleDetailItem(
+                        theme,
+                        'Is Paid',
+                        leaveType.isPaid ? 'Yes' : 'No',
+                      ),
+                    ),
+                    const Expanded(child: SizedBox()),
+                  ],
+                ),
+              ],
             ],
           ),
         ),

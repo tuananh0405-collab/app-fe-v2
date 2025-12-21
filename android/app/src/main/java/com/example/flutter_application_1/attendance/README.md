@@ -29,7 +29,7 @@ attendance/
 - Returns session token (5 min TTL)
 - Endpoint: `POST /api/v1/attendance/attendance-check/validate-beacon`
 
-### Step 2: Request Face Verification 📍
+### Step 2: Request Face Verification 
 - Validates GPS location
 - Creates attendance check record
 - Endpoint: `POST /api/v1/attendance/attendance-check/request-face-verification`

@@ -134,7 +134,7 @@ public class FaceIdRequestManager {
                                     STATUS_POLL_INTERVAL_MS, 
                                     TimeUnit.MILLISECONDS);
         
-        Log.d(TAG, "📡 Started status polling for request: " + currentRequestId);
+        Log.d(TAG, "Started status polling for request: " + currentRequestId);
     }
     
     /**

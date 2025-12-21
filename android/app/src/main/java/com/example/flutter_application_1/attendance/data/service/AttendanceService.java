@@ -71,7 +71,7 @@ public class AttendanceService {
             int rssi,
             AttendanceCallback<ValidateBeaconResponse> callback) {
         
-        Log.d(TAG, "📡 Step 1: Validating beacon - UUID: " + beaconUuid + 
+        Log.d(TAG, "Step 1: Validating beacon - UUID: " + beaconUuid + 
                 ", Major: " + beaconMajor + ", Minor: " + beaconMinor + ", RSSI: " + rssi);
 
         

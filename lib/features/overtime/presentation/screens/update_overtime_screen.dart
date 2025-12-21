@@ -116,22 +116,30 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
         return;
       }
       
+      
       // Combine date with time - create local DateTime first
-    final localStartDateTime = DateTime(
-      _overtimeDate.year,
-      _overtimeDate.month,
-      _overtimeDate.day,
-      _startTime.hour,
-      _startTime.minute,
-    );
+      final localStartDateTime = DateTime(
+        _overtimeDate.year,
+        _overtimeDate.month,
+        _overtimeDate.day,
+        _startTime.hour,
+        _startTime.minute,
+      );
 
-    final localEndDateTime = DateTime(
-      _overtimeDate.year,
-      _overtimeDate.month,
-      _overtimeDate.day,
-      _endTime.hour,
-      _endTime.minute,
-    );
+      final localEndDateTime = DateTime(
+        _overtimeDate.year,
+        _overtimeDate.month,
+        _overtimeDate.day,
+        _endTime.hour,
+        _endTime.minute,
+      );
+
+      // Validate overtime start time is not in the past
+      if (localStartDateTime.isBefore(DateTime.now())) {
+        showSnackbar(context, 'Cannot update overtime request with a time in the past. Please select a time from now onwards.');
+        return;
+      }
+
 
     // Convert to UTC by subtracting the local timezone offset
     // This ensures the actual time value stays the same but is marked as UTC

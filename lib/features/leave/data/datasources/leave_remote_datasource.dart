@@ -274,7 +274,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      debugPrint('🔄 Updating leave request $leaveId');
+      debugPrint('Updating leave request $leaveId');
       debugPrint('Request body: ${{
         'start_date': startDate.toIso8601String().split('T')[0],
         'end_date': endDate.toIso8601String().split('T')[0],
@@ -398,7 +398,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
     required String cancellationReason,
   }) async {
     try {
-      debugPrint('🔄 Cancelling leave request $leaveId');
+      debugPrint('Cancelling leave request $leaveId');
       debugPrint('Request body: ${{
         'cancellation_reason': cancellationReason,
         'cancelled_by': '',
@@ -474,6 +474,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
   Future<List<LeaveTypeModel>> getLeaveTypes() async {
     try {
       final response = await dio.get('/leave/leave-types');
+
+      debugPrint('Response data: ${response.data}');
 
       final apiResponse = LeaveApiResponseModel.fromJson(
         response.data,
