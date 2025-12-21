@@ -67,7 +67,7 @@ public class FaceIdRetryManager {
             
             if (attempt < maxRetries) {
                 long delay = calculateDelay(attempt);
-                Log.d(TAG, "⏰ Scheduling retry in " + delay + "ms");
+                Log.d(TAG, "Scheduling retry in " + delay + "ms");
                 
                 scheduler.schedule(() -> {
                     executeWithRetryInternal(task, callback, attempt + 1);

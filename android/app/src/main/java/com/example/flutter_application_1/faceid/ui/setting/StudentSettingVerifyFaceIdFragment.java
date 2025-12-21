@@ -2585,7 +2585,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
      *  NEW: Handle request expired
      */
     private void handleRequestExpired() {
-        Log.d(TAG, "⏰ Request expired");
+        Log.d(TAG, "Request expired");
         stopCameraSafe();
         
         // Show expired message

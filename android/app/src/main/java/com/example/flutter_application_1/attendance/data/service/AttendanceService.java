@@ -93,8 +93,8 @@ public class AttendanceService {
                         // Save session token for next step
                         currentSessionToken = body.getSession_token();
                         Log.d(TAG, " Beacon validated! Session token: " + currentSessionToken);
-                        Log.d(TAG, "📍 Location: " + body.getLocation_name());
-                        Log.d(TAG, "⏰ Expires at: " + body.getExpires_at());
+                        Log.d(TAG, "Location: " + body.getLocation_name());
+                        Log.d(TAG, "Expires at: " + body.getExpires_at());
                         callback.onSuccess(body);
                     } else {
                         callback.onFailure(body.getMessage() != null ? 

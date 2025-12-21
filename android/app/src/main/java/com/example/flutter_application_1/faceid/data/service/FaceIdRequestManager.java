@@ -236,7 +236,7 @@ public class FaceIdRequestManager {
      * Xử lý khi request hết hạn
      */
     private void handleRequestExpired() {
-        Log.d(TAG, "⏰ Request expired: " + currentRequestId);
+        Log.d(TAG, "Request expired: " + currentRequestId);
         currentState = RequestState.EXPIRED;
         stopStatusPolling();
         
@@ -285,7 +285,7 @@ public class FaceIdRequestManager {
                 }
             }, delay, TimeUnit.MILLISECONDS);
             
-            Log.d(TAG, "⏰ Scheduled expiration check in " + (delay / 1000) + "s");
+            Log.d(TAG, "Scheduled expiration check in " + (delay / 1000) + "s");
         } else {
             handleRequestExpired();
         }
