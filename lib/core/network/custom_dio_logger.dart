@@ -26,8 +26,7 @@ class CustomDioLogger extends Interceptor {
 
   void _logRequest(RequestOptions options) {
     if (kDebugMode) {
-      print('┌─────────────────────────────────────────────────────────────');
-      print('│ 🚀 REQUEST: ${options.method} ${options.uri}');
+      print('│ ======> REQUEST: ${options.method} ${options.uri}');
       
       // Log query parameters
       if (options.queryParameters.isNotEmpty) {

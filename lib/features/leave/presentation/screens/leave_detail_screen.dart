@@ -6,6 +6,7 @@ import '../../../../core/routing/routes.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../providers/leave_providers.dart';
+import '../widgets/compact_leave_balance_card.dart';
 
 class LeaveDetailScreen extends ConsumerStatefulWidget {
   final String leaveId;
@@ -26,7 +27,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
 
     // Load leave balance and leave types
     Future.microtask(() {
-      ref.read(leaveControllerProvider.notifier).getLeaveBalance();
+      // ref.read(leaveControllerProvider.notifier).getLeaveBalance();
       ref.read(leaveControllerProvider.notifier).getLeaveTypes();
     });
 
@@ -169,40 +170,42 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              
               // Leave Balance Card
-              if (leaveState.leaveBalances.isNotEmpty)
-                _buildLeaveBalanceCard(theme, leaveState, l10n),
-              const SizedBox(height: 16),
+              // if (leaveState.leaveBalances.isNotEmpty)
+              //   _buildLeaveBalanceCard(theme, leaveState, l10n),
+              // const SizedBox(height: 16),
 
-              // Status Card (minimal design)
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: statusColor.withValues(alpha: 0.25)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _getStatusIcon(leave.status),
-                      color: statusColor,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      statusText,
-                      style: theme.bodyText1.override(
-                        color: statusColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ).animateOnPageLoad(animationsMap['statusCardAnimation']!),
-              const SizedBox(height: 20),
+              // Status Card 
+              // Container(
+              //   padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              //   decoration: BoxDecoration(
+              //     color: statusColor.withValues(alpha: 0.12),
+              //     borderRadius: BorderRadius.circular(10),
+              //     border: Border.all(color: statusColor.withValues(alpha: 0.25)),
+              //   ),
+              //   child: Row(
+              //     mainAxisSize: MainAxisSize.min,
+              //     children: [
+              //       Icon(
+              //         _getStatusIcon(leave.status),
+              //         color: statusColor,
+              //         size: 18,
+              //       ),
+              //       const SizedBox(width: 8),
+              //       Text(
+              //         statusText,
+              //         style: theme.bodyText1.override(
+              //           color: statusColor,
+              //           fontWeight: FontWeight.w600,
+              //           fontSize: 14,
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ).animateOnPageLoad(animationsMap['statusCardAnimation']!),
+              // const SizedBox(height: 20),
+
 
               // Leave Information
               Container(
@@ -222,38 +225,77 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.leave.leaveInformation,
-                        style: theme.title3.override(
-                          color: theme.primaryText,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      // Header with Status Card on the right
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Leave #${leave.id}',
+                            style: theme.title3.override(
+                              color: theme.primaryText,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          // Status Card (right aligned)
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: statusColor.withValues(alpha: 0.25)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _getStatusIcon(leave.status),
+                                  color: statusColor,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  statusText,
+                                  style: theme.bodyText2.override(
+                                    color: statusColor,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                       Divider(
                         height: 24,
                         color: theme.secondaryText.withValues(alpha: 0.2),
                       ),
                       // Leave ID and Employee Code on same row
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoRow(
-                              theme,
-                              l10n.leave.leaveId,
-                              '#${leave.id}',
-                              Icons.tag,
-                            ),
-                          ),
-                          Expanded(
-                            child: _buildInfoRow(
-                              theme,
-                              l10n.leave.employeeCode,
-                              leave.employeeCode,
-                              Icons.badge,
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Row(
+                      //   children: [
+                      //     Expanded(
+                      //       child: _buildInfoRow(
+                      //         theme,
+                      //         l10n.leave.leaveId,
+                      //         '#${leave.id}',
+                      //         Icons.tag,
+                      //       ),
+                      //     ),
+                          
+                      //     Expanded(
+                      //       child: 
+                      //       // _buildInfoRow(
+                      //       //   theme,
+                      //       //   l10n.leave.employeeCode,
+                      //       //   leave.employeeCode,
+                      //       //   Icons.badge,
+                      //       // ),
+
+                                 
+                      //     ),
+                      //   ],
+                      // ),
+
                       // Leave Type
                       _buildInfoRow(
                         theme,
@@ -264,6 +306,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                             .firstOrNull ?? 'N/A',
                         Icons.category_outlined,
                       ),
+
                       // Start Date and End Date on same row
                       Row(
                         children: [
@@ -299,26 +342,68 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                           l10n.leave.halfDayLeaveEnd,
                           Icons.access_time,
                         ),
-                      _buildInfoRow(
-                        theme,
-                        l10n.leave.totalLeaveDays,
-                        '${leave.totalLeaveDays?.toStringAsFixed(1) ?? 0} ${l10n.leave.days}',
-                        Icons.event_available,
+                      // Leave Days and Working Days on same row
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildInfoRow(
+                              theme,
+                              l10n.leave.totalLeaveDays,
+                              '${leave.totalLeaveDays?.toStringAsFixed(1) ?? 0} ${l10n.leave.days}',
+                              Icons.event_available,
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildInfoRow(
+                              theme,
+                              l10n.leave.totalWorkingDays,
+                              '${leave.totalWorkingDays ?? 0} ${l10n.leave.days}',
+                              Icons.work,
+                            ),
+                          ),
+                        ],
                       ),
-                      _buildInfoRow(
-                        theme,
-                        l10n.leave.totalWorkingDays,
-                        '${leave.totalWorkingDays ?? 0} ${l10n.leave.days}',
-                        Icons.work,
-                      ),
-                      _buildInfoRow(
-                        theme,
-                        l10n.leave.submittedAt,
-                        leave.requestedAt != null
-                            ? dateTimeFormat.format(leave.requestedAt!)
-                            : 'N/A',
-                        Icons.send,
-                      ),
+                      // Submit At and Approve At on same row (if approved)
+
+                       _buildInfoRow(
+                              theme,
+                              l10n.leave.submittedAt,
+                              leave.requestedAt != null
+                                  ? dateTimeFormat.format(leave.requestedAt!)
+                                  : 'N/A',
+                              Icons.send,
+                            ),
+
+                             if (leave.status?.toUpperCase() == 'APPROVED' && leave.approvedAt != null)
+                            _buildInfoRow(
+                                theme,
+                                l10n.leave.approvedAt,
+                                dateTimeFormat.format(leave.approvedAt!),
+                                Icons.check_circle,
+                            ),
+                      // Row(
+                      //   children: [
+                      //     Expanded(
+                      //       child: _buildInfoRow(
+                      //         theme,
+                      //         l10n.leave.submittedAt,
+                      //         leave.requestedAt != null
+                      //             ? dateTimeFormat.format(leave.requestedAt!)
+                      //             : 'N/A',
+                      //         Icons.send,
+                      //       ),
+                      //     ),
+                      //     if (leave.status?.toUpperCase() == 'APPROVED' && leave.approvedAt != null)
+                      //       Expanded(
+                      //         child: _buildInfoRow(
+                      //           theme,
+                      //           l10n.leave.approvedAt,
+                      //           dateTimeFormat.format(leave.approvedAt!),
+                      //           Icons.check_circle,
+                      //         ),
+                      //       ),
+                      //   ],
+                      // ),
                     ],
                   ),
                 ),
@@ -423,74 +508,74 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
               ],
 
               // Approval Information
-              if (leave.status?.toUpperCase() == 'APPROVED') ...[
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: theme.secondaryBackground,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha:0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.verified,
-                              color: theme.success,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              l10n.leave.approvalInformation,
-                              style: theme.title3.override(
-                                color: theme.primaryText,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Divider(
-                          height: 24,
-                          color: theme.secondaryText.withValues(alpha: 0.2),
-                        ),
-                        // Approval Level and Approved At on same row
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildInfoRow(
-                                theme,
-                                l10n.leave.approvalLevel,
-                                '${leave.approvalLevel ?? 'N/A'}',
-                                Icons.approval,
-                              ),
-                            ),
-                            if (leave.approvedAt != null)
-                              Expanded(
-                                child: _buildInfoRow(
-                                  theme,
-                                  l10n.leave.approvedAt,
-                                  dateTimeFormat.format(leave.approvedAt!),
-                                  Icons.check_circle,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ).animateOnPageLoad(animationsMap['detailsAnimation']!),
-              ],
+              // if (leave.status?.toUpperCase() == 'APPROVED') ...[
+              //   const SizedBox(height: 16),
+              //   Container(
+              //     width: double.infinity,
+              //     decoration: BoxDecoration(
+              //       color: theme.secondaryBackground,
+              //       borderRadius: BorderRadius.circular(12),
+              //       boxShadow: [
+              //         BoxShadow(
+              //           color: Colors.black.withValues(alpha:0.05),
+              //           blurRadius: 8,
+              //           offset: const Offset(0, 2),
+              //         ),
+              //       ],
+              //     ),
+              //     child: Padding(
+              //       padding: const EdgeInsets.all(16),
+              //       child: Column(
+              //         crossAxisAlignment: CrossAxisAlignment.start,
+              //         children: [
+              //           Row(
+              //             children: [
+              //               Icon(
+              //                 Icons.verified,
+              //                 color: theme.success,
+              //                 size: 20,
+              //               ),
+              //               const SizedBox(width: 8),
+              //               Text(
+              //                 l10n.leave.approvalInformation,
+              //                 style: theme.title3.override(
+              //                   color: theme.primaryText,
+              //                   fontWeight: FontWeight.bold,
+              //                 ),
+              //               ),
+              //             ],
+              //           ),
+              //           Divider(
+              //             height: 24,
+              //             color: theme.secondaryText.withValues(alpha: 0.2),
+              //           ),
+              //           // Approval Level and Approved At on same row
+              //           Row(
+              //             children: [
+              //               Expanded(
+              //                 child: _buildInfoRow(
+              //                   theme,
+              //                   l10n.leave.approvalLevel,
+              //                   '${leave.approvalLevel ?? 'N/A'}',
+              //                   Icons.approval,
+              //                 ),
+              //               ),
+              //               if (leave.approvedAt != null)
+              //                 Expanded(
+              //                   child: _buildInfoRow(
+              //                     theme,
+              //                     l10n.leave.approvedAt,
+              //                     dateTimeFormat.format(leave.approvedAt!),
+              //                     Icons.check_circle,
+              //                   ),
+              //                 ),
+              //             ],
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //   ).animateOnPageLoad(animationsMap['detailsAnimation']!),
+              // ],
 
               // Rejection Information
               if (leave.status?.toUpperCase() == 'REJECTED') ...[
@@ -639,113 +724,13 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
 
   Widget _buildLeaveBalanceCard(
       FlutterFlowTheme theme, dynamic leaveState, AppLocalizations l10n) {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: theme.primaryColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.account_balance_wallet,
-                  color: theme.primaryColor,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                l10n.leave.leaveBalance,
-                style: theme.title3.override(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          /// Danh sách leave
-          ...leaveState.leaveBalances.map<Widget>((b) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: Colors.black.withValues(alpha: 0.05),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  /// Tên loại nghỉ + tổng
-                  // Column(
-                  //   crossAxisAlignment: CrossAxisAlignment.start,
-                  //   children: [
-                  //     Text(
-                  //       b.leaveTypeName,
-                  //       style: theme.subtitle1.override(
-                  //         color: Colors.black87,
-                  //         fontWeight: FontWeight.w600,
-                  //       ),
-                  //     ),
-                  //     const SizedBox(height: 4),
-                  //     Text(
-                  //       'Total: ${b.totalDays.toStringAsFixed(1)} days',
-                  //       style: theme.bodyText2.override(
-                  //         color: Colors.black54,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-
-                  /// Remaining dạng chip
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: theme.primaryColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      '${b.remainingDays.toStringAsFixed(1)} ${l10n.leave.daysLeft}',
-                      style: theme.bodyText2.override(
-                        color: theme.primaryColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ],
-      ),
-    ),
-  );
-}
+    return CompactLeaveBalanceCard(
+      theme: theme,
+      leaveBalances: leaveState.leaveBalances,
+      leaveTypes: leaveState.leaveTypes,
+      title: l10n.leave.leaveBalance,
+    );
+  }
 
   Widget _buildInfoRow(
     FlutterFlowTheme theme,
@@ -757,7 +742,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, size: 15, color: theme.primaryColor),
+          Icon(icon, size: 13, color: theme.primaryColor),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -776,7 +761,8 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                   value,
                   style: theme.subtitle1.override(
                     color: theme.primaryText,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
                   ),
                 ),
               ],

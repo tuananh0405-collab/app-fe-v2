@@ -7,6 +7,7 @@ import '../../../../flutter_flow/flutter_flow.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../data/models/leave_type_model.dart';
 import '../../providers/leave_providers.dart';
+import '../widgets/compact_leave_balance_card.dart';
 import 'leave_detail_screen.dart';
 
 class LeaveListScreen extends ConsumerStatefulWidget {
@@ -179,156 +180,17 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
     );
   }
 
+
   Widget _buildLeaveBalanceCard(
       FlutterFlowTheme theme, dynamic leaveState, AppLocalizations l10n) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// Header
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: theme.primaryColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.account_balance_wallet,
-                    color: theme.primaryColor,
-                    size: 26,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  l10n.leave.leaveBalance,
-                  style: theme.title2.override(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            /// Balance List
-            ...leaveState.leaveBalances.map<Widget>((b) {
-              // Find the leave type name from leaveTypes list
-              LeaveTypeModel? leaveType;
-              try {
-                leaveType = leaveState.leaveTypes.firstWhere(
-                  (type) => type.id == b.leaveTypeId,
-                );
-              } catch (e) {
-                leaveType = null;
-              }
-              final leaveTypeName = leaveType?.leaveTypeName ?? 'Unknown';
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.black.withValues(alpha: 0.05),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      leaveTypeName,
-                      style: theme.subtitle1.override(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Divider(
-                      height: 24,
-                      color: Colors.grey.withValues(alpha: 0.2),
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _buildInfoRow(
-                            theme,
-                            'Year',
-                            '${b.year}',
-                            Icons.calendar_today,
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildInfoRow(
-                            theme,
-                            'Total Days',
-                            '${b.totalDays}',
-                            Icons.format_list_numbered,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _buildInfoRow(
-                            theme,
-                            'Used Days',
-                            '${b.usedDays}',
-                            Icons.check_circle_outline,
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildInfoRow(
-                            theme,
-                            'Pending Days',
-                            '${b.pendingDays}',
-                            Icons.hourglass_empty,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _buildInfoRow(
-                            theme,
-                            'Remaining Days',
-                            '${b.remainingDays}',
-                            Icons.event_available,
-                          ),
-                        ),
-                        const Spacer(), // Placeholder for even spacing if needed
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ],
-        ),
-      ),
+    return CompactLeaveBalanceCard(
+      theme: theme,
+      leaveBalances: leaveState.leaveBalances,
+      leaveTypes: leaveState.leaveTypes,
+      title: l10n.leave.leaveBalance,
     );
   }
+
 
   Widget _buildInfoRow(
     FlutterFlowTheme theme,
@@ -370,6 +232,196 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
       ),
     );
   }
+
+  Color _parseColor(String hexColor) {
+    try {
+      final hex = hexColor.replaceAll('#', '');
+      if (hex.length == 6) {
+        return Color(int.parse('FF$hex', radix: 16));
+      }
+      return const Color(0xFF3B82F6); // Default blue
+    } catch (e) {
+      return const Color(0xFF3B82F6); // Default blue
+    }
+  }
+
+  void _showBalanceDetailDialog(
+    BuildContext context,
+    FlutterFlowTheme theme,
+    dynamic leave,
+    dynamic balance,
+    String leaveTypeName,
+    Color color,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.account_balance_wallet,
+                      color: color,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      leaveTypeName,
+                      style: theme.title2.override(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Divider(color: Colors.grey.withValues(alpha: 0.2)),
+              const SizedBox(height: 16),
+              
+              // Balance Details
+              _buildDetailRow(
+                theme,
+                'Year',
+                '${balance.year}',
+                Icons.calendar_today,
+                color,
+              ),
+              const SizedBox(height: 12),
+              _buildDetailRow(
+                theme,
+                'Total Days',
+                '${balance.totalDays}',
+                Icons.format_list_numbered,
+                color,
+              ),
+              const SizedBox(height: 12),
+              _buildDetailRow(
+                theme,
+                'Used Days',
+                '${balance.usedDays}',
+                Icons.check_circle_outline,
+                color,
+              ),
+              const SizedBox(height: 12),
+              _buildDetailRow(
+                theme,
+                'Pending Days',
+                '${balance.pendingDays}',
+                Icons.hourglass_empty,
+                color,
+              ),
+              const SizedBox(height: 12),
+              _buildDetailRow(
+                theme,
+                'Remaining Days',
+                '${balance.remainingDays}',
+                Icons.event_available,
+                color,
+              ),
+              const SizedBox(height: 20),
+              
+              // Close Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Close',
+                    style: theme.subtitle1.override(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(
+    FlutterFlowTheme theme,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 20, color: color),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.bodyText2.override(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: theme.bodyText1.override(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
 
   Widget _buildLeaveCard(
     BuildContext context,

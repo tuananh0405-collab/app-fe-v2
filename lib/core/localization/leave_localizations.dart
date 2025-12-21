@@ -46,7 +46,7 @@ class LeaveLocalizations {
       'total_working_days': 'Working Days',
       'submitted_at': 'Submitted At',
       'days': 'days',
-      'reason_label': 'Reason for leave:',
+      'reason_label': 'Reason for leave',
       'supporting_document_label': 'Supporting Document',
       'approval_information': 'Approval Information',
       'approval_level': 'Approval Level',
