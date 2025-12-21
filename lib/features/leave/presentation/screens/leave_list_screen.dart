@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../data/models/leave_type_model.dart';
 import '../../providers/leave_providers.dart';
 import 'leave_detail_screen.dart';
 
@@ -229,10 +230,14 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen>
             /// Balance List
             ...leaveState.leaveBalances.map<Widget>((b) {
               // Find the leave type name from leaveTypes list
-              final leaveType = leaveState.leaveTypes.firstWhere(
-                (type) => type.id == b.leaveTypeId,
-                orElse: () => null as dynamic,
-              );
+              LeaveTypeModel? leaveType;
+              try {
+                leaveType = leaveState.leaveTypes.firstWhere(
+                  (type) => type.id == b.leaveTypeId,
+                );
+              } catch (e) {
+                leaveType = null;
+              }
               final leaveTypeName = leaveType?.leaveTypeName ?? 'Unknown';
 
               return Container(
