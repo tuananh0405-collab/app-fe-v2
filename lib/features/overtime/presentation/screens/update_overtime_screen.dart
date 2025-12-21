@@ -116,23 +116,40 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
         return;
       }
       
-      // Combine date with time
-      final startDateTime = DateTime(
-        _overtimeDate.year,
-        _overtimeDate.month,
-        _overtimeDate.day,
-        _startTime.hour,
-        _startTime.minute,
-      );
+      // Combine date with time - create local DateTime first
+    final localStartDateTime = DateTime(
+      _overtimeDate.year,
+      _overtimeDate.month,
+      _overtimeDate.day,
+      _startTime.hour,
+      _startTime.minute,
+    );
 
-      final endDateTime = DateTime(
-        _overtimeDate.year,
-        _overtimeDate.month,
-        _overtimeDate.day,
-        _endTime.hour,
-        _endTime.minute,
-      );
+    final localEndDateTime = DateTime(
+      _overtimeDate.year,
+      _overtimeDate.month,
+      _overtimeDate.day,
+      _endTime.hour,
+      _endTime.minute,
+    );
 
+    // Convert to UTC by subtracting the local timezone offset
+    // This ensures the actual time value stays the same but is marked as UTC
+    final startDateTime = DateTime.utc(
+      localStartDateTime.year,
+      localStartDateTime.month,
+      localStartDateTime.day,
+      localStartDateTime.hour,
+      localStartDateTime.minute,
+    );
+
+    final endDateTime = DateTime.utc(
+      localEndDateTime.year,
+      localEndDateTime.month,
+      localEndDateTime.day,
+      localEndDateTime.hour,
+      localEndDateTime.minute,
+    );
       debugPrint('Calling updateOvertimeRequest with ID: ${widget.overtime.id}');
       
       ref.read(overtimeControllerProvider.notifier).updateOvertimeRequest(
