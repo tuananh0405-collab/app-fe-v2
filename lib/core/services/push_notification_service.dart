@@ -55,7 +55,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
                        action == 'BACKGROUND_GPS_SYNC';
     
     if (isGpsCheck) {
-      debugPrint('📍 [BACKGROUND] GPS check request detected - processing...');
+      debugPrint('[BACKGROUND] GPS check request detected - processing...');
       
       // Initialize Hive to get access token
       if (!Hive.isBoxOpen('auth')) {
@@ -88,10 +88,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final gpsTrackingService = GpsTrackingService(dio);
       await gpsTrackingService.handleGpsCheckRequest(message.data);
       
-      debugPrint('✅ [BACKGROUND] GPS check request processed');
+      debugPrint('[BACKGROUND] GPS check request processed');
     }
   } catch (e) {
-    debugPrint('❌ [BACKGROUND] Error: $e');
+    debugPrint('[BACKGROUND] Error: $e');
   }
 }
 
@@ -264,7 +264,7 @@ class PushNotificationService {
     final silent = message.data['silent'] as String?; // Note: silent comes as String from FCM metadata
     
     if (messageType == 'GPS_CHECK_REQUEST' && silent == 'true') {
-      debugPrint('📍 [FOREGROUND] GPS check request detected - processing...');
+      debugPrint('[FOREGROUND] GPS check request detected - processing...');
       
       // Handle GPS check in foreground
       if (gpsTrackingService != null) {

@@ -122,8 +122,8 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
         return;
       }
 
-      // Combine date with time
-      final startDateTime = DateTime(
+      // Combine date with time - create local DateTime first
+      final localStartDateTime = DateTime(
         _overtimeDate!.year,
         _overtimeDate!.month,
         _overtimeDate!.day,
@@ -131,12 +131,30 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
         _startTime!.minute,
       );
 
-      final endDateTime = DateTime(
+      final localEndDateTime = DateTime(
         _overtimeDate!.year,
         _overtimeDate!.month,
         _overtimeDate!.day,
         _endTime!.hour,
         _endTime!.minute,
+      );
+
+      // Convert to UTC by subtracting the local timezone offset
+      // This ensures the actual time value stays the same but is marked as UTC
+      final startDateTime = DateTime.utc(
+        localStartDateTime.year,
+        localStartDateTime.month,
+        localStartDateTime.day,
+        localStartDateTime.hour,
+        localStartDateTime.minute,
+      );
+
+      final endDateTime = DateTime.utc(
+        localEndDateTime.year,
+        localEndDateTime.month,
+        localEndDateTime.day,
+        localEndDateTime.hour,
+        localEndDateTime.minute,
       );
 
       ref.read(overtimeControllerProvider.notifier).createOvertimeRequest(

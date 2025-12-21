@@ -52,11 +52,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ),
     });
     
-    // Load notifications and attendance when screen initializes
+    // Load notifications and work schedule when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // For home screen we only need the latest 3 notifications
       ref.read(notificationListControllerProvider.notifier).loadNotifications(limit: 3);
-      ref.read(attendanceControllerProvider.notifier).loadAttendance();
       
       final now = DateTime.now();
       // Load shifts for today only

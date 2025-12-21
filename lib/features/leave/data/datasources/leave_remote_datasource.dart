@@ -275,7 +275,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
   }) async {
     try {
       debugPrint('🔄 Updating leave request $leaveId');
-      debugPrint('📤 Request body: ${{
+      debugPrint('Request body: ${{
         'start_date': startDate.toIso8601String().split('T')[0],
         'end_date': endDate.toIso8601String().split('T')[0],
         'is_half_day_start': isHalfDayStart,
@@ -399,7 +399,7 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
   }) async {
     try {
       debugPrint('🔄 Cancelling leave request $leaveId');
-      debugPrint('📤 Request body: ${{
+      debugPrint('Request body: ${{
         'cancellation_reason': cancellationReason,
         'cancelled_by': '',
       }}');

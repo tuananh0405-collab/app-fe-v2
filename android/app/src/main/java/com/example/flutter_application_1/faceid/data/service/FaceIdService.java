@@ -736,7 +736,7 @@ public class FaceIdService {
                     RequestBody embeddingPart = RequestBody.create(MediaType.parse("application/octet-stream"), buffer.array());
                     MultipartBody.Part filePart = MultipartBody.Part.createFormData("embedding", "embedding.bin", embeddingPart);
 
-                    // 📍 Thêm location và device info
+                    // Thêm location và device info
                     RequestBody latitudePart = latitude != null ?
                             RequestBody.create(MediaType.parse("text/plain"), String.valueOf(latitude)) :
                             null;
@@ -1516,12 +1516,12 @@ public class FaceIdService {
 
             // Encode to Base64
             String base64 = android.util.Base64.encodeToString(embeddingBytes, android.util.Base64.NO_WRAP);
-            android.util.Log.d(TAG, "✅ Face embedding encoded to Base64: " + base64.length() + " chars (" + embeddingBytes.length + " bytes)");
+            android.util.Log.d(TAG, "Face embedding encoded to Base64: " + base64.length() + " chars (" + embeddingBytes.length + " bytes)");
             
             return base64;
             
         } catch (Exception e) {
-            android.util.Log.e(TAG, "❌ Error converting embedding to Base64", e);
+            android.util.Log.e(TAG, "Error converting embedding to Base64", e);
             return null;
         }
     }

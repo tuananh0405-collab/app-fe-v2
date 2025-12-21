@@ -90,7 +90,7 @@ public class TokenAuthenticator implements Authenticator {
                 String newAccessToken = refreshAccessToken(refreshToken);
                 
                 if (newAccessToken != null && !newAccessToken.isEmpty()) {
-                    Log.d(TAG, "✅ Token refreshed successfully");
+                    Log.d(TAG, "Token refreshed successfully");
                     
                     // Retry the request with new token
                     return response.request().newBuilder()
@@ -162,11 +162,11 @@ public class TokenAuthenticator implements Authenticator {
                     AuthManager authManager = AuthManager.getInstance(context);
                     authManager.updateTokens(newAccessToken, newRefreshToken);
                     
-                    Log.d(TAG, "✅ Tokens updated in AuthManager");
+                    Log.d(TAG, "Tokens updated in AuthManager");
                     return newAccessToken;
                 }
             } else {
-                Log.e(TAG, "❌ Refresh token failed: HTTP " + response.code());
+                Log.e(TAG, "Refresh token failed: HTTP " + response.code());
             }
         }
         

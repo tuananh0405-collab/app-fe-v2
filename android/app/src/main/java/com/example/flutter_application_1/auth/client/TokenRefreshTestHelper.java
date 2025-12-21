@@ -24,7 +24,7 @@ public class TokenRefreshTestHelper {
         AuthManager authManager = AuthManager.getInstance(context);
         authManager.updateTokens(accessToken, refreshToken);
         
-        Log.d(TAG, "✅ Test tokens set:");
+        Log.d(TAG, "Test tokens set:");
         Log.d(TAG, "Access Token: " + (accessToken != null ? accessToken.substring(0, Math.min(20, accessToken.length())) + "..." : "null"));
         Log.d(TAG, "Refresh Token: " + (refreshToken != null ? refreshToken.substring(0, Math.min(20, refreshToken.length())) + "..." : "null"));
     }
@@ -53,7 +53,7 @@ public class TokenRefreshTestHelper {
     public static void clearTokens(Context context) {
         AuthManager authManager = AuthManager.getInstance(context);
         authManager.clearAuth();
-        Log.d(TAG, "✅ All tokens cleared");
+        Log.d(TAG, "All tokens cleared");
     }
     
     /**

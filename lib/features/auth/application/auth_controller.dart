@@ -48,7 +48,7 @@ class AuthController extends Notifier<AuthState> {
       final refreshToken = box.get('refreshToken') as String?;
       
       if (accessToken != null && refreshToken != null) {
-        debugPrint('✅ Found saved tokens, restoring session...');
+        debugPrint('Found saved tokens, restoring session...');
         
         // Restore session through LoginController
         await ref.read(loginControllerProvider.notifier).restoreSession(
@@ -56,12 +56,12 @@ class AuthController extends Notifier<AuthState> {
           refreshToken: refreshToken,
         );
         
-        debugPrint('✅ Session restored successfully');
+        debugPrint('Session restored successfully');
       } else {
         debugPrint('ℹ️ No saved session found');
       }
     } catch (e) {
-      debugPrint('❌ Failed to restore session: $e');
+      debugPrint('Failed to restore session: $e');
     }
   }
 

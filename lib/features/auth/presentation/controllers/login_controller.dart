@@ -99,9 +99,9 @@ class LoginController extends Notifier<LoginState> {
         }
       }
       
-      debugPrint('✅ Saved tokens and user data to Hive');
+      debugPrint('Saved tokens and user data to Hive');
     } catch (e) {
-      debugPrint('❌ Failed to save tokens to Hive: $e');
+      debugPrint('Failed to save tokens to Hive: $e');
     }
   }
 
@@ -140,12 +140,12 @@ class LoginController extends Notifier<LoginState> {
           user: user,
         );
         
-        debugPrint('✅ Session restored for user: ${user.fullName}');
+        debugPrint('Session restored for user: ${user.fullName}');
       } else {
         debugPrint('Incomplete user data in storage, cannot restore session');
       }
     } catch (e) {
-      debugPrint('❌ Failed to restore session: $e');
+      debugPrint('Failed to restore session: $e');
     }
   }
 
@@ -192,10 +192,10 @@ class LoginController extends Notifier<LoginState> {
         box.delete('userFullName');
         box.delete('userRole');
         box.delete('userEmployeeId');
-        debugPrint('✅ Cleared all auth data from Hive');
+        debugPrint('Cleared all auth data from Hive');
       });
     } catch (e) {
-      debugPrint('❌ Failed to clear auth data from Hive: $e');
+      debugPrint('Failed to clear auth data from Hive: $e');
     }
   }
 }

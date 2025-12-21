@@ -110,7 +110,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     // 🔄 HANDLERS
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    // 📍 LOCATION
+    // LOCATION
     private LocationManager locationManager;
     private Location currentLocation;
 
@@ -120,7 +120,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private int beaconMinor = -1;
     private int beaconRssi = -100;
     
-    // ✅ SUCCESS FLAG - Prevent processing after successful verification
+    // SUCCESS FLAG - Prevent processing after successful verification
     private boolean verificationCompleted = false;
 
     // 🕒 ATTENDANCE TYPE
@@ -1422,7 +1422,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
     
     /**
-     * 📍 Lấy tọa độ GPS hiện tại của thiết bị
+     * Lấy tọa độ GPS hiện tại của thiết bị
      */
     private void getCurrentLocation() {
         try {
@@ -1452,7 +1452,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             
         
         } catch (Exception e) {
-            Log.e(TAG, "❌ Error getting current location", e);
+            Log.e(TAG, "Error getting current location", e);
         }
     }
     
@@ -1478,7 +1478,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             return;
         }
 
-        // 📍 Lấy tọa độ GPS hiện tại thay vì dùng giá trị fix cứng
+        // Lấy tọa độ GPS hiện tại thay vì dùng giá trị fix cứng
         getCurrentLocation();
         
         final double latitude = (currentLocation != null) ? currentLocation.getLatitude() : 10.762622;
@@ -1486,7 +1486,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         final double accuracy = (currentLocation != null) ? currentLocation.getAccuracy() : 15.0;
         
         if (currentLocation != null) {
-            Log.d(TAG, "📍 Using current GPS location: lat=" + latitude + ", lng=" + longitude + ", accuracy=" + accuracy);
+            Log.d(TAG, "Using current GPS location: lat=" + latitude + ", lng=" + longitude + ", accuracy=" + accuracy);
         } else {
             Log.w(TAG, "GPS location not available, using default coordinates");
         }
@@ -1502,11 +1502,11 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             @Override
             public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse beaconResult) {
                 if (!isAdded()) return;
-                Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
+                Log.d(TAG, "Step 1 - Beacon validated, session_token: " + beaconResult.getSession_token());
 
                 // Step 1.5: Check GPS location via Flutter method channel
                 stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Verifying GPS location...");
-                Log.d(TAG, "📍 Calling GPS check via method channel...");
+                Log.d(TAG, "Calling GPS check via method channel...");
                 
                 try {
                     // Get Flutter engine - try multiple approaches
@@ -1524,7 +1524,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                     // Approach 2: Fallback - skip GPS check and proceed directly
                     if (flutterEngine == null) {
                         Log.w(TAG, "Flutter engine not available, skipping GPS check via method channel");
-                        Log.d(TAG, "📍 Proceeding directly to face verification");
+                        Log.d(TAG, "Proceeding directly to face verification");
                         
                         // Continue with face verification directly
                         performFaceVerification(beaconResult, latitude, longitude, accuracy, deviceId, faceImage, attendanceService);
@@ -1542,7 +1542,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                         @Override
                         public void success(Object result) {
                             if (!isAdded()) return;
-                            Log.d(TAG, "Step 1.5 ✅ - GPS check passed");
+                            Log.d(TAG, "Step 1.5 - GPS check passed");
                             
                             // GPS check succeeded, now proceed to face verification
                             performFaceVerification(beaconResult, latitude, longitude, accuracy, deviceId, faceImage, attendanceService);
@@ -1551,19 +1551,19 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                         @Override
                         public void error(String errorCode, String errorMessage, Object errorDetails) {
                             if (!isAdded()) return;
-                            Log.e(TAG, "❌ Step 1.5 failed - GPS check: " + errorCode + ": " + errorMessage);
+                            Log.e(TAG, "Step 1.5 failed - GPS check: " + errorCode + ": " + errorMessage);
                             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "GPS verification failed: " + (errorMessage != null ? errorMessage : "Please ensure you are at the correct location"));
                         }
                         
                         @Override
                         public void notImplemented() {
                             if (!isAdded()) return;
-                            Log.e(TAG, "❌ GPS check not implemented");
+                            Log.e(TAG, "GPS check not implemented");
                             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "GPS check not available");
                         }
                     });
                 } catch (Exception e) {
-                    Log.e(TAG, "❌ Error calling GPS check", e);
+                    Log.e(TAG, "Error calling GPS check", e);
                     stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "GPS check failed: " + e.getMessage());
                 }
             }
@@ -1571,7 +1571,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             @Override
             public void onFailure(String error) {
                 if (!isAdded()) return;
-                Log.e(TAG, "❌ Step 1 failed: " + error);
+                Log.e(TAG, "Step 1 failed: " + error);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 1 failed: " + error);
             }
         });
@@ -1596,12 +1596,12 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         
         String faceEmbeddingBase64 = faceIdService.extractFaceEmbeddingBase64(faceImage);
         if (faceEmbeddingBase64 == null) {
-            Log.e(TAG, "❌ Failed to generate face embedding");
+            Log.e(TAG, "Failed to generate face embedding");
             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Failed to generate face embedding");
             return;
         }
         
-        Log.d(TAG, "✅ Face embedding generated: " + faceEmbeddingBase64.length() + " chars");
+        Log.d(TAG, "Face embedding generated: " + faceEmbeddingBase64.length() + " chars");
 
         // Step 2: Request Face Verification WITH face embedding
         stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Submitting face verification...");
@@ -1611,11 +1611,11 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 @Override
                 public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse verifyResult) {
                     if (!isAdded()) return;
-                    Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
-                    Log.d(TAG, "Step 2 ✅ - ShiftId: " + verifyResult.getShift_id());
-                    Log.d(TAG, "✅ Face verification submitted! Waiting for backend processing via RabbitMQ...");
+                    Log.d(TAG, "Step 2 - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
+                    Log.d(TAG, "Step 2 - ShiftId: " + verifyResult.getShift_id());
+                    Log.d(TAG, "Face verification submitted! Waiting for backend processing via RabbitMQ...");
 
-                    // ✅ DONE! Backend will handle verification via event-driven flow:
+                    // DONE! Backend will handle verification via event-driven flow:
                     // Attendance Service → RabbitMQ → Face Service → Verify → Publish event → Update check_in_time
                     stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
                         "Face verification submitted successfully! Check-in time will be updated shortly.");
@@ -1624,7 +1624,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 @Override
                 public void onFailure(String error) {
                     if (!isAdded()) return;
-                    Log.e(TAG, "❌ Step 2 failed: " + error);
+                    Log.e(TAG, "Step 2 failed: " + error);
                     lastDetailedErrorMessage = "Request face verification failed:\n" + error;
                     hasDetailedError = true;
                     stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 2 failed: " + error);
@@ -1644,7 +1644,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         
         // Set flag to prevent duplicate processing
         verificationCompleted = true;
-        Log.d(TAG, "✅ Verification completed flag set");
+        Log.d(TAG, "Verification completed flag set");
 
         try {
             stopCamera();
@@ -1771,13 +1771,14 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         } else if (state == FaceRegistrationState.FAILED_SPOOF) {
             message = "Unable to verify face. Please make sure you are in good lighting and try again.";
         } else {
-            // Check for specific Beacon or GPS errors
+            // Check for specific GPS, Beacon, or other errors
+            // GPS check comes first since it happens after beacon validation in the flow
             if (lastStateMessage != null) {
                 Log.d(TAG, "Last state message: " + lastStateMessage);
-                if (lastStateMessage.contains("Beacon")) {
-                    message = "Beacon signal not found. Please ensure you are within range of the office beacon.";
-                } else if (lastStateMessage.contains("Location") || lastStateMessage.contains("GPS")) {
+                if (lastStateMessage.contains("GPS") || lastStateMessage.contains("Location") || lastStateMessage.contains("location")) {
                     message = "Location verification failed. Please ensure GPS is enabled and you are at the correct location.";
+                } else if (lastStateMessage.contains("Beacon") || lastStateMessage.contains("beacon")) {
+                    message = "Beacon signal not found. Please ensure you are within range of the office beacon.";
                 } else if (lastStateMessage.contains("No active shift available")) {
                      message = "No active shift available for check-in/check-out at this time.";
                 } else {
@@ -2233,7 +2234,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         if (beaconReceiver != null) {
             try {
                 requireActivity().unregisterReceiver(beaconReceiver);
-                Log.d(TAG, "✅ BroadcastReceiver unregistered successfully");
+                Log.d(TAG, "BroadcastReceiver unregistered successfully");
             } catch (IllegalArgumentException e) {
                 // Receiver was not registered or already unregistered
                 Log.w(TAG, "BroadcastReceiver was not registered: " + e.getMessage());

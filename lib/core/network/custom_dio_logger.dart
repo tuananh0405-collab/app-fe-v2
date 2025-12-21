@@ -60,7 +60,7 @@ class CustomDioLogger extends Interceptor {
   void _logError(DioException err) {
     if (kDebugMode) {
       print('┌─────────────────────────────────────────────────────────────');
-      print('│ ❌ ERROR: ${err.requestOptions.method} ${err.requestOptions.uri}');
+      print('│ ERROR: ${err.requestOptions.method} ${err.requestOptions.uri}');
       print('│ Type: ${err.type}');
       print('│ Status: ${err.response?.statusCode}');
       print('│ Message: ${err.message}');

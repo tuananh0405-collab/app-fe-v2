@@ -110,7 +110,7 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
     private boolean isRegistering = false; // Ngăn gọi API nhiều lần
     private boolean hasStartedRegistration = false; // Track xem đã bắt đầu registration chưa
     
-    // ✅ SUCCESS FLAG - Prevent processing after successful registration or error
+    // SUCCESS FLAG - Prevent processing after successful registration or error
     private boolean verificationCompleted = false;
 
 
@@ -1028,7 +1028,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         
         // Set flag to prevent duplicate processing
         verificationCompleted = true;
-        Log.d(TAG, "✅ Verification completed flag set");
+        Log.d(TAG, "Verification completed flag set");
 
         try {
             stopCamera();
@@ -1134,7 +1134,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         
         // Set flag to prevent duplicate processing
         verificationCompleted = true;
-        Log.d(TAG, "✅ Verification completed flag set (error state)");
+        Log.d(TAG, "Verification completed flag set (error state)");
 
         // Prepare error message based on state
         String title = "Registration Failed";

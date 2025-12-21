@@ -46,7 +46,7 @@ class WorkScheduleRemoteDataSourceImpl
             'from_date': fromDateStr,
             'to_date': toDateStr,
             'page': 1,
-            'limit': 30,
+            'limit': 100,
           },
         );
 

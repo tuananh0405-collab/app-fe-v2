@@ -60,7 +60,7 @@ public class MainActivity extends FlutterActivity {
                     successData.put("user_id", intent.getStringExtra("user_id"));
                     
                     methodChannel.invokeMethod("onFaceIdSuccess", successData);
-                    Log.d(TAG, "📤 Sent success data from MainActivity: " + successData);
+                    Log.d(TAG, "Sent success data from MainActivity: " + successData);
                     
                     // Clear the intent to avoid duplicate processing
                     intent.removeExtra("face_id_register_success");
@@ -85,7 +85,7 @@ public class MainActivity extends FlutterActivity {
                     errorData.put("message", intent.getStringExtra("error_message"));
 
                     methodChannel.invokeMethod("onFaceIdError", errorData);
-                    Log.d(TAG, "📤 Sent failure data from MainActivity: " + errorData);
+                    Log.d(TAG, "Sent failure data from MainActivity: " + errorData);
 
                     // Clear failure extras
                     intent.removeExtra("face_id_register_failed");

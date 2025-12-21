@@ -140,7 +140,7 @@ public class AttendanceService {
         
         // Validate session token
         if (currentSessionToken == null || currentSessionToken.isEmpty()) {
-            Log.e(TAG, "❌ No session token available! currentSessionToken is null or empty");
+            Log.e(TAG, "No session token available! currentSessionToken is null or empty");
             callback.onFailure("No valid session token. Please validate beacon first.");
             return;
         }
@@ -252,7 +252,7 @@ public class AttendanceService {
             new AttendanceCallback<ValidateBeaconResponse>() {
                 @Override
                 public void onSuccess(ValidateBeaconResponse beaconResult) {
-                    Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
+                    Log.d(TAG, "Step 1 - Beacon validated, session_token: " + beaconResult.getSession_token());
                     
                     // Step 2: Request Face Verification (tạo attendance_check record)
                     // pass null for faceEmbeddingBase64 here (no embedding available in this flow)
@@ -260,8 +260,8 @@ public class AttendanceService {
                         new AttendanceCallback<RequestFaceVerificationResponse>() {
                             @Override
                             public void onSuccess(RequestFaceVerificationResponse verifyResult) {
-                                Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
-                                Log.d(TAG, "Step 2 ✅ - ShiftId: " + verifyResult.getShift_id());
+                                Log.d(TAG, "Step 2 - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
+                                Log.d(TAG, "Step 2 - ShiftId: " + verifyResult.getShift_id());
                                 
                                 // Step 3: Caller (Fragment) sẽ tự động verify face bằng local AI
                                 // và call FaceIdService.verifyFaceIdForRequest() để gửi embedding

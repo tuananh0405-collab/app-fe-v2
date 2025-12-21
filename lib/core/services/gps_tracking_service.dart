@@ -61,10 +61,10 @@ class GpsTrackingService {
         timeLimit: const Duration(seconds: 10),
       );
 
-      debugPrint('📍 Got location: ${position.latitude}, ${position.longitude}');
+      debugPrint('Got location: ${position.latitude}, ${position.longitude}');
       return position;
     } catch (e) {
-      debugPrint('❌ Error getting location: $e');
+      debugPrint('Error getting location: $e');
       return null;
     }
   }
@@ -86,7 +86,7 @@ class GpsTrackingService {
     required Position position,
   }) async {
     try {
-      debugPrint('📤 Sending GPS to attendance service...');
+      debugPrint('Sending GPS to attendance service...');
       debugPrint('   Position: ${position.latitude}, ${position.longitude}');
       debugPrint('   Accuracy: ${position.accuracy}m');
 
@@ -107,7 +107,7 @@ class GpsTrackingService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('✅ GPS verification completed');
+        debugPrint('GPS verification completed');
         debugPrint('===========> response: ${response}');
 
         await _saveScanRecord(GpsScanRecord(
@@ -121,7 +121,7 @@ class GpsTrackingService {
                 ));
 
         if (response.data['is_valid'] == true) {
-          debugPrint('   ✅ GPS within office geofence');
+          debugPrint('   GPS within office geofence');
         } else {
           debugPrint('   GPS outside office geofence: ${response.data['message']}');
         }
@@ -142,7 +142,7 @@ class GpsTrackingService {
         return false;
       }
     } on DioException catch (e) {
-      debugPrint('❌ Error sending GPS: ${e.message}');
+      debugPrint('Error sending GPS: ${e.message}');
       if (e.response != null) {
         debugPrint('   Response data: ${e.response?.data}');
         debugPrint('   Status code: ${e.response?.statusCode}');
@@ -160,7 +160,7 @@ class GpsTrackingService {
       ));
       return false;
     } catch (e) {
-      debugPrint('❌ Unexpected error sending GPS: $e');
+      debugPrint('Unexpected error sending GPS: $e');
       await _saveScanRecord(GpsScanRecord(
         timestamp: DateTime.now(),
         success: false,
@@ -183,7 +183,7 @@ class GpsTrackingService {
       await box.add(record.toJson());
       // debugPrint('💾 Saved GPS scan record: ${record.toJson()}');
     } catch (e) {
-      debugPrint('❌ Failed to save GPS scan record: $e');
+      debugPrint('Failed to save GPS scan record: $e');
     }
   }
 
@@ -205,7 +205,7 @@ class GpsTrackingService {
   /// ```
   Future<void> handleGpsCheckRequest(Map<String, dynamic> data) async {
     try {
-      debugPrint('📍 [GPS_CHECK] Received GPS check request');
+      debugPrint('[GPS_CHECK] Received GPS check request');
       debugPrint('   Data: ${jsonEncode(data)}');
 
       // Extract metadata
@@ -231,7 +231,7 @@ class GpsTrackingService {
         position: position,
       );
     } catch (e) {
-      debugPrint('❌ Error handling GPS check request: $e');
+      debugPrint('Error handling GPS check request: $e');
     }
   }
 

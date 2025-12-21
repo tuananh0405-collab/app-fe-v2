@@ -24,7 +24,7 @@ class JwtHelper {
       
       return jsonDecode(decoded) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('❌ Error decoding JWT: $e');
+      debugPrint('Error decoding JWT: $e');
       return null;
     }
   }
@@ -63,7 +63,7 @@ class JwtHelper {
 
       return getEmployeeIdFromToken(accessToken);
     } catch (e) {
-      debugPrint('❌ Error getting employee ID from storage: $e');
+      debugPrint('Error getting employee ID from storage: $e');
       return null;
     }
   }
