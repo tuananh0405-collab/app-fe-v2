@@ -218,8 +218,20 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
       if (next.successMessage != null &&
           next.successMessage != previous?.successMessage) {
         showSnackbar(context, leave.translate(next.successMessage!));
-        // Navigate back after successful creation
-        Future.delayed(const Duration(milliseconds: 500), () {
+        // Refresh all leave-related data immediately before navigating back
+        Future.microtask(() async {
+          try {
+            // Refresh leave records, balance, and types in parallel for better performance
+            await Future.wait([
+              ref.read(leaveControllerProvider.notifier).getLeaveRecords(),
+              ref.read(leaveControllerProvider.notifier).getLeaveBalance(),
+              ref.read(leaveControllerProvider.notifier).getLeaveTypes(),
+            ]);
+          } catch (_) {
+            // ignore errors from refresh - user already saw success
+          }
+
+          // Navigate back after data is refreshed
           if (mounted) {
             context.pop();
           }

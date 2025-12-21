@@ -18,13 +18,16 @@ class LeaveDetailScreen extends ConsumerStatefulWidget {
 
 class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
     with TickerProviderStateMixin, AnimationControllerMixin {
+  bool _isInitialized = false;
+
   @override
   void initState() {
     super.initState();
 
-    // Load leave balance
+    // Load leave balance and leave types
     Future.microtask(() {
       ref.read(leaveControllerProvider.notifier).getLeaveBalance();
+      ref.read(leaveControllerProvider.notifier).getLeaveTypes();
     });
 
     // Setup animations
@@ -72,6 +75,24 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
         ),
       ),
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Refresh data when returning to this screen (e.g., after update)
+    if (_isInitialized) {
+      Future.microtask(() async {
+        await Future.wait([
+          ref.read(leaveControllerProvider.notifier).selectLeave(int.parse(widget.leaveId)),
+          ref.read(leaveControllerProvider.notifier).getLeaveBalance(),
+          ref.read(leaveControllerProvider.notifier).getLeaveTypes(),
+        ]);
+      });
+    } else {
+      _isInitialized = true;
+    }
   }
 
   @override
@@ -232,6 +253,16 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen>
                             ),
                           ),
                         ],
+                      ),
+                      // Leave Type
+                      _buildInfoRow(
+                        theme,
+                        l10n.leave.leaveType,
+                        leaveState.leaveTypes
+                            .where((lt) => lt.id == leave.leaveTypeId)
+                            .map((lt) => lt.leaveTypeName)
+                            .firstOrNull ?? 'N/A',
+                        Icons.category_outlined,
                       ),
                       // Start Date and End Date on same row
                       Row(
