@@ -3,7 +3,9 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/employee_shift_api_response_model.dart';
 import '../models/employee_shift_model.dart';
+import '../models/work_schedule_assignment_model.dart';
 import '../../domain/entities/employee_shift_entity.dart';
+import '../../domain/entities/work_schedule_assignment_entity.dart';
 
 abstract class WorkScheduleRemoteDataSource {
   Future<List<EmployeeShiftModel>> getEmployeeShifts({
@@ -99,41 +101,109 @@ class WorkScheduleRemoteDataSourceImpl
           );
 
           if (response.statusCode == 200 && response.data['data'] != null) {
-            final assignments = response.data['data'] as List;
+            final assignmentsJson = response.data['data'] as List;
+            
+            // Parse assignments
+            final assignments = assignmentsJson
+                .map((json) => WorkScheduleAssignmentModel.fromJson(json))
+                .toList();
 
+            // Iterate through each date in the range
             for (var date = futureStartDate;
                 date.isBefore(toDate.add(const Duration(days: 1)));
                 date = date.add(const Duration(days: 1))) {
               
               final dateOnly = DateTime(date.year, date.month, date.day);
 
-              // Find assignment for this date
-              final assignment = assignments.firstWhere((a) {
-                final effectiveFrom = DateTime.parse(a['effective_from']);
-                final effectiveTo = DateTime.parse(a['effective_to']);
-                
-                final efOnly = DateTime(effectiveFrom.year, effectiveFrom.month, effectiveFrom.day);
-                final etOnly = DateTime(effectiveTo.year, effectiveTo.month, effectiveTo.day);
+              // Find all assignments that cover this date
+              final applicableAssignments = assignments.where((assignment) {
+                final efOnly = DateTime(
+                  assignment.effectiveFrom.year,
+                  assignment.effectiveFrom.month,
+                  assignment.effectiveFrom.day,
+                );
+                final etOnly = DateTime(
+                  assignment.effectiveTo.year,
+                  assignment.effectiveTo.month,
+                  assignment.effectiveTo.day,
+                );
 
                 return (dateOnly.isAtSameMomentAs(efOnly) || dateOnly.isAfter(efOnly)) &&
                        (dateOnly.isAtSameMomentAs(etOnly) || dateOnly.isBefore(etOnly));
-              }, orElse: () => null);
+              }).toList();
 
-              if (assignment != null) {
-                final schedule = assignment['work_schedule'];
-                if (schedule != null) {
-                  allShifts.add(EmployeeShiftModel(
+              // Process each applicable assignment (can have multiple shifts per day)
+              for (var assignment in applicableAssignments) {
+                EmployeeShiftModel? shiftForAssignment;
+                
+                // Check if there's a schedule override for this date
+                final override = assignment.scheduleOverrides.cast<ScheduleOverrideEntity?>().firstWhere(
+                  (override) {
+                    if (override == null) return false;
+                    final overrideFromDate = DateTime(
+                      override.fromDate.year,
+                      override.fromDate.month,
+                      override.fromDate.day,
+                    );
+                    final overrideToDate = DateTime(
+                      override.toDate.year,
+                      override.toDate.month,
+                      override.toDate.day,
+                    );
+
+                    return (dateOnly.isAtSameMomentAs(overrideFromDate) || 
+                            dateOnly.isAfter(overrideFromDate)) &&
+                           (dateOnly.isAtSameMomentAs(overrideToDate) || 
+                            dateOnly.isBefore(overrideToDate));
+                  },
+                  orElse: () => null,
+                );
+
+                if (override != null && override.overrideWorkScheduleId != null) {
+                  // Find the override work schedule from all assignments
+                  WorkScheduleEntity? overrideSchedule;
+                  
+                  for (var otherAssignment in assignments) {
+                    if (otherAssignment.workScheduleId == override.overrideWorkScheduleId) {
+                      overrideSchedule = otherAssignment.workSchedule;
+                      break;
+                    }
+                  }
+
+                  if (overrideSchedule != null) {
+                    shiftForAssignment = EmployeeShiftModel(
+                      id: 0,
+                      employeeId: employeeId,
+                      employeeCode: '', 
+                      departmentId: 0,
+                      shiftDate: date,
+                      workScheduleId: overrideSchedule.id,
+                      scheduledStartTime: overrideSchedule.startTime,
+                      scheduledEndTime: overrideSchedule.endTime,
+                      status: ShiftStatus.scheduled,
+                      scheduleName: '${overrideSchedule.scheduleName} (Override)',
+                    );
+                  }
+                } else {
+                  // No override, use the regular work schedule
+                  final schedule = assignment.workSchedule;
+                  
+                  shiftForAssignment = EmployeeShiftModel(
                     id: 0,
                     employeeId: employeeId,
                     employeeCode: '', 
                     departmentId: 0,
                     shiftDate: date,
-                    workScheduleId: schedule['id'] ?? 0,
-                    scheduledStartTime: schedule['start_time'] ?? '00:00:00',
-                    scheduledEndTime: schedule['end_time'] ?? '00:00:00',
+                    workScheduleId: schedule.id,
+                    scheduledStartTime: schedule.startTime,
+                    scheduledEndTime: schedule.endTime,
                     status: ShiftStatus.scheduled,
-                    scheduleName: schedule['schedule_name'],
-                  ));
+                    scheduleName: schedule.scheduleName,
+                  );
+                }
+
+                if (shiftForAssignment != null) {
+                  allShifts.add(shiftForAssignment);
                 }
               }
             }
