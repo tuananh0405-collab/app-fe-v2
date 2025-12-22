@@ -17,8 +17,15 @@ class ProfileModel extends ProfileEntity {
     super.lastLoginIp,
     super.createdAt,
     super.updatedAt,
+    super.phone,
+    super.address,
+    super.dateOfBirth,
   });
-
+  static DateTime? _parseDate(dynamic v) {
+    if (v == null) return null;
+    if (v is String && v.trim().isNotEmpty) return DateTime.parse(v);
+    return null;
+  }
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
     return ProfileModel(
       id: json['id'] as String,
@@ -42,6 +49,16 @@ class ProfileModel extends ProfileEntity {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
+
+      phone: json['phone'] as String?,
+      address: (json['address'] is Map)
+          ? Map<String, dynamic>.from(json['address'] as Map)
+          : null,
+
+      // response dùng camelCase: dateOfBirth
+      // (mình cho fallback snake_case để an toàn)
+      dateOfBirth: _parseDate(json['dateOfBirth'] ?? json['date_of_birth']),
+
     );
   }
 
@@ -62,6 +79,10 @@ class ProfileModel extends ProfileEntity {
       'last_login_ip': lastLoginIp,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+
+      'phone': phone,
+      'address': address,
+      'dateOfBirth': dateOfBirth?.toIso8601String(),
     };
   }
 }

@@ -15,6 +15,9 @@ class ProfileEntity {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  final String? phone;
+  final Map<String, dynamic>? address;
+  final DateTime? dateOfBirth;
   ProfileEntity({
     required this.id,
     required this.email,
@@ -31,5 +34,9 @@ class ProfileEntity {
     this.lastLoginIp,
     this.createdAt,
     this.updatedAt,
+
+    this.phone,
+    this.address,
+    this.dateOfBirth,
   });
 }

@@ -130,7 +130,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             _buildMenuItem(
               context: context,
               theme: theme,
-              icon: Icons.lock_outline,
+              icon: Icons.settings,
               title: 'Settings',
               subtitle: 'Vibration, Sound, etc',
               onTap: () => context.push(AppRoutePath.settings),
