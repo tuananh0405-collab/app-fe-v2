@@ -428,7 +428,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         //  NEW: Setup request manager callbacks
         setupRequestManagerCallbacks();
         
-        Log.d(TAG, "📦 All components initialized successfully");
+        Log.d(TAG, "All components initialized successfully");
     }
 
     private void setupCameraAndOverlay() {
@@ -1788,9 +1788,13 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             requireActivity().onBackPressed();
         });
         
-        // Store reference and show dialog
-        currentErrorDialog = dialog;
-        dialog.show();
+        // Store reference and show dialog only if fragment is still attached and activity is not finishing
+        if (isAdded() && !requireActivity().isFinishing()) {
+            currentErrorDialog = dialog;
+            dialog.show();
+        } else {
+            Log.w(TAG, "Cannot show network error dialog: Fragment not attached or Activity is finishing");
+        }
     }
 
     /**
@@ -1908,9 +1912,13 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             requireActivity().onBackPressed();
         });
         
-        // Store reference and show dialog
-        currentErrorDialog = dialog;
-        dialog.show();
+        // Store reference and show dialog only if fragment is still attached and activity is not finishing
+        if (isAdded() && !requireActivity().isFinishing()) {
+            currentErrorDialog = dialog;
+            dialog.show();
+        } else {
+            Log.w(TAG, "Cannot show error dialog: Fragment not attached or Activity is finishing");
+        }
     }
 
     /**
@@ -2706,6 +2714,8 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             requireActivity().onBackPressed();
         }
     }
+    
+
     
 }
 

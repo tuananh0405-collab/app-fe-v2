@@ -77,7 +77,30 @@ public class BeaconScanService extends Service implements BeaconConsumer {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "BeaconScanService destroyed");
-        beaconManager.unbind(this);
+        
+        // Stop ranging beacons before unbinding
+        try {
+            if (beaconManager != null) {
+                beaconManager.removeAllRangeNotifiers();
+                beaconManager.stopRangingBeaconsInRegion(new Region("all-beacons", null, null, null));
+                Log.d(TAG, "Stopped ranging beacons");
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error stopping ranging", e);
+        } catch (Exception e) {
+            Log.e(TAG, "Error cleaning up beacon manager", e);
+        }
+        
+        // Unbind beacon manager
+        try {
+            if (beaconManager != null) {
+                beaconManager.unbind(this);
+                beaconManager = null;
+                Log.d(TAG, "Beacon manager unbound and cleared");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error unbinding beacon manager", e);
+        }
     }
 
     @Nullable

@@ -630,14 +630,14 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
         color = Color(int.parse('0xFF${colorHex.substring(1)}'));
         bgColor = Color(int.parse('0x33${colorHex.substring(1)}')); // 20% opacity
       } else {
-        // Fallback colors
-        color = theme.error;
-        bgColor = theme.error.withValues(alpha: 0.2);
+        // Fallback colors: purple for leave
+        color = Colors.purple;
+        bgColor = Colors.purple.withValues(alpha: 0.2);
       }
     } catch (e) {
-      // Fallback colors if parsing fails
-      color = theme.error;
-      bgColor = theme.error.withValues(alpha: 0.2);
+      // Fallback colors if parsing fails: purple for leave
+      color = Colors.purple;
+      bgColor = Colors.purple.withValues(alpha: 0.2);
     }
 
     return Container(
@@ -924,16 +924,16 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
                 '${shift.overtimeHours.toStringAsFixed(1)}h',
               ),
             ),
-          if (shift.breakHours > 0)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _buildDetailRow(
-                theme,
-                Icons.coffee_outlined,
-                'Break',
-                '${shift.breakHours.toStringAsFixed(1)}h',
-              ),
-            ),
+          // if (shift.breakHours > 0)
+          //   Padding(
+          //     padding: const EdgeInsets.only(top: 8),
+          //     child: _buildDetailRow(
+          //       theme,
+          //       Icons.coffee_outlined,
+          //       'Break',
+          //       '${shift.breakHours.toStringAsFixed(1)}h',
+          //     ),
+          //   ),
           if (shift.lateMinutes > 0)
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -942,7 +942,7 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
                 Icons.warning_amber_rounded,
                 'Late',
                 '${shift.lateMinutes}min',
-                color: theme.error,
+                // color: theme.error,
               ),
             ),
           if (shift.earlyLeaveMinutes > 0)
@@ -1033,9 +1033,9 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
   Color _getStatusColor(ShiftStatus status, FlutterFlowTheme theme) {
     switch (status) {
       case ShiftStatus.scheduled:
-        return theme.warning;
+        return Colors.blue; // incoming: blue
       case ShiftStatus.inProgress:
-        return theme.primaryColor;
+        return Colors.amber; // in progress: yellow
       case ShiftStatus.completed:
         return theme.success;
       case ShiftStatus.absent:

@@ -12,8 +12,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import lombok.Getter;
-import lombok.Setter;
 import retrofit2.Call;
 import com.example.flutter_application_1.faceid.data.api.FaceIdApiController;
 import com.example.flutter_application_1.faceid.data.model.response.FaceIdRequestStatusResponse;
@@ -47,26 +45,36 @@ public class FaceIdRequestManager {
     private final ScheduledExecutorService scheduler;
     private final Handler mainHandler;
 
-    // Getters
     // Request state
-    @Getter
     private String currentRequestId;
     private String currentSessionId;
     private RequestState currentState;
     private long expirationTime;
     private int retryCount = 0;
     private long lastRetryTime = 0;
+    
+    // Getter method (manual implementation since Lombok is not configured)
+    public String getCurrentRequestId() {
+        return currentRequestId;
+    }
 
     // Callbacks
-    @Setter
     private RequestStatusCallback statusCallback;
-    @Setter
     private RequestExpiredCallback expiredCallback;
     
     // Polling
     private boolean isPolling = false;
     private Runnable statusPollingRunnable;
     private ScheduledFuture<?> statusPollingFuture;
+    
+    // Setter methods (manual implementation since Lombok is not configured)
+    public void setStatusCallback(RequestStatusCallback callback) {
+        this.statusCallback = callback;
+    }
+    
+    public void setExpiredCallback(RequestExpiredCallback callback) {
+        this.expiredCallback = callback;
+    }
     
     public interface RequestStatusCallback {
         void onRequestStatusUpdated(RequestState state, FaceIdRequestStatusResponse response);

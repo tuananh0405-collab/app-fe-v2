@@ -680,12 +680,14 @@ class _AttendanceShiftSection extends ConsumerWidget {
         color = Color(int.parse('0xFF${colorHex.substring(1)}'));
         bgColor = Color(int.parse('0x33${colorHex.substring(1)}')); // 20% opacity
       } else {
-        color = theme.error;
-        bgColor = theme.error.withValues(alpha: 0.2);
+        // Fallback colors: purple for leave
+        color = Colors.purple;
+        bgColor = Colors.purple.withValues(alpha: 0.2);
       }
     } catch (e) {
-      color = theme.error;
-      bgColor = theme.error.withValues(alpha: 0.2);
+      // Fallback colors if parsing fails: purple for leave
+      color = Colors.purple;
+      bgColor = Colors.purple.withValues(alpha: 0.2);
     }
 
     return Container(

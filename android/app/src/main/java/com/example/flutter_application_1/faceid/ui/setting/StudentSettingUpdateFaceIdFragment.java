@@ -161,7 +161,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
         // 4. Face Tracker with optimized settings for stability
         faceTracker = new FaceTracker(10); // Increased from 8 to 10 frames for better stability (~ 0.33 seconds)
 
-        Log.d(TAG, "📦 All components initialized successfully");
+        Log.d(TAG, "All components initialized successfully");
     }
 
     private void setupCameraAndOverlay() {
