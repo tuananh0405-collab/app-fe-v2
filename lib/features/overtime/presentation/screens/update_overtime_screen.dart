@@ -181,9 +181,6 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
     final overtimeState = ref.watch(overtimeControllerProvider);
     final dateFormat = DateFormat('dd/MM/yyyy');
 
-    // Debug: Print state to check if isSubmitting is stuck
-    debugPrint('OvertimeState - isSubmitting: ${overtimeState.isSubmitting}, isLoading: ${overtimeState.isLoading}');
-
     // Listen for success or error
     ref.listen(overtimeControllerProvider, (previous, next) {
       if (next.successMessage != null &&

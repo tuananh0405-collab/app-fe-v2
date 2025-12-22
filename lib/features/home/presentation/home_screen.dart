@@ -83,13 +83,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
              s.shiftDate.day == now.day;
     });
     
-    // Filter for today's approved overtime requests
-    final todayOvertimes = overtimeState.overtimeRequests.where((ot) {
-      return ot.status == 'approved' &&
-             ot.startTime.year == now.year &&
-             ot.startTime.month == now.month &&
-             ot.startTime.day == now.day;
-    }).toList();
+
 
     final locationStatusAsync = ref.watch(locationStatusProvider);
     final locationStatus = locationStatusAsync.asData?.value ?? const LocationStatusModel(
@@ -202,12 +196,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ).animateOnPageLoad(animationsMap['cardOnPageLoad']!),
               const SizedBox(height: 24),
 
-              // Today's Overtime Section
-              if (todayOvertimes.isNotEmpty)
-                _TodayOvertimeSection(overtimes: todayOvertimes)
-                    .animateOnPageLoad(animationsMap['cardOnPageLoad']!),
-              if (todayOvertimes.isNotEmpty)
-                const SizedBox(height: 24),
+
 
               // Latest Notifications
               _LatestNotificationsSection(
@@ -388,129 +377,499 @@ class _LocationStatusCard extends StatelessWidget {
   }
 }
 
-class _AttendanceShiftSection extends StatelessWidget {
+class _AttendanceShiftSection extends ConsumerWidget {
   final List<attendance.AttendanceShift> shifts;
 
   const _AttendanceShiftSection({required this.shifts});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = FlutterFlowTheme.of(context);
     final now = DateTime.now();
+    final controller = ref.read(workScheduleControllerProvider.notifier);
+    
+    // Check for holiday/leave on today
+    final holidayInfo = controller.getHolidayInfoForDate(now);
+    final leaveInfo = controller.getLeaveInfoForDate(now);
+    final overtimes = controller.getOvertimesForDate(now);
 
-  attendance.AttendanceShift? displayShift;
-    String label = 'No incoming shift today';
-    bool isCurrent = false;
+    // If there's a holiday or leave, don't show regular shifts
+    final shouldShowShifts = holidayInfo == null && leaveInfo == null;
 
-    // Sort shifts by date and time to ensure correct order
-  final sortedShifts = List<attendance.AttendanceShift>.from(shifts);
-    sortedShifts.sort((a, b) {
-      final dateA = _parseDateTime(a.shiftDate, a.scheduledStartTime);
-      final dateB = _parseDateTime(b.shiftDate, b.scheduledStartTime);
-      return dateA.compareTo(dateB);
-    });
-
-    for (final shift in sortedShifts) {
-      // Parse dates
-      // shiftDate is YYYY-MM-DD
-      // scheduledStartTime is HH:mm or HH:mm:ss
-      // We need to handle potential format differences, but assuming ISO-like
-      try {
-        final startDateTime = _parseDateTime(shift.shiftDate, shift.scheduledStartTime);
-        final endDateTime = _parseDateTime(shift.shiftDate, shift.scheduledEndTime);
-
-        if (now.isAfter(startDateTime) && now.isBefore(endDateTime)) {
-          displayShift = shift;
-          label = 'Current Shift';
-          isCurrent = true;
-          break; // Found current shift, stop searching
-        } else if (now.isBefore(startDateTime)) {
-          if (displayShift == null) {
-            displayShift = shift;
-            label = 'Incoming Shift';
-            // Don't break yet, in case we find a "Current" shift later (though unlikely if sorted)
-            // Actually, if we found an incoming one, and we are sorted, this is the NEXT one.
-            // But we should check if there's a current one overlapping? 
-            // Assuming no overlapping shifts for now.
-            break; 
+    // Check for current or incoming overtime
+    dynamic currentOvertime;
+    dynamic incomingOvertime;
+    String overtimeLabel = '';
+    bool isOvertimeCurrent = false;
+    
+    if (overtimes.isNotEmpty) {
+      for (final overtime in overtimes) {
+        try {
+          final startTime = overtime.startTime as DateTime;
+          final endTime = overtime.endTime as DateTime;
+          
+          // Check if overtime is currently active
+          if (now.isAfter(startTime) && now.isBefore(endTime)) {
+            currentOvertime = overtime;
+            overtimeLabel = 'Current Overtime';
+            isOvertimeCurrent = true;
+            break;
           }
+          
+          // Check if overtime is starting within 15 minutes
+          final timeUntilStart = startTime.difference(now).inMinutes;
+          if (timeUntilStart > 0 && timeUntilStart <= 15) {
+            if (incomingOvertime == null) {
+              incomingOvertime = overtime;
+              overtimeLabel = 'Incoming Overtime';
+            }
+          }
+        } catch (e) {
+          print('Error parsing overtime: $e');
+          continue;
         }
-      } catch (e) {
-        print('Error parsing shift date: $e');
-        continue;
       }
     }
 
-    if (displayShift == null) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: theme.secondaryBackground,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: theme.primaryText.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Shift Schedule',
-              style: theme.subtitle1.override(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'No incoming shift today',
-              style: theme.bodyText2.override(
-                color: theme.secondaryText,
-              ),
-            ),
-          ],
-        ),
-      );
+    attendance.AttendanceShift? displayShift;
+    String label = 'No incoming shift today';
+    bool isCurrent = false;
+
+    // Only process shifts if we should show them and no current/incoming overtime
+    if (shouldShowShifts && shifts.isNotEmpty && currentOvertime == null && incomingOvertime == null) {
+      // Sort shifts by date and time to ensure correct order
+      final sortedShifts = List<attendance.AttendanceShift>.from(shifts);
+      sortedShifts.sort((a, b) {
+        final dateA = _parseDateTime(a.shiftDate, a.scheduledStartTime);
+        final dateB = _parseDateTime(b.shiftDate, b.scheduledStartTime);
+        return dateA.compareTo(dateB);
+      });
+
+      for (final shift in sortedShifts) {
+        try {
+          final startDateTime = _parseDateTime(shift.shiftDate, shift.scheduledStartTime);
+          final endDateTime = _parseDateTime(shift.shiftDate, shift.scheduledEndTime);
+
+          if (now.isAfter(startDateTime) && now.isBefore(endDateTime)) {
+            displayShift = shift;
+            label = 'Current Shift';
+            isCurrent = true;
+            break;
+          } else if (now.isBefore(startDateTime)) {
+            if (displayShift == null) {
+              displayShift = shift;
+              label = 'Incoming Shift';
+              break; 
+            }
+          }
+        } catch (e) {
+          print('Error parsing shift date: $e');
+          continue;
+        }
+      }
     }
 
+    // Build the UI
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(
-              Icons.access_time, 
-              color: isCurrent ? theme.info : theme.warning, 
-              size: 20
+        // Show holiday card if exists
+        if (holidayInfo != null) ...[
+          _buildHolidayCard(theme, holidayInfo),
+          const SizedBox(height: 12),
+        ],
+        
+        // Show leave card if exists
+        if (leaveInfo != null) ...[
+          _buildLeaveCard(theme, leaveInfo),
+          const SizedBox(height: 12),
+        ],
+        
+        // Show current/incoming overtime with priority
+        if (currentOvertime != null || incomingOvertime != null) ...[
+          Row(
+            children: [
+              Icon(
+                Icons.timer_outlined, 
+                color: isOvertimeCurrent ? const Color(0xFF7C2D12) : theme.warning, 
+                size: 20
+              ),
+              const SizedBox(width: 8),
+              Text(
+                overtimeLabel,
+                style: theme.subtitle1.override(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _buildOvertimeCard(theme, currentOvertime ?? incomingOvertime),
+        ]
+        // Show shift only if no holiday/leave and no current/incoming overtime
+        else if (shouldShowShifts) ...[
+          if (displayShift != null) ...[
+            Row(
+              children: [
+                Icon(
+                  Icons.access_time, 
+                  color: isCurrent ? theme.info : theme.warning, 
+                  size: 20
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: theme.subtitle1.override(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: theme.subtitle1.override(
-                fontWeight: FontWeight.bold,
+            const SizedBox(height: 8),
+            AttendanceShiftItem(
+              shift: displayShift,
+              showOvertime: false,
+              showWorkHours: false,
+            ),
+          ] else ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.secondaryBackground,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.primaryText.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Shift Schedule',
+                    style: theme.subtitle1.override(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No incoming shift today',
+                    style: theme.bodyText2.override(
+                      color: theme.secondaryText,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 8),
-        AttendanceShiftItem(
-          shift: displayShift,
-          showOvertime: false,
-          showWorkHours: false,
-        ),
+        ],
+        
+        // Show other overtime cards if exist (excluding the one already displayed)
+        if (overtimes.isNotEmpty && overtimes.length > 1) ...[
+          const SizedBox(height: 12),
+          ...overtimes.where((ot) => ot != currentOvertime && ot != incomingOvertime).map((overtime) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildOvertimeCard(theme, overtime),
+            );
+          }).toList(),
+        ],
+        
+        // Show info message if holiday/leave exists and there are shifts
+        if (!shouldShowShifts && shifts.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.secondaryBackground,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: theme.secondaryText.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: theme.secondaryText,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Shifts are not displayed due to ${holidayInfo != null ? "holiday" : "leave"}',
+                    style: theme.bodyText2.override(
+                      fontSize: 12,
+                      color: theme.secondaryText,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
 
-  DateTime _parseDateTime(String date, String time) {
-    // date: YYYY-MM-DD
-    // time: H:mm, HH:mm, H:mm:ss, or HH:mm:ss
+  Widget _buildHolidayCard(FlutterFlowTheme theme, Map<String, dynamic> holidayInfo) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE5E7EB), // gray-200
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF9CA3AF), // gray-400
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF9CA3AF).withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.celebration,
+              size: 24,
+              color: Color(0xFF1F2937), // gray-800
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  holidayInfo['label'] as String,
+                  style: theme.subtitle2.override(
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1F2937), // gray-800
+                  ),
+                ),
+                if (holidayInfo['holiday']?.description != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      holidayInfo['holiday'].description,
+                      style: theme.bodyText2.override(
+                        fontSize: 12,
+                        color: const Color(0xFF1F2937).withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeaveCard(FlutterFlowTheme theme, Map<String, dynamic> leaveInfo) {
+    Color color;
+    Color bgColor;
     
-    // Ensure time components are padded (e.g., 8:30 -> 08:30)
+    try {
+      final colorHex = leaveInfo['color'] as String?;
+      if (colorHex != null && colorHex.isNotEmpty) {
+        color = Color(int.parse('0xFF${colorHex.substring(1)}'));
+        bgColor = Color(int.parse('0x33${colorHex.substring(1)}')); // 20% opacity
+      } else {
+        color = theme.error;
+        bgColor = theme.error.withValues(alpha: 0.2);
+      }
+    } catch (e) {
+      color = theme.error;
+      bgColor = theme.error.withValues(alpha: 0.2);
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.event_busy,
+              size: 24,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  leaveInfo['label'] as String,
+                  style: theme.subtitle2.override(
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+                if (leaveInfo['leave']?.reason != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      leaveInfo['leave'].reason,
+                      style: theme.bodyText2.override(
+                        fontSize: 12,
+                        color: color.withValues(alpha: 0.8),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOvertimeCard(FlutterFlowTheme theme, dynamic overtime) {
+    final timeFormat = DateFormat('HH:mm');
+    
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFFDBA74).withValues(alpha: 0.3), // orange-300 with transparency
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with OT Badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  'Overtime',
+                  style: theme.subtitle2.override(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDBA74).withValues(alpha: 0.2), // orange-300
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.timer_outlined,
+                      size: 12,
+                      color: Color(0xFF7C2D12), // orange-900
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'OT',
+                      style: theme.bodyText2.override(
+                        fontSize: 11,
+                        color: const Color(0xFF7C2D12), // orange-900
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          // Time
+          Row(
+            children: [
+              Icon(
+                Icons.access_time,
+                size: 14,
+                color: theme.secondaryText,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${timeFormat.format(overtime.startTime)} - ${timeFormat.format(overtime.endTime)}',
+                style: theme.bodyText2.override(
+                  fontSize: 12,
+                  color: theme.secondaryText,
+                ),
+              ),
+            ],
+          ),
+          
+          // Reason
+          if (overtime.reason != null && overtime.reason.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: theme.primaryBackground,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.note_outlined,
+                      size: 14,
+                      color: theme.secondaryText,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        overtime.reason,
+                        style: theme.bodyText2.override(
+                          fontSize: 12,
+                          color: theme.secondaryText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  DateTime _parseDateTime(String date, String time) {
     final parts = time.split(':');
     if (parts.isEmpty) return DateTime.parse('${date}T00:00:00');
     

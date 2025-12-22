@@ -123,10 +123,10 @@ class _PushNotificationInitializerState extends ConsumerState<PushNotificationIn
           // }
         },
         onForegroundMessage: (message) {
-          debugPrint('📬 Foreground message received: ${message.messageId}');
-          debugPrint('📬 Title: ${message.notification?.title}');
-          debugPrint('📬 Body: ${message.notification?.body}');
-          debugPrint('📬 Data: ${message.data}');
+          debugPrint('Foreground message received: ${message.messageId}');
+          debugPrint('Title: ${message.notification?.title}');
+          debugPrint('Body: ${message.notification?.body}');
+          debugPrint('Data: ${message.data}');
           
           // Local notification will be shown automatically by the service
         },

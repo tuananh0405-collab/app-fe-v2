@@ -94,7 +94,7 @@ public class FaceIdRetryManager {
         double jitter = delay * JITTER_FACTOR * (Math.random() - 0.5);
         delay = Math.max(0, delay + (long) jitter);
         
-        Log.d(TAG, "📊 Calculated delay: " + delay + "ms (attempt " + attempt + ")");
+        Log.d(TAG, "Calculated delay: " + delay + "ms (attempt " + attempt + ")");
         return delay;
     }
     

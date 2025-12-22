@@ -123,8 +123,8 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
       }
 
 
-      // Combine date with time - create local DateTime first
-      final localStartDateTime = DateTime(
+      // Combine date with time - create local DateTime
+      final startDateTime = DateTime(
         _overtimeDate!.year,
         _overtimeDate!.month,
         _overtimeDate!.day,
@@ -132,7 +132,7 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
         _startTime!.minute,
       );
 
-      final localEndDateTime = DateTime(
+      final endDateTime = DateTime(
         _overtimeDate!.year,
         _overtimeDate!.month,
         _overtimeDate!.day,
@@ -141,29 +141,10 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
       );
 
       // Validate overtime start time is not in the past
-      if (localStartDateTime.isBefore(DateTime.now())) {
-        showSnackbar(context, 'Cannot create overtime request in the past. Please select a time from now onwards.');
+      if (startDateTime.isBefore(DateTime.now())) {
+        showSnackbar(context, 'Cannot create overtime request in the past.');
         return;
       }
-
-
-      // Convert to UTC by subtracting the local timezone offset
-      // This ensures the actual time value stays the same but is marked as UTC
-      final startDateTime = DateTime.utc(
-        localStartDateTime.year,
-        localStartDateTime.month,
-        localStartDateTime.day,
-        localStartDateTime.hour,
-        localStartDateTime.minute,
-      );
-
-      final endDateTime = DateTime.utc(
-        localEndDateTime.year,
-        localEndDateTime.month,
-        localEndDateTime.day,
-        localEndDateTime.hour,
-        localEndDateTime.minute,
-      );
 
       ref.read(overtimeControllerProvider.notifier).createOvertimeRequest(
             // shiftId: _shiftId,

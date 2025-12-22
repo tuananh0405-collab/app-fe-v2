@@ -96,7 +96,7 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
       final overtimes = results[3] as List<dynamic>?;
       final leaveTypes = results[4] as List<dynamic>?;
 
-      print('📊 [WorkSchedule] Final results:');
+      print('[WorkSchedule] Final results:');
       print('  - Shifts: ${shifts?.length ?? 0}');
       print('  - Leaves: ${leaves?.length ?? 0}');
       print('  - Holidays: ${holidays.length}');

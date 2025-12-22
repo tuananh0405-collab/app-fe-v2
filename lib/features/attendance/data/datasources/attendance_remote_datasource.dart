@@ -45,7 +45,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       if (response.statusCode == 200) {
         try {
           final data = response.data['data'];
-          print('📊 Parsing attendance data: $data');
+          print('Parsing attendance data: $data');
           return AttendanceResponseModel.fromJson(data);
         } catch (e, stackTrace) {
           print('Error parsing attendance response: $e');

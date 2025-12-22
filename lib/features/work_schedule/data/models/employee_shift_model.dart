@@ -38,15 +38,33 @@ class EmployeeShiftModel extends EmployeeShiftEntity {
       checkOutTime: json['check_out_time'] != null
           ? DateTime.parse(json['check_out_time'] as String)
           : null,
-      workHours: (json['work_hours'] as num?)?.toDouble() ?? 0,
-      overtimeHours: (json['overtime_hours'] as num?)?.toDouble() ?? 0,
-      breakHours: (json['break_hours'] as num?)?.toDouble() ?? 0,
-      lateMinutes: (json['late_minutes'] as num?)?.toInt() ?? 0,
-      earlyLeaveMinutes: (json['early_leave_minutes'] as num?)?.toInt() ?? 0,
+      workHours: _parseDouble(json['work_hours']),
+      overtimeHours: _parseDouble(json['overtime_hours']),
+      breakHours: _parseDouble(json['break_hours']),
+      lateMinutes: _parseInt(json['late_minutes']),
+      earlyLeaveMinutes: _parseInt(json['early_leave_minutes']),
       status: _parseStatus(json['status'] as String?),
       notes: json['notes'] as String?,
       scheduleName: json['schedule_name'] as String?,
     );
+  }
+
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      return double.tryParse(value) ?? 0;
+    }
+    return 0;
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      return int.tryParse(value) ?? 0;
+    }
+    return 0;
   }
 
   static ShiftStatus _parseStatus(String? status) {

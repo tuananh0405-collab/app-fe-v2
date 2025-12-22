@@ -1817,23 +1817,39 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             title = ERROR_TITLE_FACE;
             message = ERROR_MSG_FACE;
         } else {
-            // Check for specific GPS, Beacon, or other errors
-            // GPS check comes first since it happens after beacon validation in the flow
+            // Check for specific errors in priority order: Face > GPS > Beacon > No Shift > General
+            // This ensures that when a message contains multiple keywords (e.g., "Beacon: ✅ | GPS: ✅ | Face: ❌"),
+            // we show the most relevant error (Face in this case)
             if (lastStateMessage != null) {
                 Log.d(TAG, "Last state message: " + lastStateMessage);
-                if (lastStateMessage.contains(KEYWORD_GPS) || 
+                // Priority 1: Check for Face error first (most specific)
+                if (lastStateMessage.contains("Face: ❌") || 
+                    lastStateMessage.contains("Face:") ||
+                    lastStateMessage.toLowerCase().contains("face verification failed") ||
+                    lastStateMessage.toLowerCase().contains("face not verified")) {
+                    title = ERROR_TITLE_FACE;
+                    message = ERROR_MSG_FACE;
+                }
+                // Priority 2: Check for GPS error
+                else if (lastStateMessage.contains(KEYWORD_GPS) || 
                     lastStateMessage.contains(KEYWORD_LOCATION) || 
                     lastStateMessage.contains(KEYWORD_LOCATION_LOWER)) {
                     title = ERROR_TITLE_GPS;
                     message = ERROR_MSG_GPS;
-                } else if (lastStateMessage.contains(KEYWORD_BEACON) || 
+                } 
+                // Priority 3: Check for Beacon error
+                else if (lastStateMessage.contains(KEYWORD_BEACON) || 
                            lastStateMessage.contains(KEYWORD_BEACON_LOWER)) {
                     title = ERROR_TITLE_BEACON;
                     message = ERROR_MSG_BEACON;
-                } else if (lastStateMessage.contains(KEYWORD_NO_SHIFT)) {
+                } 
+                // Priority 4: Check for No Shift error
+                else if (lastStateMessage.contains(KEYWORD_NO_SHIFT)) {
                     title = ERROR_TITLE_NO_SHIFT;
                     message = ERROR_MSG_NO_SHIFT;
-                } else {
+                } 
+                // Default: General error
+                else {
                     title = ERROR_TITLE_GENERAL;
                     message = ERROR_MSG_GENERAL;
                 }
