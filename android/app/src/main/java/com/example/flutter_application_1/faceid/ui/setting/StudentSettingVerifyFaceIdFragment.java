@@ -665,7 +665,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
             case FACE_REAL:
                 //  Liveness verified! Auto-transition to capture and verify
-                Log.d(TAG, "🎉 Face is REAL - Starting automatic capture and verification");
+                Log.d(TAG, "Face is REAL - Starting automatic capture and verification");
                 livenessVerified = true;
                 
                 // Update overlay color to success
@@ -1844,7 +1844,24 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                     if (!isAdded()) return;
                     Log.d(TAG, "Step 2 - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
                     Log.d(TAG, "Step 2 - ShiftId: " + verifyResult.getShift_id());
-                    Log.d(TAG, "Face verification submitted! Waiting for backend processing via RabbitMQ...");
+                    
+                    // 🔍 Check if response contains error indicators in message
+                    String message = verifyResult.getMessage();
+                    Log.d(TAG, "Response message: " + message);
+                    
+                    // Check for face verification failure indicators
+                    if (message != null && (message.contains("Face: ❌") || 
+                        message.toLowerCase().contains("face verification failed") ||
+                        message.toLowerCase().contains("face not verified"))) {
+                        Log.e(TAG, "❌ Face verification failed despite HTTP success: " + message);
+                        lastDetailedErrorMessage = message;
+                        hasDetailedError = true;
+                        lastStateMessage = message;
+                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, message);
+                        return;
+                    }
+                    
+                    Log.d(TAG, "✅ Face verification submitted! Waiting for backend processing via RabbitMQ...");
 
                     // DONE! Backend will handle verification via event-driven flow:
                     // Attendance Service → RabbitMQ → Face Service → Verify → Publish event → Update check_in_time
@@ -1858,13 +1875,14 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                     Log.e(TAG, "Step 2 failed: " + error);
                     lastDetailedErrorMessage = "Request face verification failed:\n" + error;
                     hasDetailedError = true;
+                    lastStateMessage = error;
                     stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 2 failed: " + error);
                 }
             });
     }
 
     /**
-     * 🎉 Handle success - Navigate to Success Activity
+     * Handle success - Navigate to Success Activity
      */
     private void handleSuccessState() {
         // Check if fragment is still attached before proceeding
@@ -1906,7 +1924,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             // This ensures no duplicate requests when user clicks Continue
             requireActivity().finish();
 
-            Log.d(TAG, "🎉 Navigating to Success Activity and finishing parent activity");
+            Log.d(TAG, "Navigating to Success Activity and finishing parent activity");
 
         } catch (Exception e) {
             Log.e(TAG, " Error handling success", e);
@@ -2014,8 +2032,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             if (lastStateMessage != null) {
                 Log.d(TAG, "Last state message: " + lastStateMessage);
                 // Priority 1: Check for Face error first (most specific)
-                if (lastStateMessage.contains("Face: ❌") || 
-                    lastStateMessage.contains("Face:") ||
+                if (lastStateMessage.contains("Beacon: ✅ | GPS: ✅ | Face: ❌") || 
                     lastStateMessage.toLowerCase().contains("face verification failed") ||
                     lastStateMessage.toLowerCase().contains("face not verified")) {
                     title = ERROR_TITLE_FACE;

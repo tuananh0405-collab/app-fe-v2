@@ -402,34 +402,63 @@ class _AttendanceShiftSection extends ConsumerWidget {
     String overtimeLabel = '';
     bool isOvertimeCurrent = false;
     
+    print('=== OVERTIME DEBUG ===');
+    print('Current time (local): $now');
+    print('Total overtimes: ${overtimes.length}');
+    
     if (overtimes.isNotEmpty) {
-      for (final overtime in overtimes) {
+      for (int i = 0; i < overtimes.length; i++) {
+        final overtime = overtimes[i];
         try {
-          final startTime = overtime.startTime as DateTime;
-          final endTime = overtime.endTime as DateTime;
+          // Backend stores local time as UTC, so we need to add 7 hours to convert back to local
+          final startTimeUtc = overtime.startTime as DateTime;
+          final endTimeUtc = overtime.endTime as DateTime;
+          final startTime = startTimeUtc.add(const Duration(hours: 7));
+          final endTime = endTimeUtc.add(const Duration(hours: 7));
+          
+          print('Overtime #$i:');
+          print('  Start (from backend): $startTimeUtc');
+          print('  Start (local): $startTime');
+          print('  End (from backend): $endTimeUtc');
+          print('  End (local): $endTime');
+          print('  now.isAfter(endTime): ${now.isAfter(endTime)}');
+          print('  now.isAfter(startTime): ${now.isAfter(startTime)}');
+          print('  now.isBefore(endTime): ${now.isBefore(endTime)}');
+          
+          // Skip overtime that has already ended
+          if (now.isAfter(endTime)) {
+            print('  -> SKIPPED (already ended)');
+            continue;
+          }
           
           // Check if overtime is currently active
           if (now.isAfter(startTime) && now.isBefore(endTime)) {
             currentOvertime = overtime;
             overtimeLabel = 'Current Overtime';
             isOvertimeCurrent = true;
+            print('  -> CURRENT OVERTIME');
             break;
           }
           
           // Check if overtime is starting within 15 minutes
           final timeUntilStart = startTime.difference(now).inMinutes;
+          print('  Time until start: $timeUntilStart minutes');
           if (timeUntilStart > 0 && timeUntilStart <= 15) {
             if (incomingOvertime == null) {
               incomingOvertime = overtime;
               overtimeLabel = 'Incoming Overtime';
+              print('  -> INCOMING OVERTIME');
             }
           }
         } catch (e) {
-          print('Error parsing overtime: $e');
+          print('Error parsing overtime #$i: $e');
           continue;
         }
       }
     }
+    
+    print('Selected overtime: ${currentOvertime != null ? "current" : incomingOvertime != null ? "incoming" : "none"}');
+    print('=== END OVERTIME DEBUG ===');
 
     attendance.AttendanceShift? displayShift;
     String label = 'No incoming shift today';
@@ -568,10 +597,21 @@ class _AttendanceShiftSection extends ConsumerWidget {
           ],
         ],
         
-        // Show other overtime cards if exist (excluding the one already displayed)
+        // Show other overtime cards if exist (excluding the one already displayed and ended ones)
         if (overtimes.isNotEmpty && overtimes.length > 1) ...[
           const SizedBox(height: 12),
-          ...overtimes.where((ot) => ot != currentOvertime && ot != incomingOvertime).map((overtime) {
+          ...overtimes.where((ot) {
+            try {
+              final endTimeUtc = ot.endTime as DateTime;
+              final endTime = endTimeUtc.add(const Duration(hours: 7));
+              // Exclude current/incoming overtime and ended overtime
+              return ot != currentOvertime && 
+                     ot != incomingOvertime && 
+                     now.isBefore(endTime);
+            } catch (e) {
+              return false;
+            }
+          }).map((overtime) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _buildOvertimeCard(theme, overtime),

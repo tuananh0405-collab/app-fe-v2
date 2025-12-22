@@ -384,7 +384,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
 
             case FACE_REAL:
                 //  Liveness verified! Auto-transition to capture and update
-                Log.d(TAG, "🎉 Face is REAL - Starting automatic capture and update");
+                Log.d(TAG, "Face is REAL - Starting automatic capture and update");
                 livenessVerified = true;
                 
                 // Update overlay color to success
@@ -1165,7 +1165,7 @@ String userId;
 }
 
     /**
-     * 🎉 Handle success - Navigate to Success Activity
+     * Handle success - Navigate to Success Activity
      */
     private void handleSuccessState() {
     Log.d(TAG, "==================== handleSuccessState START ====================");

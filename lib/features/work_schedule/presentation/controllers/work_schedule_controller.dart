@@ -39,7 +39,7 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
     final employeeId = employeeIdStr != null ? int.tryParse(employeeIdStr) : null;
 
     print('[WorkSchedule] Loading shifts from $fromDate to $toDate');
-    print('👤 [WorkSchedule] Employee ID: $employeeId');
+    print('[WorkSchedule] Employee ID: $employeeId');
 
     try {
       // Fetch all data in parallel

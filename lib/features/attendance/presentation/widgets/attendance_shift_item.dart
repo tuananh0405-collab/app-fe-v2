@@ -144,19 +144,19 @@ class AttendanceShiftItem extends StatelessWidget {
                 _buildTimeInfo('Work Hours', '${shift.workHours}h'),
             ],
           ),
-          if (shift.lateMinutes > 0 || shift.earlyLeaveMinutes > 0) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                if (shift.lateMinutes > 0)
-                  _buildWarningTag('Late: ${shift.lateMinutes}m'),
-                if (shift.lateMinutes > 0 && shift.earlyLeaveMinutes > 0)
-                  const SizedBox(width: 8),
-                if (shift.earlyLeaveMinutes > 0)
-                  _buildWarningTag('Early: ${shift.earlyLeaveMinutes}m'),
-              ],
-            ),
-          ],
+          // if (shift.lateMinutes > 0 || shift.earlyLeaveMinutes > 0) ...[
+          //   const SizedBox(height: 12),
+          //   Row(
+          //     children: [
+          //       if (shift.lateMinutes > 0)
+          //         _buildWarningTag('Late: ${shift.lateMinutes}m'),
+          //       if (shift.lateMinutes > 0 && shift.earlyLeaveMinutes > 0)
+          //         const SizedBox(width: 8),
+          //       if (shift.earlyLeaveMinutes > 0)
+          //         _buildWarningTag('Early: ${shift.earlyLeaveMinutes}m'),
+          //     ],
+          //   ),
+          // ],
           if (shift.notes != null && shift.notes!.isNotEmpty) ...[
             const SizedBox(height: 12),
             Container(
