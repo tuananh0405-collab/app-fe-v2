@@ -1687,7 +1687,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 Log.d(TAG, "Using GPS location: lat=" + latitude + ", lng=" + longitude + ", accuracy=" + accuracy);
 
                 // 🔍 Validate GPS accuracy before proceeding
-                final double MAX_GPS_ACCURACY = 50.0; // Maximum allowed accuracy in meters
+                final double MAX_GPS_ACCURACY = 2000.0; // Maximum allowed accuracy in meters
                 if (accuracy > MAX_GPS_ACCURACY) {
                     Log.e(TAG, "GPS accuracy too low: " + accuracy + "m (max allowed: " + MAX_GPS_ACCURACY + "m)");
                     stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 

@@ -727,7 +727,7 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
             children: [
               Flexible(
                 child: Text(
-                  'Overtime Request',
+                  'Overtime',
                   style: theme.subtitle2.override(
                     fontWeight: FontWeight.w600,
                   ),
@@ -755,7 +755,7 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
                       'OT',
                       style: theme.bodyText2.override(
                         fontSize: 11,
-                        color: const Color(0xFF7C2D12), // orange-900
+                        color: const Color(0xFF7C2D12),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
