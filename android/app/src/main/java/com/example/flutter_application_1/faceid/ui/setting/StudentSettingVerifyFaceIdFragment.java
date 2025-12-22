@@ -57,6 +57,7 @@ import com.example.flutter_application_1.faceid.ui.setting.state.FaceRegistratio
 import com.example.flutter_application_1.faceid.ui.setting.state.FaceRegistrationStateManager;
 import com.example.flutter_application_1.faceid.ui.setting.success.FaceIdSuccessActivity;
 import com.example.flutter_application_1.faceid.data.service.FaceIdRequestManager;
+import com.example.flutter_application_1.attendance.data.constants.AttendanceTimeFlexibility;
 
 
 public class StudentSettingVerifyFaceIdFragment extends Fragment implements FaceIdEnhancer.FaceIdEnhancerCallback {
@@ -131,6 +132,14 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private static final String KEYWORD_BEACON = "Beacon";
     private static final String KEYWORD_BEACON_LOWER = "beacon";
     private static final String KEYWORD_NO_SHIFT = "No active shift available";
+    
+    // ⏰ ATTENDANCE TIME FLEXIBILITY CONSTANTS
+    // Check-in window: [shift start - 1 hour] to [shift start + 1 hour]
+    // Check-out window: [shift end - 30 minutes] to [shift end + 1 hour]
+    private static final int EARLY_CHECK_IN_MINUTES = AttendanceTimeFlexibility.EARLY_CHECK_IN_MINUTES;
+    private static final int LATE_CHECK_IN_MINUTES = AttendanceTimeFlexibility.LATE_CHECK_IN_MINUTES;
+    private static final int EARLY_CHECK_OUT_MINUTES = AttendanceTimeFlexibility.EARLY_CHECK_OUT_MINUTES;
+    private static final int LATE_CHECK_OUT_MINUTES = AttendanceTimeFlexibility.LATE_CHECK_OUT_MINUTES;
 
     // HANDLERS
     private final Handler mainHandler = new Handler(Looper.getMainLooper());

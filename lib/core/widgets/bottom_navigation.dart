@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../routing/routes.dart';
 import '../../faceid_channel.dart';
 import '../../features/auth/providers/auth_providers.dart';
+import '../../features/work_schedule/providers/work_schedule_providers.dart';
+import '../services/shift_validation_service.dart';
 import '../../flutter_flow/flutter_flow.dart';
 import '../../flutter_flow/flutter_flow_util.dart';
 
@@ -165,7 +167,74 @@ class BottomNavigation extends ConsumerWidget {
       return;
     }
 
+    // Get today's shifts
+    final scheduleState = ref.read(workScheduleControllerProvider);
+    final now = DateTime.now();
+    final todayShifts = scheduleState.shifts.where((s) {
+      return s.shiftDate.year == now.year && 
+             s.shiftDate.month == now.month && 
+             s.shiftDate.day == now.day;
+    }).toList();
+    
+    // Validate if there's a valid shift for check-in or check-out
+    final validationResult = ShiftValidationService.validateCurrentShift(todayShifts);
+    
+    if (!validationResult.isValid) {
+      // Show error dialog
+      _showNoShiftDialog(context);
+      return;
+    }
+    
+    // Valid shift found, proceed with face verification
     FaceIdChannel.verifyFace(userId: userId);
+  }
+  
+  void _showNoShiftDialog(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: theme.error,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'No Shift Found',
+                style: theme.title3.override(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'No active shift available for check-in/check-out at this time.\n\n'
+            'Please check your schedule and try again during your shift hours.',
+            style: theme.bodyText1,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'OK',
+                style: theme.bodyText1.override(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _onItemTapped(BuildContext context, WidgetRef ref, int index) {
