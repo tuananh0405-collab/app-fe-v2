@@ -223,60 +223,66 @@ class WorkScheduleRemoteDataSourceImpl
     }
 
     // 3. Process shifts to update status from scheduled to inProgress if check-in time has passed
-    final processedShifts = allShifts.map((shift) {
-      // Only process shifts with scheduled status
-      if (shift.status == ShiftStatus.scheduled) {
-        // Parse the scheduled start time to get check-in time
-        final timeParts = shift.scheduledStartTime.split(':');
-        final checkInDateTime = DateTime(
-          shift.shiftDate.year,
-          shift.shiftDate.month,
-          shift.shiftDate.day,
-          int.parse(timeParts[0]),
-          int.parse(timeParts[1]),
-          timeParts.length > 2 ? int.parse(timeParts[2]) : 0,
-        );
+    // NOTE: Logic này đã được comment để sử dụng status từ BE trực tiếp
+    // Có thể sẽ dùng lại sau này nếu cần xử lý status ở client-side
+    // final processedShifts = allShifts.map((shift) {
+    //   // Only process shifts with scheduled status
+    //   if (shift.status == ShiftStatus.scheduled) {
+    //     // Parse the scheduled start time to get check-in time
+    //     final timeParts = shift.scheduledStartTime.split(':');
+    //     final checkInDateTime = DateTime(
+    //       shift.shiftDate.year,
+    //       shift.shiftDate.month,
+    //       shift.shiftDate.day,
+    //       int.parse(timeParts[0]),
+    //       int.parse(timeParts[1]),
+    //       timeParts.length > 2 ? int.parse(timeParts[2]) : 0,
+    //     );
+    //
+    //     // Parse the scheduled end time to get check-out time
+    //     final endTimeParts = shift.scheduledEndTime.split(':');
+    //     final checkOutDateTime = DateTime(
+    //       shift.shiftDate.year,
+    //       shift.shiftDate.month,
+    //       shift.shiftDate.day,
+    //       int.parse(endTimeParts[0]),
+    //       int.parse(endTimeParts[1]),
+    //       endTimeParts.length > 2 ? int.parse(endTimeParts[2]) : 0,
+    //     );
+    //
+    //     // If check-in time has passed and now is before or at check-out time, change status to inProgress
+    //     if ((now.isAfter(checkInDateTime) || now.isAtSameMomentAs(checkInDateTime)) &&
+    //         (now.isBefore(checkOutDateTime) || now.isAtSameMomentAs(checkOutDateTime))) {
+    //       return EmployeeShiftModel(
+    //         id: shift.id,
+    //         employeeId: shift.employeeId,
+    //         employeeCode: shift.employeeCode,
+    //         departmentId: shift.departmentId,
+    //         shiftDate: shift.shiftDate,
+    //         workScheduleId: shift.workScheduleId,
+    //         scheduledStartTime: shift.scheduledStartTime,
+    //         scheduledEndTime: shift.scheduledEndTime,
+    //         checkInTime: shift.checkInTime,
+    //         checkOutTime: shift.checkOutTime,
+    //         workHours: shift.workHours,
+    //         overtimeHours: shift.overtimeHours,
+    //         breakHours: shift.breakHours,
+    //         lateMinutes: shift.lateMinutes,
+    //         earlyLeaveMinutes: shift.earlyLeaveMinutes,
+    //         status: ShiftStatus.inProgress,
+    //         notes: shift.notes,
+    //         scheduleName: shift.scheduleName,
+    //       );
+    //     }
+    //   }
+    //   return shift;
+    // }).toList();
+    //
+    // return processedShifts;
 
-        // Parse the scheduled end time to get check-out time
-        final endTimeParts = shift.scheduledEndTime.split(':');
-        final checkOutDateTime = DateTime(
-          shift.shiftDate.year,
-          shift.shiftDate.month,
-          shift.shiftDate.day,
-          int.parse(endTimeParts[0]),
-          int.parse(endTimeParts[1]),
-          endTimeParts.length > 2 ? int.parse(endTimeParts[2]) : 0,
-        );
-
-        // If check-in time has passed and now is before or at check-out time, change status to inProgress
-        if ((now.isAfter(checkInDateTime) || now.isAtSameMomentAs(checkInDateTime)) &&
-            (now.isBefore(checkOutDateTime) || now.isAtSameMomentAs(checkOutDateTime))) {
-          return EmployeeShiftModel(
-            id: shift.id,
-            employeeId: shift.employeeId,
-            employeeCode: shift.employeeCode,
-            departmentId: shift.departmentId,
-            shiftDate: shift.shiftDate,
-            workScheduleId: shift.workScheduleId,
-            scheduledStartTime: shift.scheduledStartTime,
-            scheduledEndTime: shift.scheduledEndTime,
-            checkInTime: shift.checkInTime,
-            checkOutTime: shift.checkOutTime,
-            workHours: shift.workHours,
-            overtimeHours: shift.overtimeHours,
-            breakHours: shift.breakHours,
-            lateMinutes: shift.lateMinutes,
-            earlyLeaveMinutes: shift.earlyLeaveMinutes,
-            status: ShiftStatus.inProgress,
-            notes: shift.notes,
-            scheduleName: shift.scheduleName,
-          );
-        }
-      }
-      return shift;
-    }).toList();
-
-    return processedShifts;
+    // Hiện tại trả về status từ BE trực tiếp
+    // Nếu BE trả về IN_PROGRESS thì sẽ hiển thị in progress
+    return allShifts;
   }
 }
 

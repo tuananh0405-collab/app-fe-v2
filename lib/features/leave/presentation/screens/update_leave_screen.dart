@@ -402,12 +402,18 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
                         ),
                         items: leaveState.leaveTypes
                             .where((leaveType) {
+                              // Always show the currently selected leave type (for editing)
                               if (_leaveTypeId == leaveType.id) return true;
-                              final balances = leaveState.leaveBalances
-                                  .where((b) => b.leaveTypeId == leaveType.id);
-                              if (balances.isNotEmpty) {
-                                return balances.first.remainingDays > 0;
+                              // Filter out inactive leave types
+                              if (leaveType.status.toLowerCase() != 'active') {
+                                return false;
                               }
+                              // TODO: Uncomment if needed to filter by remaining days
+                              // final balances = leaveState.leaveBalances
+                              //     .where((b) => b.leaveTypeId == leaveType.id);
+                              // if (balances.isNotEmpty) {
+                              //   return balances.first.remainingDays > 0;
+                              // }
                               return true;
                             })
                             .map((leaveType) => DropdownMenuItem(

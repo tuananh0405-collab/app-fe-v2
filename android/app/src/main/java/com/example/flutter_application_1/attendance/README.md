@@ -1,4 +1,4 @@
-# 📦 Attendance Package
+# Attendance Package
 
 ## Overview
 
