@@ -145,7 +145,7 @@ public class AttendanceService {
             return;
         }
         
-        Log.d(TAG, "📝 Using session token: " + currentSessionToken);
+        Log.d(TAG, "Using session token: " + currentSessionToken);
         
         // Get JWT token
         String token = AuthManager.getInstance(context).getAuthToken();
@@ -181,7 +181,7 @@ public class AttendanceService {
                         currentAttendanceCheckId = body.getAttendance_check_id();
                         currentShiftId = body.getShift_id();
                         Log.d(TAG, " Face verification requested!");
-                        Log.d(TAG, "📝 Attendance Check ID: " + currentAttendanceCheckId);
+                        Log.d(TAG, "Attendance Check ID: " + currentAttendanceCheckId);
                         Log.d(TAG, "📅 Shift ID: " + currentShiftId);
                         callback.onSuccess(body);
                     } else {

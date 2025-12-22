@@ -103,7 +103,7 @@ public class FaceIdRetryManager {
      */
     public void cleanup() {
         scheduler.shutdown();
-        Log.d(TAG, "🧹 Cleaned up FaceIdRetryManager");
+        Log.d(TAG, "Cleaned up FaceIdRetryManager");
     }
     
     /**

@@ -369,7 +369,7 @@ public class FaceIdRequestManager {
             }
         }
         
-        Log.d(TAG, "🧹 Cleaned up FaceIdRequestManager");
+        Log.d(TAG, "Cleaned up FaceIdRequestManager");
     }
 
 }

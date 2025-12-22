@@ -138,6 +138,8 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     // LOCATION
     private LocationManager locationManager;
     private Location currentLocation;
+    private LocationListener locationListener;
+    private boolean isRequestingLocation = false;
 
     // BEACON DATA (stored as instance variables to avoid fragment lifecycle issues)
     private String beaconUuid;
@@ -1493,7 +1495,153 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         }
     }
     
+    /**
+     * Callback interface for location updates
+     */
+    private interface LocationCallback {
+        void onLocationReceived(Location location);
+        void onLocationFailed();
+    }
     
+    /**
+     * Request fresh GPS location with timeout
+     * This provides more accurate location than getLastKnownLocation()
+     */
+    private void requestFreshLocation(LocationCallback callback) {
+        if (isRequestingLocation) {
+            Log.w(TAG, "Location request already in progress");
+            return;
+        }
+        
+        try {
+            if (locationManager == null) {
+                locationManager = (LocationManager) requireContext().getSystemService(android.content.Context.LOCATION_SERVICE);
+            }
+            
+            // Kiểm tra permission
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "Location permission not granted");
+                callback.onLocationFailed();
+                return;
+            }
+            
+            // Check if GPS is enabled
+            boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            
+            if (!isGpsEnabled && !isNetworkEnabled) {
+                Log.w(TAG, "GPS and Network providers are disabled");
+                // Fallback to last known location
+                getCurrentLocation();
+                if (currentLocation != null) {
+                    callback.onLocationReceived(currentLocation);
+                } else {
+                    callback.onLocationFailed();
+                }
+                return;
+            }
+            
+            isRequestingLocation = true;
+            Log.d(TAG, "🔍 Requesting fresh GPS location...");
+            
+            // Create location listener
+            locationListener = new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    if (!isAdded()) return;
+                    
+                    Log.d(TAG, "✓ Fresh location received: accuracy=" + location.getAccuracy() + "m");
+                    
+                    // Update current location
+                    currentLocation = location;
+                    
+                    // Remove updates
+                    stopLocationUpdates();
+                    
+                    // Callback
+                    callback.onLocationReceived(location);
+                }
+                
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {}
+                
+                @Override
+                public void onProviderEnabled(String provider) {}
+                
+                @Override
+                public void onProviderDisabled(String provider) {}
+            };
+            
+            // Request location updates from both GPS and Network
+            if (isGpsEnabled) {
+                locationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    0,      // minTime: 0ms (get immediately)
+                    0,      // minDistance: 0m (any distance)
+                    locationListener,
+                    Looper.getMainLooper()
+                );
+                Log.d(TAG, "Requested GPS location updates");
+            }
+            
+            if (isNetworkEnabled) {
+                locationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER,
+                    0,
+                    0,
+                    locationListener,
+                    Looper.getMainLooper()
+                );
+                Log.d(TAG, "Requested Network location updates");
+            }
+            
+            // Set timeout: If no location after 5 seconds, use last known location
+            mainHandler.postDelayed(() -> {
+                if (!isAdded() || !isRequestingLocation) return;
+                
+                Log.w(TAG, "⏱️ Location request timeout, using last known location");
+                
+                // Stop location updates
+                stopLocationUpdates();
+                
+                // Fallback to last known location
+                getCurrentLocation();
+                
+                if (currentLocation != null) {
+                    Log.d(TAG, "Using cached location: accuracy=" + currentLocation.getAccuracy() + "m");
+                    callback.onLocationReceived(currentLocation);
+                } else {
+                    Log.e(TAG, "No location available");
+                    callback.onLocationFailed();
+                }
+            }, 5000); // 5 second timeout
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error requesting fresh location", e);
+            isRequestingLocation = false;
+            callback.onLocationFailed();
+        }
+    }
+    
+    /**
+     * Stop location updates and cleanup
+     */
+    private void stopLocationUpdates() {
+        try {
+            if (locationManager != null && locationListener != null) {
+                locationManager.removeUpdates(locationListener);
+                Log.d(TAG, "Location updates stopped");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error stopping location updates", e);
+        } finally {
+            isRequestingLocation = false;
+            locationListener = null;
+        }
+    }
+    
+
     /**
      *  Perform attendance check-in using AttendanceService (3-step flow)
      */
@@ -1515,27 +1663,39 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             return;
         }
 
-        // Lấy tọa độ GPS hiện tại thay vì dùng giá trị fix cứng
-        getCurrentLocation();
+        // 🔍 Request fresh GPS location for better accuracy
+        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Getting GPS location...");
         
-        final double latitude = (currentLocation != null) ? currentLocation.getLatitude() : 10.762622;
-        final double longitude = (currentLocation != null) ? currentLocation.getLongitude() : 106.660172;
-        final double accuracy = (currentLocation != null) ? currentLocation.getAccuracy() : 15.0;
-        
-        if (currentLocation != null) {
-            Log.d(TAG, "Using current GPS location: lat=" + latitude + ", lng=" + longitude + ", accuracy=" + accuracy);
-        } else {
-            Log.w(TAG, "GPS location not available, using default coordinates");
-        }
+        requestFreshLocation(new LocationCallback() {
+            @Override
+            public void onLocationReceived(Location location) {
+                if (!isAdded()) return;
+                
+                final double latitude = location.getLatitude();
+                final double longitude = location.getLongitude();
+                final double accuracy = location.getAccuracy();
+                
+                Log.d(TAG, "Using GPS location: lat=" + latitude + ", lng=" + longitude + ", accuracy=" + accuracy);
 
-        final String deviceId = android.provider.Settings.Secure.getString(requireContext().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+                // 🔍 Validate GPS accuracy before proceeding
+                final double MAX_GPS_ACCURACY = 50.0; // Maximum allowed accuracy in meters
+                if (accuracy > MAX_GPS_ACCURACY) {
+                    Log.e(TAG, "GPS accuracy too low: " + accuracy + "m (max allowed: " + MAX_GPS_ACCURACY + "m)");
+                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
+                        "GPS accuracy too low (" + String.format("%.1f", accuracy) + "m). Please move to an area with better GPS signal and try again.");
+                    return;
+                }
+                
+                Log.d(TAG, "✓ GPS accuracy acceptable: " + accuracy + "m");
 
-        // Initialize AttendanceService
-        com.example.flutter_application_1.attendance.data.service.AttendanceService attendanceService = new com.example.flutter_application_1.attendance.data.service.AttendanceService(requireContext());
+                final String deviceId = android.provider.Settings.Secure.getString(requireContext().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 
-        // Step 1: Validate Beacon
-        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Validating beacon...");
-        attendanceService.validateBeacon(beaconUuidLocal, beaconMajorLocal, beaconMinorLocal, rssiLocal, new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse>() {
+                // Initialize AttendanceService
+                com.example.flutter_application_1.attendance.data.service.AttendanceService attendanceService = new com.example.flutter_application_1.attendance.data.service.AttendanceService(requireContext());
+
+                // Step 1: Validate Beacon
+                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Validating beacon...");
+                attendanceService.validateBeacon(beaconUuidLocal, beaconMajorLocal, beaconMinorLocal, rssiLocal, new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse>() {
             @Override
             public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse beaconResult) {
                 if (!isAdded()) return;
@@ -1619,6 +1779,16 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 1 failed: " + error);
             }
         });
+            }
+            
+            @Override
+            public void onLocationFailed() {
+                if (!isAdded()) return;
+                Log.e(TAG, "Failed to get GPS location");
+                stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
+                    "Failed to get GPS location. Please ensure GPS is enabled and try again.");
+            }
+        });
     }
 
     /**
@@ -1650,6 +1820,14 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         // Step 2: Request Face Verification WITH face embedding
         stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Submitting face verification...");
         String verifyType = attendanceType != null ? attendanceType : "check_in";
+        
+        // Log GPS data being sent to backend
+        Log.d(TAG, "📍 Sending GPS data to backend:");
+        Log.d(TAG, "  - Latitude: " + latitude);
+        Log.d(TAG, "  - Longitude: " + longitude);
+        Log.d(TAG, "  - Accuracy: " + accuracy + "m");
+        Log.d(TAG, "  - Device ID: " + deviceId);
+        
         attendanceService.requestFaceVerification(verifyType, latitude, longitude, accuracy, deviceId, faceEmbeddingBase64,
             new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse>() {
                 @Override
@@ -2308,6 +2486,9 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
         stopCameraSafe();
 
+        // Stop location updates if still running
+        stopLocationUpdates();
+
         // Hủy đăng ký receiver khi destroy view
         if (beaconReceiver != null) {
             try {
@@ -2359,7 +2540,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         faceOverlayView = null;
         binding = null;
 
-        Log.d(TAG, "🧹 Fragment cleaned up");
+        Log.d(TAG, "Fragment cleaned up");
     }
     // Thêm các biến UI cần thiết
     private ProgressBar analysisProgressBar;

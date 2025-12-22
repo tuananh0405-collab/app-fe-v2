@@ -143,7 +143,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
             if (userId != null && !userId.isEmpty()) {
                 // Save to AuthManager immediately
                 AuthManager.getInstance(requireContext()).setUserId(userId);
-                Log.d(TAG, "📝 Received userId from Intent: " + userId);
+                Log.d(TAG, "Received userId from Intent: " + userId);
             }
         }
         
@@ -1195,7 +1195,7 @@ String userId;
         String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
         String userName = AuthManager.getInstance(requireContext()).getCurrentUserName();
         
-        Log.d(TAG, "📝 Preparing intent with:");
+        Log.d(TAG, "Preparing intent with:");
         Log.d(TAG, "  - userId: " + userId);
         Log.d(TAG, "  - userName: " + userName);
         Log.d(TAG, "  - bitmapPath: " + bitmapPath);
@@ -1818,7 +1818,7 @@ String userId;
         faceOverlayView = null;
         binding = null;
 
-        Log.d(TAG, "🧹 Fragment cleaned up");
+        Log.d(TAG, "Fragment cleaned up");
     }
     // Thêm các biến UI cần thiết
     private ProgressBar analysisProgressBar;
