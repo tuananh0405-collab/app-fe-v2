@@ -45,10 +45,10 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       if (response.statusCode == 200) {
         try {
           final data = response.data['data'];
-          print('📊 Parsing attendance data: $data');
+          print('Parsing attendance data: $data');
           return AttendanceResponseModel.fromJson(data);
         } catch (e, stackTrace) {
-          print('❌ Error parsing attendance response: $e');
+          print('Error parsing attendance response: $e');
           print('Stack trace: $stackTrace');
           throw ServerException('Failed to parse attendance data: ${e.toString()}');
         }
@@ -79,7 +79,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
           e is NetworkException) {
         rethrow;
       }
-      print('❌ Unexpected error in getMyAttendance: $e');
+      print('Unexpected error in getMyAttendance: $e');
       throw ServerException('Unexpected error: ${e.toString()}');
     }
   }

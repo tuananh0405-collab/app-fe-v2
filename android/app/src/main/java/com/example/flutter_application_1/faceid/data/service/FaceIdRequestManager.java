@@ -12,8 +12,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import lombok.Getter;
-import lombok.Setter;
 import retrofit2.Call;
 import com.example.flutter_application_1.faceid.data.api.FaceIdApiController;
 import com.example.flutter_application_1.faceid.data.model.response.FaceIdRequestStatusResponse;
@@ -47,26 +45,36 @@ public class FaceIdRequestManager {
     private final ScheduledExecutorService scheduler;
     private final Handler mainHandler;
 
-    // Getters
     // Request state
-    @Getter
     private String currentRequestId;
     private String currentSessionId;
     private RequestState currentState;
     private long expirationTime;
     private int retryCount = 0;
     private long lastRetryTime = 0;
+    
+    // Getter method (manual implementation since Lombok is not configured)
+    public String getCurrentRequestId() {
+        return currentRequestId;
+    }
 
     // Callbacks
-    @Setter
     private RequestStatusCallback statusCallback;
-    @Setter
     private RequestExpiredCallback expiredCallback;
     
     // Polling
     private boolean isPolling = false;
     private Runnable statusPollingRunnable;
     private ScheduledFuture<?> statusPollingFuture;
+    
+    // Setter methods (manual implementation since Lombok is not configured)
+    public void setStatusCallback(RequestStatusCallback callback) {
+        this.statusCallback = callback;
+    }
+    
+    public void setExpiredCallback(RequestExpiredCallback callback) {
+        this.expiredCallback = callback;
+    }
     
     public interface RequestStatusCallback {
         void onRequestStatusUpdated(RequestState state, FaceIdRequestStatusResponse response);
@@ -134,7 +142,7 @@ public class FaceIdRequestManager {
                                     STATUS_POLL_INTERVAL_MS, 
                                     TimeUnit.MILLISECONDS);
         
-        Log.d(TAG, "📡 Started status polling for request: " + currentRequestId);
+        Log.d(TAG, "Started status polling for request: " + currentRequestId);
     }
     
     /**
@@ -151,7 +159,7 @@ public class FaceIdRequestManager {
                 if (response.isSuccessful() && response.body() != null) {
                     handleStatusResponse(response.body());
                 } else {
-                    Log.w(TAG, "⚠️ Failed to get request status: HTTP " + response.code());
+                    Log.w(TAG, "Failed to get request status: HTTP " + response.code());
                     handlePollingError("HTTP " + response.code());
                 }
             }
@@ -169,7 +177,7 @@ public class FaceIdRequestManager {
      */
     private void handleStatusResponse(FaceIdRequestStatusResponse response) {
         if (response.getData() == null) {
-            Log.w(TAG, "⚠️ Invalid status response data");
+            Log.w(TAG, "Invalid status response data");
             return;
         }
         
@@ -236,7 +244,7 @@ public class FaceIdRequestManager {
      * Xử lý khi request hết hạn
      */
     private void handleRequestExpired() {
-        Log.d(TAG, "⏰ Request expired: " + currentRequestId);
+        Log.d(TAG, "Request expired: " + currentRequestId);
         currentState = RequestState.EXPIRED;
         stopStatusPolling();
         
@@ -266,7 +274,7 @@ public class FaceIdRequestManager {
      * Xử lý lỗi khi polling
      */
     private void handlePollingError(String error) {
-        Log.w(TAG, "⚠️ Polling error: " + error);
+        Log.w(TAG, "Polling error: " + error);
         
         if (statusCallback != null) {
             mainHandler.post(() -> statusCallback.onRequestFailed(error));
@@ -285,7 +293,7 @@ public class FaceIdRequestManager {
                 }
             }, delay, TimeUnit.MILLISECONDS);
             
-            Log.d(TAG, "⏰ Scheduled expiration check in " + (delay / 1000) + "s");
+            Log.d(TAG, "Scheduled expiration check in " + (delay / 1000) + "s");
         } else {
             handleRequestExpired();
         }
@@ -324,7 +332,7 @@ public class FaceIdRequestManager {
                     Log.d(TAG, " Request cancelled successfully");
                     handleRequestCancelled();
                 } else {
-                    Log.w(TAG, "⚠️ Failed to cancel request: HTTP " + response.code());
+                    Log.w(TAG, "Failed to cancel request: HTTP " + response.code());
                 }
             }
             
@@ -361,7 +369,7 @@ public class FaceIdRequestManager {
             }
         }
         
-        Log.d(TAG, "🧹 Cleaned up FaceIdRequestManager");
+        Log.d(TAG, "Cleaned up FaceIdRequestManager");
     }
 
 }

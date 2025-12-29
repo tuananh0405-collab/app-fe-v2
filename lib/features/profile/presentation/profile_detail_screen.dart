@@ -21,6 +21,27 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
       ref.read(profileControllerProvider.notifier).loadProfile();
     });
   }
+  String _formatAddress(Map<String, dynamic>? addr) {
+    if (addr == null || addr.isEmpty) return 'N/A';
+
+    // Nếu backend có các key phổ biến thì join lại
+    final keys = ['street', 'ward', 'district', 'city', 'province', 'country'];
+    final parts = <String>[];
+
+    for (final k in keys) {
+      final v = addr[k];
+      if (v is String && v.trim().isNotEmpty) parts.add(v.trim());
+    }
+
+    // Nếu không match key phổ biến, fallback: join tất cả string values
+    if (parts.isEmpty) {
+      addr.forEach((_, v) {
+        if (v is String && v.trim().isNotEmpty) parts.add(v.trim());
+      });
+    }
+
+    return parts.isEmpty ? 'N/A' : parts.join(', ');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +96,15 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
     final String createdAt = profile.createdAt != null
         ? DateFormat('dd/MM/yyyy').format(profile.createdAt!)
         : 'N/A';
+    final String phone = (profile.phone != null && profile.phone.toString().trim().isNotEmpty)
+        ? profile.phone.toString()
+        : 'N/A';
+
+    final String dob = profile.dateOfBirth != null
+        ? DateFormat('dd/MM/yyyy').format(profile.dateOfBirth!)
+        : 'N/A';
+
+    final String address = _formatAddress(profile.address);
 
     // Helper to get initials from full name
     String getInitials() {
@@ -236,19 +266,19 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
                     _buildInfoTile(
                       icon: Icons.phone_outlined,
                       label: 'Phone',
-                      value: 'N/A',
+                      value: phone,
                     ),
                     const Divider(height: 1, indent: 56),
                     _buildInfoTile(
                       icon: Icons.cake_outlined,
                       label: 'Date of Birth',
-                      value: 'N/A',
+                      value: dob,
                     ),
                     const Divider(height: 1, indent: 56),
                     _buildInfoTile(
                       icon: Icons.location_on_outlined,
                       label: 'Address',
-                      value: 'N/A',
+                      value: address,
                     ),
                     const Divider(height: 1, indent: 56),
                     _buildInfoTile(

@@ -26,7 +26,7 @@ class GpsTrackingService {
     // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      debugPrint('⚠️ Location services are disabled.');
+      debugPrint('Location services are disabled.');
       return false;
     }
 
@@ -35,13 +35,13 @@ class GpsTrackingService {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        debugPrint('⚠️ Location permissions are denied');
+        debugPrint('Location permissions are denied');
         return false;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      debugPrint('⚠️ Location permissions are permanently denied');
+      debugPrint('Location permissions are permanently denied');
       return false;
     }
 
@@ -61,10 +61,10 @@ class GpsTrackingService {
         timeLimit: const Duration(seconds: 10),
       );
 
-      debugPrint('📍 Got location: ${position.latitude}, ${position.longitude}');
+      debugPrint('Got location: ${position.latitude}, ${position.longitude}');
       return position;
     } catch (e) {
-      debugPrint('❌ Error getting location: $e');
+      debugPrint('Error getting location: $e');
       return null;
     }
   }
@@ -86,7 +86,7 @@ class GpsTrackingService {
     required Position position,
   }) async {
     try {
-      debugPrint('📤 Sending GPS to attendance service...');
+      debugPrint('Sending GPS to attendance service...');
       debugPrint('   Position: ${position.latitude}, ${position.longitude}');
       debugPrint('   Accuracy: ${position.accuracy}m');
 
@@ -98,7 +98,11 @@ class GpsTrackingService {
       // 4. Tăng presence_verification_rounds_completed
       // 5. Gửi notification nếu GPS ngoài vùng
       final response = await _dio.post(
+<<<<<<< HEAD
         '/gps/check',  // ✅ FIXED: Đúng endpoint theo GpsController
+=======
+        '/attendance/gps/check',
+>>>>>>> aa9c2773ad6f5d3d6a8877252fb915bbdf459d4e
         data: {
           'latitude': position.latitude,
           'longitude': position.longitude,
@@ -107,10 +111,8 @@ class GpsTrackingService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final result = response.data;
-        debugPrint('✅ GPS verification completed');
-        debugPrint('   Valid: ${result['is_valid']}');
-        debugPrint('   Distance: ${result['distance_from_office_meters']}m');
+        debugPrint('GPS verification completed');
+        debugPrint('===========> response: ${response}');
 
         await _saveScanRecord(GpsScanRecord(
                   timestamp: DateTime.now(),
@@ -122,15 +124,15 @@ class GpsTrackingService {
                   responseData: response.data is Map ? response.data.cast<String, dynamic>() : null,
                 ));
 
-        if (result['is_valid'] == true) {
-          debugPrint('   ✅ GPS within office geofence');
+        if (response.data['is_valid'] == true) {
+          debugPrint('   GPS within office geofence');
         } else {
-          debugPrint('   ⚠️ GPS outside office geofence: ${result['message']}');
+          debugPrint('   GPS outside office geofence: ${response.data['message']}');
         }
 
         return true;
       } else {
-        debugPrint('⚠️ GPS verification failed with status: ${response.statusCode}');
+        debugPrint('GPS verification failed with status: ${response.statusCode}');
         // Persist a failed scan record (server returned non-200)
         await _saveScanRecord(GpsScanRecord(
           timestamp: DateTime.now(),
@@ -144,7 +146,7 @@ class GpsTrackingService {
         return false;
       }
     } on DioException catch (e) {
-      debugPrint('❌ Error sending GPS: ${e.message}');
+      debugPrint('Error sending GPS: ${e.message}');
       if (e.response != null) {
         debugPrint('   Response data: ${e.response?.data}');
         debugPrint('   Status code: ${e.response?.statusCode}');
@@ -162,7 +164,7 @@ class GpsTrackingService {
       ));
       return false;
     } catch (e) {
-      debugPrint('❌ Unexpected error sending GPS: $e');
+      debugPrint('Unexpected error sending GPS: $e');
       await _saveScanRecord(GpsScanRecord(
         timestamp: DateTime.now(),
         success: false,
@@ -183,9 +185,9 @@ class GpsTrackingService {
       }
       final box = Hive.box('gps_history');
       await box.add(record.toJson());
-      debugPrint('💾 Saved GPS scan record: ${record.toJson()}');
+      // debugPrint('💾 Saved GPS scan record: ${record.toJson()}');
     } catch (e) {
-      debugPrint('❌ Failed to save GPS scan record: $e');
+      debugPrint('Failed to save GPS scan record: $e');
     }
   }
 
@@ -207,7 +209,7 @@ class GpsTrackingService {
   /// ```
   Future<void> handleGpsCheckRequest(Map<String, dynamic> data) async {
     try {
-      debugPrint('📍 [GPS_CHECK] Received GPS check request');
+      debugPrint('[GPS_CHECK] Received GPS check request');
       debugPrint('   Data: ${jsonEncode(data)}');
 
       // Extract metadata
@@ -216,14 +218,14 @@ class GpsTrackingService {
       
       // Validate request
       if (type != 'GPS_CHECK_REQUEST' || action != 'BACKGROUND_GPS_SYNC') {
-        debugPrint('⚠️ Invalid GPS check request type or action');
+        debugPrint('Invalid GPS check request type or action');
         return;
       }
 
       // Get current location
       final position = await getCurrentLocation();
       if (position == null) {
-        debugPrint('⚠️ Could not get current location');
+        debugPrint('Could not get current location');
         return;
       }
 
@@ -233,7 +235,7 @@ class GpsTrackingService {
         position: position,
       );
     } catch (e) {
-      debugPrint('❌ Error handling GPS check request: $e');
+      debugPrint('Error handling GPS check request: $e');
     }
   }
 

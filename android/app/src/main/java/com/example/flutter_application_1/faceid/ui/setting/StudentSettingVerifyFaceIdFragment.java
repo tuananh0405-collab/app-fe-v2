@@ -36,6 +36,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.FlutterEngineCache;
+import io.flutter.plugin.common.MethodChannel;
+
 import com.example.flutter_application_1.R;
 import com.example.flutter_application_1.auth.AuthManager;
 import com.example.flutter_application_1.databinding.FragmentStudentSettingVerifyFaceIdBinding;
@@ -53,6 +57,7 @@ import com.example.flutter_application_1.faceid.ui.setting.state.FaceRegistratio
 import com.example.flutter_application_1.faceid.ui.setting.state.FaceRegistrationStateManager;
 import com.example.flutter_application_1.faceid.ui.setting.success.FaceIdSuccessActivity;
 import com.example.flutter_application_1.faceid.data.service.FaceIdRequestManager;
+import com.example.flutter_application_1.attendance.data.constants.AttendanceTimeFlexibility;
 
 
 public class StudentSettingVerifyFaceIdFragment extends Fragment implements FaceIdEnhancer.FaceIdEnhancerCallback {
@@ -103,24 +108,62 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private static final float MAX_CENTER_MOVE_RATIO = 0.03f; // 3% of face size
     private static final float MAX_SIZE_DELTA_RATIO = 0.02f;  // 2% size change
 
-    // 🔄 HANDLERS
+    // 🚨 ERROR MESSAGE CONSTANTS
+    // Error Titles
+    private static final String ERROR_TITLE_NETWORK = "Network Error";
+    private static final String ERROR_TITLE_GPS = "GPS Error";
+    private static final String ERROR_TITLE_BEACON = "Beacon Error";
+    private static final String ERROR_TITLE_FACE = "Face Verification Failed";
+    private static final String ERROR_TITLE_NO_SHIFT = "No Shift Found";
+    private static final String ERROR_TITLE_GENERAL = "Verification Failed";
+    
+    // Error Messages
+    private static final String ERROR_MSG_NETWORK = "Weak signal or no internet connection. Please check and try again.";
+    private static final String ERROR_MSG_GPS = "Location verification failed. Please ensure GPS is enabled and you are at the correct location.";
+    private static final String ERROR_MSG_BEACON = "Beacon signal not found. Please ensure you are within range of the office beacon.";
+    private static final String ERROR_MSG_FACE = "Unable to verify face. Please make sure you are in good lighting and try again.";
+    private static final String ERROR_MSG_NO_SHIFT = "No active shift available for check-in/check-out at this time.";
+    private static final String ERROR_MSG_GENERAL = "Verification failed. Please try again.";
+    
+    // Error Detection Keywords
+    private static final String KEYWORD_GPS = "GPS";
+    private static final String KEYWORD_LOCATION = "Location";
+    private static final String KEYWORD_LOCATION_LOWER = "location";
+    private static final String KEYWORD_BEACON = "Beacon";
+    private static final String KEYWORD_BEACON_LOWER = "beacon";
+    private static final String KEYWORD_NO_SHIFT = "No active shift available";
+    
+    // ⏰ ATTENDANCE TIME FLEXIBILITY CONSTANTS
+    // Check-in window: [shift start - 1 hour] to [shift start + 1 hour]
+    // Check-out window: [shift end - 30 minutes] to [shift end + 1 hour]
+    private static final int EARLY_CHECK_IN_MINUTES = AttendanceTimeFlexibility.EARLY_CHECK_IN_MINUTES;
+    private static final int LATE_CHECK_IN_MINUTES = AttendanceTimeFlexibility.LATE_CHECK_IN_MINUTES;
+    private static final int EARLY_CHECK_OUT_MINUTES = AttendanceTimeFlexibility.EARLY_CHECK_OUT_MINUTES;
+    private static final int LATE_CHECK_OUT_MINUTES = AttendanceTimeFlexibility.LATE_CHECK_OUT_MINUTES;
+
+    // HANDLERS
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    // 📍 LOCATION
+    // LOCATION
     private LocationManager locationManager;
     private Location currentLocation;
+    private LocationListener locationListener;
+    private boolean isRequestingLocation = false;
 
-    // 📡 BEACON DATA (stored as instance variables to avoid fragment lifecycle issues)
+    // BEACON DATA (stored as instance variables to avoid fragment lifecycle issues)
     private String beaconUuid;
     private int beaconMajor = -1;
     private int beaconMinor = -1;
     private int beaconRssi = -100;
     
-    // ✅ SUCCESS FLAG - Prevent processing after successful verification
+    // SUCCESS FLAG - Prevent processing after successful verification
     private boolean verificationCompleted = false;
 
-    // 🕒 ATTENDANCE TYPE
+    //  ATTENDANCE TYPE
     private String attendanceType = "check_in"; // Default to check-in
+    
+    //  GPS CHECK FLAG
+    private boolean gpsCheckEnabled = false;
 
     // Verification window control
     private long verifyDeadlineMs = 0L;
@@ -202,7 +245,13 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             }
         };
         android.content.IntentFilter filter = new android.content.IntentFilter("com.example.flutter_application_1.BEACON_FOUND");
-        requireActivity().registerReceiver(beaconReceiver, filter);
+        
+        // Register receiver with RECEIVER_NOT_EXPORTED flag for Android 13+ compatibility
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(beaconReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            requireActivity().registerReceiver(beaconReceiver, filter);
+        }
     }
 
     private void setupVerificationWindowFromArgs() {
@@ -261,10 +310,10 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             Log.d(TAG, " Initializing Face ID request: " + requestId + " for session: " + sessionId);
             requestManager.initializeRequest(requestId, sessionId, deadline);
         } else {
-            Log.d(TAG, "⚠️ No requestId/sessionId found, using legacy verification mode");
+            Log.d(TAG, "No requestId/sessionId found, using legacy verification mode");
         }
 
-        // 🔄 NEW: Check for attendance_type in Intent/Args and update UI logic
+        // NEW: Check for attendance_type in Intent/Args and update UI logic
         if (args != null && args.containsKey("attendance_type")) {
             attendanceType = args.getString("attendance_type");
         } else if (getActivity() != null && getActivity().getIntent() != null && getActivity().getIntent().hasExtra("attendance_type")) {
@@ -272,6 +321,15 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         }
         
         Log.d(TAG, "Attendance Type: " + attendanceType);
+        
+        //  NEW: Check for gps_flag in Intent/Args
+        // if (args != null && args.containsKey("gps_flag")) {
+        //     gpsCheckEnabled = args.getBoolean("gps_flag", true);
+        // } else if (getActivity() != null && getActivity().getIntent() != null && getActivity().getIntent().hasExtra("gps_flag")) {
+        //     gpsCheckEnabled = getActivity().getIntent().getBooleanExtra("gps_flag", true);
+        // }
+        
+        // Log.d(TAG, "GPS Check Enabled: " + gpsCheckEnabled);
         
         // Update Button Text
         if (binding != null && binding.btnGetStarted != null) {
@@ -381,7 +439,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         //  NEW: Setup request manager callbacks
         setupRequestManagerCallbacks();
         
-        Log.d(TAG, "📦 All components initialized successfully");
+        Log.d(TAG, "All components initialized successfully");
     }
 
     private void setupCameraAndOverlay() {
@@ -409,11 +467,11 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
 
     /**
-     * 🔄 State change callback from StateManager
+     * State change callback from StateManager
      */
     private void onStateChanged(FaceRegistrationState state, String message) {
         if (!isAdded() || binding == null) {
-            Log.w(TAG, "⚠️ Fragment not valid for state change: " + state);
+            Log.w(TAG, "Fragment not valid for state change: " + state);
             return;
         }
 
@@ -484,7 +542,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private void handleStateActions(FaceRegistrationState state) {
         // Kiểm tra xem fragment có còn hoạt động không
         if (!isAdded() || getActivity() == null) {
-            Log.w(TAG, "⚠️ Fragment not valid for state action: " + state);
+            Log.w(TAG, "Fragment not valid for state action: " + state);
             return;
         }
 
@@ -561,7 +619,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
             case LIVENESS_CHALLENGE:
                 // Hiển thị UI cho liveness challenge
-                Log.d(TAG, "🔄 Activating Liveness Challenge");
+                Log.d(TAG, "Activating Liveness Challenge");
                 if (binding != null && binding.tvStatusMessage != null) {
                     binding.tvStatusMessage.setText("Look at the camera and blink");
                 }
@@ -607,7 +665,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
             case FACE_REAL:
                 //  Liveness verified! Auto-transition to capture and verify
-                Log.d(TAG, "🎉 Face is REAL - Starting automatic capture and verification");
+                Log.d(TAG, "Face is REAL - Starting automatic capture and verification");
                 livenessVerified = true;
                 
                 // Update overlay color to success
@@ -740,7 +798,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             }
             Log.d(TAG, " SpoofDetectionManager initialized with oval boundary");
         } else {
-            Log.w(TAG, "⚠️ FaceSpoofDetector not available, using fallback detection");
+            Log.w(TAG, "FaceSpoofDetector not available, using fallback detection");
         }
     }
 
@@ -789,11 +847,11 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private void startBeaconService() {
         try {
             Log.d(TAG, "Starting BeaconScanService...");
-            Intent intent = new Intent(requireContext(), com.example.flutter_application_1.attendance.data.service.BeaconScanService.class);
+            Intent intent = new Intent(requireContext(), com.example.flutter_application_1.attendance.data.service.BeaconsService.class);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 requireActivity().startForegroundService(intent);
             } else {
-                requireActivity().startService(intent);
+                requireActivity().startService(intent);s
             }
         } catch (Exception e) {
             Log.e(TAG, "Failed to start BeaconScanService", e);
@@ -809,7 +867,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                 Log.w(TAG, "Fragment not added - cannot stop BeaconScanService safely");
                 return;
             }
-            Intent intent = new Intent(requireContext(), com.example.flutter_application_1.attendance.data.service.BeaconScanService.class);
+            Intent intent = new Intent(requireContext(), com.example.flutter_application_1.attendance.data.service.BeaconsService.class);
             boolean stopped = requireActivity().stopService(intent);
             Log.d(TAG, "BeaconScanService stop requested, result=" + stopped);
             // Also send an explicit STOP action to the service so it can self-terminate reliably
@@ -1328,7 +1386,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private void captureAndVerifyFace() {
         // Check if verification has already completed successfully
         if (verificationCompleted) {
-            Log.w(TAG, "⚠️ Verification already completed, ignoring duplicate request");
+            Log.w(TAG, "Verification already completed, ignoring duplicate request");
             return;
         }
         
@@ -1339,7 +1397,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         }
 
         if (currentFrameBitmap == null || currentFaceRect == null) {
-            Log.w(TAG, "⚠️ Cannot capture - no frame or face rect");
+            Log.w(TAG, "Cannot capture - no frame or face rect");
             stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
                     "Capture failed - no data available");
             return;
@@ -1412,8 +1470,9 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     }
     
     /**
-     * 📍 Lấy tọa độ GPS hiện tại của thiết bị
+     * Lấy tọa độ GPS hiện tại của thiết bị
      */
+
     private void getCurrentLocation() {
         try {
             if (locationManager == null) {
@@ -1423,7 +1482,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             // Kiểm tra permission
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "⚠️ Location permission not granted");
+                Log.w(TAG, "Location permission not granted");
                 return;
             }
             
@@ -1442,11 +1501,157 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             
         
         } catch (Exception e) {
-            Log.e(TAG, "❌ Error getting current location", e);
+            Log.e(TAG, "Error getting current location", e);
         }
     }
     
+    /**
+     * Callback interface for location updates
+     */
+    private interface LocationCallback {
+        void onLocationReceived(Location location);
+        void onLocationFailed();
+    }
     
+    /**
+     * Request fresh GPS location with timeout
+     * This provides more accurate location than getLastKnownLocation()
+     */
+    private void requestFreshLocation(LocationCallback callback) {
+        if (isRequestingLocation) {
+            Log.w(TAG, "Location request already in progress");
+            return;
+        }
+        
+        try {
+            if (locationManager == null) {
+                locationManager = (LocationManager) requireContext().getSystemService(android.content.Context.LOCATION_SERVICE);
+            }
+            
+            // Kiểm tra permission
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "Location permission not granted");
+                callback.onLocationFailed();
+                return;
+            }
+            
+            // Check if GPS is enabled
+            boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            
+            if (!isGpsEnabled && !isNetworkEnabled) {
+                Log.w(TAG, "GPS and Network providers are disabled");
+                // Fallback to last known location
+                getCurrentLocation();
+                if (currentLocation != null) {
+                    callback.onLocationReceived(currentLocation);
+                } else {
+                    callback.onLocationFailed();
+                }
+                return;
+            }
+            
+            isRequestingLocation = true;
+            Log.d(TAG, "🔍 Requesting fresh GPS location...");
+            
+            // Create location listener
+            locationListener = new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    if (!isAdded()) return;
+                    
+                    Log.d(TAG, "✓ Fresh location received: accuracy=" + location.getAccuracy() + "m");
+                    
+                    // Update current location
+                    currentLocation = location;
+                    
+                    // Remove updates
+                    stopLocationUpdates();
+                    
+                    // Callback
+                    callback.onLocationReceived(location);
+                }
+                
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {}
+                
+                @Override
+                public void onProviderEnabled(String provider) {}
+                
+                @Override
+                public void onProviderDisabled(String provider) {}
+            };
+            
+            // Request location updates from both GPS and Network
+            if (isGpsEnabled) {
+                locationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    0,      // minTime: 0ms (get immediately)
+                    0,      // minDistance: 0m (any distance)
+                    locationListener,
+                    Looper.getMainLooper()
+                );
+                Log.d(TAG, "Requested GPS location updates");
+            }
+            
+            if (isNetworkEnabled) {
+                locationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER,
+                    0,
+                    0,
+                    locationListener,
+                    Looper.getMainLooper()
+                );
+                Log.d(TAG, "Requested Network location updates");
+            }
+            
+            // Set timeout: If no location after 5 seconds, use last known location
+            mainHandler.postDelayed(() -> {
+                if (!isAdded() || !isRequestingLocation) return;
+                
+                Log.w(TAG, "⏱️ Location request timeout, using last known location");
+                
+                // Stop location updates
+                stopLocationUpdates();
+                
+                // Fallback to last known location
+                getCurrentLocation();
+                
+                if (currentLocation != null) {
+                    Log.d(TAG, "Using cached location: accuracy=" + currentLocation.getAccuracy() + "m");
+                    callback.onLocationReceived(currentLocation);
+                } else {
+                    Log.e(TAG, "No location available");
+                    callback.onLocationFailed();
+                }
+            }, 5000); // 5 second timeout
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error requesting fresh location", e);
+            isRequestingLocation = false;
+            callback.onLocationFailed();
+        }
+    }
+    
+    /**
+     * Stop location updates and cleanup
+     */
+    private void stopLocationUpdates() {
+        try {
+            if (locationManager != null && locationListener != null) {
+                locationManager.removeUpdates(locationListener);
+                Log.d(TAG, "Location updates stopped");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error stopping location updates", e);
+        } finally {
+            isRequestingLocation = false;
+            locationListener = null;
+        }
+    }
+    
+
     /**
      *  Perform attendance check-in using AttendanceService (3-step flow)
      */
@@ -1468,84 +1673,216 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             return;
         }
 
-        // 📍 Lấy tọa độ GPS hiện tại thay vì dùng giá trị fix cứng
-        getCurrentLocation();
+        // 🔍 Request fresh GPS location for better accuracy
+        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Getting GPS location...");
         
-        final double latitude = (currentLocation != null) ? currentLocation.getLatitude() : 10.762622;
-        final double longitude = (currentLocation != null) ? currentLocation.getLongitude() : 106.660172;
-        final double accuracy = (currentLocation != null) ? currentLocation.getAccuracy() : 15.0;
-        
-        if (currentLocation != null) {
-            Log.d(TAG, "📍 Using current GPS location: lat=" + latitude + ", lng=" + longitude + ", accuracy=" + accuracy);
-        } else {
-            Log.w(TAG, "⚠️ GPS location not available, using default coordinates");
-        }
-
-        final String deviceId = android.provider.Settings.Secure.getString(requireContext().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
-
-        // Initialize AttendanceService
-        com.example.flutter_application_1.attendance.data.service.AttendanceService attendanceService = new com.example.flutter_application_1.attendance.data.service.AttendanceService(requireContext());
-
-        // Step 1: Validate Beacon
-        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Validating beacon...");
-        attendanceService.validateBeacon(beaconUuidLocal, beaconMajorLocal, beaconMinorLocal, rssiLocal, new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse>() {
+        requestFreshLocation(new LocationCallback() {
             @Override
-            public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse beaconResult) {
+            public void onLocationReceived(Location location) {
                 if (!isAdded()) return;
-                Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
-
-                // 🔍 Generate face embedding from captured image
-                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Generating face embedding...");
                 
-                String faceEmbeddingBase64 = faceIdService.extractFaceEmbeddingBase64(faceImage);
-                if (faceEmbeddingBase64 == null) {
-                    Log.e(TAG, "❌ Failed to generate face embedding");
-                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Failed to generate face embedding");
+                final double latitude = location.getLatitude();
+                final double longitude = location.getLongitude();
+                final double accuracy = location.getAccuracy();
+                
+                Log.d(TAG, "Using GPS location: lat=" + latitude + ", lng=" + longitude + ", accuracy=" + accuracy);
+
+                // 🔍 Validate GPS accuracy before proceeding
+                final double MAX_GPS_ACCURACY = 2000.0; // Maximum allowed accuracy in meters
+                if (accuracy > MAX_GPS_ACCURACY) {
+                    Log.e(TAG, "GPS accuracy too low: " + accuracy + "m (max allowed: " + MAX_GPS_ACCURACY + "m)");
+                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
+                        "GPS accuracy too low (" + String.format("%.1f", accuracy) + "m). Please move to an area with better GPS signal and try again.");
                     return;
                 }
                 
-                Log.d(TAG, "✅ Face embedding generated: " + faceEmbeddingBase64.length() + " chars");
+                Log.d(TAG, "✓ GPS accuracy acceptable: " + accuracy + "m");
 
-                // Step 2: Request Face Verification WITH face embedding
-                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Submitting face verification...");
-                String verifyType = attendanceType != null ? attendanceType : "check_in";
-                attendanceService.requestFaceVerification(verifyType, latitude, longitude, accuracy, deviceId, faceEmbeddingBase64,
-                    new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse>() {
+                final String deviceId = android.provider.Settings.Secure.getString(requireContext().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+
+                // Initialize AttendanceService
+                com.example.flutter_application_1.attendance.data.service.AttendanceService attendanceService = new com.example.flutter_application_1.attendance.data.service.AttendanceService(requireContext());
+
+                // Step 1: Validate Beacon
+                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Validating beacon...");
+                attendanceService.validateBeacon(beaconUuidLocal, beaconMajorLocal, beaconMinorLocal, rssiLocal, new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse>() {
+            @Override
+            public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse beaconResult) {
+                if (!isAdded()) return;
+                Log.d(TAG, "Step 1 - Beacon validated, session_token: " + beaconResult.getSession_token());
+
+                // Step 1.5: Check GPS location via Flutter method channel (only if GPS flag is enabled)
+                if (!gpsCheckEnabled) {
+                    Log.d(TAG, "GPS check is disabled by flag, skipping GPS verification");
+                    // Skip GPS check and proceed directly to face verification
+                    performFaceVerification(beaconResult, latitude, longitude, accuracy, deviceId, faceImage, attendanceService);
+                    return;
+                }
+                
+                stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Verifying GPS location...");
+                Log.d(TAG, "Calling GPS check via method channel...");
+                
+                try {
+                    // Get Flutter engine - try multiple approaches
+                    FlutterEngine flutterEngine = null;
+                    
+                    // Approach 1: Try to get from FlutterEngineCache
+                    try {
+                        flutterEngine = io.flutter.embedding.engine.FlutterEngineCache
+                                .getInstance()
+                                .get("main_engine");
+                    } catch (Exception e) {
+                        Log.d(TAG, "Engine not in cache with ID 'main_engine'");
+                    }
+                    
+                    // Approach 2: Fallback - skip GPS check and proceed directly
+                    if (flutterEngine == null) {
+                        Log.w(TAG, "Flutter engine not available, skipping GPS check via method channel");
+                        Log.d(TAG, "Proceeding directly to face verification");
+                        
+                        // Continue with face verification directly
+                        performFaceVerification(beaconResult, latitude, longitude, accuracy, deviceId, faceImage, attendanceService);
+                        return;
+                    }
+                    
+                    MethodChannel channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "com.example.flutter_application_1/faceid");
+                    
+                    java.util.HashMap<String, Object> args = new java.util.HashMap<>();
+                    args.put("latitude", latitude);
+                    args.put("longitude", longitude);
+                    args.put("accuracy", accuracy);
+                    
+                    channel.invokeMethod("checkGps", args, new MethodChannel.Result() {
                         @Override
-                        public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse verifyResult) {
+                        public void success(Object result) {
                             if (!isAdded()) return;
-                            Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
-                            Log.d(TAG, "Step 2 ✅ - ShiftId: " + verifyResult.getShift_id());
-                            Log.d(TAG, "✅ Face verification submitted! Waiting for backend processing via RabbitMQ...");
-
-                            // ✅ DONE! Backend will handle verification via event-driven flow:
-                            // Attendance Service → RabbitMQ → Face Service → Verify → Publish event → Update check_in_time
-                            stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
-                                "Face verification submitted successfully! Check-in time will be updated shortly.");
+                            Log.d(TAG, "Step 1.5 - GPS check passed");
+                            
+                            // GPS check succeeded, now proceed to face verification
+                            performFaceVerification(beaconResult, latitude, longitude, accuracy, deviceId, faceImage, attendanceService);
                         }
-
+                        
                         @Override
-                        public void onFailure(String error) {
+                        public void error(String errorCode, String errorMessage, Object errorDetails) {
                             if (!isAdded()) return;
-                            Log.e(TAG, "❌ Step 2 failed: " + error);
-                            lastDetailedErrorMessage = "Request face verification failed:\n" + error;
-                            hasDetailedError = true;
-                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 2 failed: " + error);
+                            Log.e(TAG, "Step 1.5 failed - GPS check: " + errorCode + ": " + errorMessage);
+                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "GPS verification failed: " + (errorMessage != null ? errorMessage : "Please ensure you are at the correct location"));
+                        }
+                        
+                        @Override
+                        public void notImplemented() {
+                            if (!isAdded()) return;
+                            Log.e(TAG, "GPS check not implemented");
+                            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "GPS check not available");
                         }
                     });
+                } catch (Exception e) {
+                    Log.e(TAG, "Error calling GPS check", e);
+                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "GPS check failed: " + e.getMessage());
+                }
             }
             
             @Override
             public void onFailure(String error) {
                 if (!isAdded()) return;
-                Log.e(TAG, "❌ Step 1 failed: " + error);
+                Log.e(TAG, "Step 1 failed: " + error);
                 stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 1 failed: " + error);
+            }
+        });
+            }
+            
+            @Override
+            public void onLocationFailed() {
+                if (!isAdded()) return;
+                Log.e(TAG, "Failed to get GPS location");
+                stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, 
+                    "Failed to get GPS location. Please ensure GPS is enabled and try again.");
             }
         });
     }
 
     /**
-     * 🎉 Handle success - Navigate to Success Activity
+     * Helper method to perform face verification after beacon (and optionally GPS) validation
+     */
+    private void performFaceVerification(
+            com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse beaconResult,
+            double latitude,
+            double longitude,
+            double accuracy,
+            String deviceId,
+            Bitmap faceImage,
+            com.example.flutter_application_1.attendance.data.service.AttendanceService attendanceService) {
+        if (!isAdded()) return;
+        
+        // 🔍 Generate face embedding from captured image
+        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Generating face embedding...");
+        
+        String faceEmbeddingBase64 = faceIdService.extractFaceEmbeddingBase64(faceImage);
+        if (faceEmbeddingBase64 == null) {
+            Log.e(TAG, "Failed to generate face embedding");
+            stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Failed to generate face embedding");
+            return;
+        }
+        
+        Log.d(TAG, "Face embedding generated: " + faceEmbeddingBase64.length() + " chars");
+
+        // Step 2: Request Face Verification WITH face embedding
+        stateManager.transitionTo(FaceRegistrationState.PROCESSING, "Submitting face verification...");
+        String verifyType = attendanceType != null ? attendanceType : "check_in";
+        
+        // Log GPS data being sent to backend
+        Log.d(TAG, "📍 Sending GPS data to backend:");
+        Log.d(TAG, "  - Latitude: " + latitude);
+        Log.d(TAG, "  - Longitude: " + longitude);
+        Log.d(TAG, "  - Accuracy: " + accuracy + "m");
+        Log.d(TAG, "  - Device ID: " + deviceId);
+        
+        attendanceService.requestFaceVerification(verifyType, latitude, longitude, accuracy, deviceId, faceEmbeddingBase64,
+            new com.example.flutter_application_1.attendance.data.service.AttendanceService.AttendanceCallback<com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse>() {
+                @Override
+                public void onSuccess(com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse verifyResult) {
+                    if (!isAdded()) return;
+                    Log.d(TAG, "Step 2 - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
+                    Log.d(TAG, "Step 2 - ShiftId: " + verifyResult.getShift_id());
+                    
+                    // 🔍 Check if response contains error indicators in message
+                    String message = verifyResult.getMessage();
+                    Log.d(TAG, "Response message: " + message);
+                    
+                    // Check for face verification failure indicators
+                    if (message != null && (message.contains("Face: ❌") || 
+                        message.toLowerCase().contains("face verification failed") ||
+                        message.toLowerCase().contains("face not verified"))) {
+                        Log.e(TAG, "❌ Face verification failed despite HTTP success: " + message);
+                        lastDetailedErrorMessage = message;
+                        hasDetailedError = true;
+                        lastStateMessage = message;
+                        stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, message);
+                        return;
+                    }
+                    
+                    Log.d(TAG, "✅ Face verification submitted! Waiting for backend processing via RabbitMQ...");
+
+                    // DONE! Backend will handle verification via event-driven flow:
+                    // Attendance Service → RabbitMQ → Face Service → Verify → Publish event → Update check_in_time
+                    stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
+                        "Face verification submitted successfully! Check-in time will be updated shortly.");
+                }
+
+                @Override
+                public void onFailure(String error) {
+                    if (!isAdded()) return;
+                    Log.e(TAG, "Step 2 failed: " + error);
+                    lastDetailedErrorMessage = "Request face verification failed:\n" + error;
+                    hasDetailedError = true;
+                    lastStateMessage = error;
+                    stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER, "Step 2 failed: " + error);
+                }
+            });
+    }
+
+    /**
+     * Handle success - Navigate to Success Activity
      */
     private void handleSuccessState() {
         // Check if fragment is still attached before proceeding
@@ -1556,7 +1893,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         
         // Set flag to prevent duplicate processing
         verificationCompleted = true;
-        Log.d(TAG, "✅ Verification completed flag set");
+        Log.d(TAG, "Verification completed flag set");
 
         try {
             stopCamera();
@@ -1587,7 +1924,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             // This ensures no duplicate requests when user clicks Continue
             requireActivity().finish();
 
-            Log.d(TAG, "🎉 Navigating to Success Activity and finishing parent activity");
+            Log.d(TAG, "Navigating to Success Activity and finishing parent activity");
 
         } catch (Exception e) {
             Log.e(TAG, " Error handling success", e);
@@ -1610,39 +1947,59 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
     private void handleNetworkError(String errorMessage) {
         if (!isAdded()) return;
 
-        // Create alert dialog with retry option
+        // Inflate custom dialog layout
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_error, null);
+        
+        // Find views
+        TextView tvTitle = dialogView.findViewById(R.id.tvErrorTitle);
+        TextView tvMessage = dialogView.findViewById(R.id.tvErrorMessage);
+        View btnTryAgain = dialogView.findViewById(R.id.btnTryAgain);
+        View btnCancel = dialogView.findViewById(R.id.btnCancel);
+        
+        // Set content
+        tvTitle.setText("Network Connection Issue");
+        tvMessage.setText("Cannot connect to the server. Please check your internet connection and try again.");
+        
+        // Create dialog
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setTitle("Network Connection Issue")
-                .setMessage("Cannot connect to the server. Please check your internet connection and try again.")
-                .setPositiveButton("Try Again", (d, which) -> {
-                    // Check if fragment is still attached before proceeding
-                    if (!isAdded()) {
-                        Log.w(TAG, "Fragment not attached, cannot retry registration");
-                        return;
-                    }
-
-                    // Dismiss dialog and reset
-                    currentErrorDialog = null;
-                    resetComponents();
-                    startFaceRegistration();
-                })
-                .setNegativeButton("Cancel", (d, which) -> {
-                    // Check if fragment is still attached before proceeding
-                    if (!isAdded()) {
-                        Log.w(TAG, "Fragment not attached, cannot handle cancel");
-                        return;
-                    }
-
-                    // Dismiss dialog and go back
-                    currentErrorDialog = null;
-                    requireActivity().onBackPressed();
-                })
+                .setView(dialogView)
                 .setCancelable(false)
                 .create();
-                
-        // Store reference and show dialog
-        currentErrorDialog = dialog;
-        dialog.show();
+        
+        // Make dialog background transparent for rounded corners
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        
+        // Set button click listeners
+        btnTryAgain.setOnClickListener(v -> {
+            if (!isAdded()) {
+                Log.w(TAG, "Fragment not attached, cannot retry registration");
+                return;
+            }
+            dialog.dismiss();
+            currentErrorDialog = null;
+            resetComponents();
+            startFaceRegistration();
+        });
+        
+        btnCancel.setOnClickListener(v -> {
+            if (!isAdded()) {
+                Log.w(TAG, "Fragment not attached, cannot handle cancel");
+                return;
+            }
+            dialog.dismiss();
+            currentErrorDialog = null;
+            requireActivity().onBackPressed();
+        });
+        
+        // Store reference and show dialog only if fragment is still attached and activity is not finishing
+        if (isAdded() && !requireActivity().isFinishing()) {
+            currentErrorDialog = dialog;
+            dialog.show();
+        } else {
+            Log.w(TAG, "Cannot show network error dialog: Fragment not attached or Activity is finishing");
+        }
     }
 
     /**
@@ -1657,60 +2014,115 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             return;
         }
 
-        // Handle all errors in a unified way w/ Simple Messages
-        String title = "Verification Failed";
+        // Handle all errors with specific titles and messages
+        String title;
         String message;
 
-        // Set simple English message based on error type
+        // Set specific title and message based on error type
         if (state == FaceRegistrationState.FAILED_NETWORK) {
-            message = "Weak signal or no internet connection. Please check and try again.";
+            title = ERROR_TITLE_NETWORK;
+            message = ERROR_MSG_NETWORK;
         } else if (state == FaceRegistrationState.FAILED_SPOOF) {
-            message = "Unable to verify face. Please make sure you are in good lighting and try again.";
+            title = ERROR_TITLE_FACE;
+            message = ERROR_MSG_FACE;
         } else {
-            // Check for specific Beacon or GPS errors
+            // Check for specific errors in priority order: Face > GPS > Beacon > No Shift > General
+            // This ensures that when a message contains multiple keywords (e.g., "Beacon: ✅ | GPS: ✅ | Face: ❌"),
+            // we show the most relevant error (Face in this case)
             if (lastStateMessage != null) {
-                if (lastStateMessage.contains("Beacon")) {
-                    message = "Beacon signal not found. Please ensure you are within range of the office beacon.";
-                } else if (lastStateMessage.contains("Location") || lastStateMessage.contains("GPS")) {
-                    message = "Location verification failed. Please ensure GPS is enabled and you are at the correct location.";
-                } else if (lastStateMessage.contains("No active shift available")) {
-                     message = "No active shift available for check-in/check-out at this time.";
-                } else {
-                    message = "Verification failed. Please try again.";
+                Log.d(TAG, "Last state message: " + lastStateMessage);
+                // Priority 1: Check for Face error first (most specific)
+                if (lastStateMessage.contains("Beacon: ✅ | GPS: ✅ | Face: ❌") || 
+                    lastStateMessage.toLowerCase().contains("face verification failed") ||
+                    lastStateMessage.toLowerCase().contains("face not verified")) {
+                    title = ERROR_TITLE_FACE;
+                    message = ERROR_MSG_FACE;
+                }
+                // Priority 2: Check for GPS error
+                else if (lastStateMessage.contains(KEYWORD_GPS) || 
+                    lastStateMessage.contains(KEYWORD_LOCATION) || 
+                    lastStateMessage.contains(KEYWORD_LOCATION_LOWER)) {
+                    title = ERROR_TITLE_GPS;
+                    message = ERROR_MSG_GPS;
+                } 
+                // Priority 3: Check for Beacon error
+                else if (lastStateMessage.contains(KEYWORD_BEACON) || 
+                           lastStateMessage.contains(KEYWORD_BEACON_LOWER)) {
+                    title = ERROR_TITLE_BEACON;
+                    message = ERROR_MSG_BEACON;
+                } 
+                // Priority 4: Check for No Shift error
+                else if (lastStateMessage.contains(KEYWORD_NO_SHIFT)) {
+                    title = ERROR_TITLE_NO_SHIFT;
+                    message = ERROR_MSG_NO_SHIFT;
+                } 
+                // Default: General error
+                else {
+                    title = ERROR_TITLE_GENERAL;
+                    message = ERROR_MSG_GENERAL;
                 }
             } else {
-                message = "Verification failed. Please try again.";
+                title = ERROR_TITLE_GENERAL;
+                message = ERROR_MSG_GENERAL;
             }
         }
 
-        // Create alert dialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("Try Again", (dialog, which) -> {
-                     if (!isAdded()) return;
+        // Inflate custom dialog layout
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_error, null);
+        
+        // Find views
+        TextView tvTitle = dialogView.findViewById(R.id.tvErrorTitle);
+        TextView tvMessage = dialogView.findViewById(R.id.tvErrorMessage);
+        View btnTryAgain = dialogView.findViewById(R.id.btnTryAgain);
+        View btnCancel = dialogView.findViewById(R.id.btnCancel);
+        
+        // Set content
+        tvTitle.setText(title);
+        tvMessage.setText(message);
+        
+        // Create dialog
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setCancelable(false)
+                .create();
+        
+        // Make dialog background transparent for rounded corners
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        
+        // Set button click listeners
+        btnTryAgain.setOnClickListener(v -> {
+            if (!isAdded()) return;
+            
+            dialog.dismiss();
+            
+            // Reset error tracking
+            hasDetailedError = false;
+            lastDetailedErrorMessage = "";
+            lastStateMessage = "";
+            currentErrorDialog = null;
 
-                    // Reset error tracking
-                    hasDetailedError = false;
-                    lastDetailedErrorMessage = "";
-                    lastStateMessage = "";
-                    currentErrorDialog = null;
-
-                    resetComponents();
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        if (isAdded()) startFaceRegistration();
-                    }, 500);
-                })
-                .setNegativeButton("Cancel", (d, which) -> {
-                     if (!isAdded()) return;
-                    currentErrorDialog = null;
-                    requireActivity().onBackPressed();
-                })
-                .setCancelable(false);
-
-        AlertDialog dialog = builder.create();
-        currentErrorDialog = dialog;
-        dialog.show();
+            resetComponents();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (isAdded()) startFaceRegistration();
+            }, 500);
+        });
+        
+        btnCancel.setOnClickListener(v -> {
+            if (!isAdded()) return;
+            dialog.dismiss();
+            currentErrorDialog = null;
+            requireActivity().onBackPressed();
+        });
+        
+        // Store reference and show dialog only if fragment is still attached and activity is not finishing
+        if (isAdded() && !requireActivity().isFinishing()) {
+            currentErrorDialog = dialog;
+            dialog.show();
+        } else {
+            Log.w(TAG, "Cannot show error dialog: Fragment not attached or Activity is finishing");
+        }
     }
 
     /**
@@ -2055,7 +2467,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             mainHandler.removeCallbacksAndMessages(null);
         }
 
-        Log.d(TAG, "🔄 All components reset");
+        Log.d(TAG, "All components reset");
     }
 
     @Override
@@ -2100,11 +2512,14 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
 
         stopCameraSafe();
 
+        // Stop location updates if still running
+        stopLocationUpdates();
+
         // Hủy đăng ký receiver khi destroy view
         if (beaconReceiver != null) {
             try {
                 requireActivity().unregisterReceiver(beaconReceiver);
-                Log.d(TAG, "✅ BroadcastReceiver unregistered successfully");
+                Log.d(TAG, "BroadcastReceiver unregistered successfully");
             } catch (IllegalArgumentException e) {
                 // Receiver was not registered or already unregistered
                 Log.w(TAG, "BroadcastReceiver was not registered: " + e.getMessage());
@@ -2151,7 +2566,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
         faceOverlayView = null;
         binding = null;
 
-        Log.d(TAG, "🧹 Fragment cleaned up");
+        Log.d(TAG, "Fragment cleaned up");
     }
     // Thêm các biến UI cần thiết
     private ProgressBar analysisProgressBar;
@@ -2394,7 +2809,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
                                             com.example.flutter_application_1.faceid.data.model.response.FaceIdRequestStatusResponse response) {
                 if (!isAdded()) return;
                 
-                Log.d(TAG, "🔄 Request status updated: " + state);
+                Log.d(TAG, "Request status updated: " + state);
                 
                 switch (state) {
                     case VERIFIED:
@@ -2463,7 +2878,7 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
      *  NEW: Handle request expired
      */
     private void handleRequestExpired() {
-        Log.d(TAG, "⏰ Request expired");
+        Log.d(TAG, "Request expired");
         stopCameraSafe();
         
         // Show expired message
@@ -2506,6 +2921,8 @@ public class StudentSettingVerifyFaceIdFragment extends Fragment implements Face
             requireActivity().onBackPressed();
         }
     }
+    
+
     
 }
 

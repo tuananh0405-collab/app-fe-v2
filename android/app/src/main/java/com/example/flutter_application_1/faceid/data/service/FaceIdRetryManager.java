@@ -56,18 +56,18 @@ public class FaceIdRetryManager {
      */
     private <T> void executeWithRetryInternal(Supplier<T> task, RetryCallback<T> callback, int attempt) {
         try {
-            Log.d(TAG, "🔄 Executing task, attempt " + (attempt + 1) + "/" + (maxRetries + 1));
+            Log.d(TAG, "Executing task, attempt " + (attempt + 1) + "/" + (maxRetries + 1));
             
             T result = task.get();
             Log.d(TAG, " Task completed successfully on attempt " + (attempt + 1));
             callback.onSuccess(result);
             
         } catch (Exception e) {
-            Log.w(TAG, "⚠️ Task failed on attempt " + (attempt + 1) + ": " + e.getMessage());
+            Log.w(TAG, "Task failed on attempt " + (attempt + 1) + ": " + e.getMessage());
             
             if (attempt < maxRetries) {
                 long delay = calculateDelay(attempt);
-                Log.d(TAG, "⏰ Scheduling retry in " + delay + "ms");
+                Log.d(TAG, "Scheduling retry in " + delay + "ms");
                 
                 scheduler.schedule(() -> {
                     executeWithRetryInternal(task, callback, attempt + 1);
@@ -94,7 +94,7 @@ public class FaceIdRetryManager {
         double jitter = delay * JITTER_FACTOR * (Math.random() - 0.5);
         delay = Math.max(0, delay + (long) jitter);
         
-        Log.d(TAG, "📊 Calculated delay: " + delay + "ms (attempt " + attempt + ")");
+        Log.d(TAG, "Calculated delay: " + delay + "ms (attempt " + attempt + ")");
         return delay;
     }
     
@@ -103,7 +103,7 @@ public class FaceIdRetryManager {
      */
     public void cleanup() {
         scheduler.shutdown();
-        Log.d(TAG, "🧹 Cleaned up FaceIdRetryManager");
+        Log.d(TAG, "Cleaned up FaceIdRetryManager");
     }
     
     /**

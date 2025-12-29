@@ -3,7 +3,9 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/employee_shift_api_response_model.dart';
 import '../models/employee_shift_model.dart';
+import '../models/work_schedule_assignment_model.dart';
 import '../../domain/entities/employee_shift_entity.dart';
+import '../../domain/entities/work_schedule_assignment_entity.dart';
 
 abstract class WorkScheduleRemoteDataSource {
   Future<List<EmployeeShiftModel>> getEmployeeShifts({
@@ -44,7 +46,7 @@ class WorkScheduleRemoteDataSourceImpl
             'from_date': fromDateStr,
             'to_date': toDateStr,
             'page': 1,
-            'limit': 30,
+            'limit': 100,
           },
         );
 
@@ -99,41 +101,109 @@ class WorkScheduleRemoteDataSourceImpl
           );
 
           if (response.statusCode == 200 && response.data['data'] != null) {
-            final assignments = response.data['data'] as List;
+            final assignmentsJson = response.data['data'] as List;
+            
+            // Parse assignments
+            final assignments = assignmentsJson
+                .map((json) => WorkScheduleAssignmentModel.fromJson(json))
+                .toList();
 
+            // Iterate through each date in the range
             for (var date = futureStartDate;
                 date.isBefore(toDate.add(const Duration(days: 1)));
                 date = date.add(const Duration(days: 1))) {
               
               final dateOnly = DateTime(date.year, date.month, date.day);
 
-              // Find assignment for this date
-              final assignment = assignments.firstWhere((a) {
-                final effectiveFrom = DateTime.parse(a['effective_from']);
-                final effectiveTo = DateTime.parse(a['effective_to']);
-                
-                final efOnly = DateTime(effectiveFrom.year, effectiveFrom.month, effectiveFrom.day);
-                final etOnly = DateTime(effectiveTo.year, effectiveTo.month, effectiveTo.day);
+              // Find all assignments that cover this date
+              final applicableAssignments = assignments.where((assignment) {
+                final efOnly = DateTime(
+                  assignment.effectiveFrom.year,
+                  assignment.effectiveFrom.month,
+                  assignment.effectiveFrom.day,
+                );
+                final etOnly = DateTime(
+                  assignment.effectiveTo.year,
+                  assignment.effectiveTo.month,
+                  assignment.effectiveTo.day,
+                );
 
                 return (dateOnly.isAtSameMomentAs(efOnly) || dateOnly.isAfter(efOnly)) &&
                        (dateOnly.isAtSameMomentAs(etOnly) || dateOnly.isBefore(etOnly));
-              }, orElse: () => null);
+              }).toList();
 
-              if (assignment != null) {
-                final schedule = assignment['work_schedule'];
-                if (schedule != null) {
-                  allShifts.add(EmployeeShiftModel(
+              // Process each applicable assignment (can have multiple shifts per day)
+              for (var assignment in applicableAssignments) {
+                EmployeeShiftModel? shiftForAssignment;
+                
+                // Check if there's a schedule override for this date
+                final override = assignment.scheduleOverrides.cast<ScheduleOverrideEntity?>().firstWhere(
+                  (override) {
+                    if (override == null) return false;
+                    final overrideFromDate = DateTime(
+                      override.fromDate.year,
+                      override.fromDate.month,
+                      override.fromDate.day,
+                    );
+                    final overrideToDate = DateTime(
+                      override.toDate.year,
+                      override.toDate.month,
+                      override.toDate.day,
+                    );
+
+                    return (dateOnly.isAtSameMomentAs(overrideFromDate) || 
+                            dateOnly.isAfter(overrideFromDate)) &&
+                           (dateOnly.isAtSameMomentAs(overrideToDate) || 
+                            dateOnly.isBefore(overrideToDate));
+                  },
+                  orElse: () => null,
+                );
+
+                if (override != null && override.overrideWorkScheduleId != null) {
+                  // Find the override work schedule from all assignments
+                  WorkScheduleEntity? overrideSchedule;
+                  
+                  for (var otherAssignment in assignments) {
+                    if (otherAssignment.workScheduleId == override.overrideWorkScheduleId) {
+                      overrideSchedule = otherAssignment.workSchedule;
+                      break;
+                    }
+                  }
+
+                  if (overrideSchedule != null) {
+                    shiftForAssignment = EmployeeShiftModel(
+                      id: 0,
+                      employeeId: employeeId,
+                      employeeCode: '', 
+                      departmentId: 0,
+                      shiftDate: date,
+                      workScheduleId: overrideSchedule.id,
+                      scheduledStartTime: overrideSchedule.startTime,
+                      scheduledEndTime: overrideSchedule.endTime,
+                      status: ShiftStatus.scheduled,
+                      scheduleName: '${overrideSchedule.scheduleName} (Override)',
+                    );
+                  }
+                } else {
+                  // No override, use the regular work schedule
+                  final schedule = assignment.workSchedule;
+                  
+                  shiftForAssignment = EmployeeShiftModel(
                     id: 0,
                     employeeId: employeeId,
                     employeeCode: '', 
                     departmentId: 0,
                     shiftDate: date,
-                    workScheduleId: schedule['id'] ?? 0,
-                    scheduledStartTime: schedule['start_time'] ?? '00:00:00',
-                    scheduledEndTime: schedule['end_time'] ?? '00:00:00',
+                    workScheduleId: schedule.id,
+                    scheduledStartTime: schedule.startTime,
+                    scheduledEndTime: schedule.endTime,
                     status: ShiftStatus.scheduled,
-                    scheduleName: schedule['schedule_name'],
-                  ));
+                    scheduleName: schedule.scheduleName,
+                  );
+                }
+
+                if (shiftForAssignment != null) {
+                  allShifts.add(shiftForAssignment);
                 }
               }
             }
@@ -153,60 +223,66 @@ class WorkScheduleRemoteDataSourceImpl
     }
 
     // 3. Process shifts to update status from scheduled to inProgress if check-in time has passed
-    final processedShifts = allShifts.map((shift) {
-      // Only process shifts with scheduled status
-      if (shift.status == ShiftStatus.scheduled) {
-        // Parse the scheduled start time to get check-in time
-        final timeParts = shift.scheduledStartTime.split(':');
-        final checkInDateTime = DateTime(
-          shift.shiftDate.year,
-          shift.shiftDate.month,
-          shift.shiftDate.day,
-          int.parse(timeParts[0]),
-          int.parse(timeParts[1]),
-          timeParts.length > 2 ? int.parse(timeParts[2]) : 0,
-        );
+    // NOTE: Logic này đã được comment để sử dụng status từ BE trực tiếp
+    // Có thể sẽ dùng lại sau này nếu cần xử lý status ở client-side
+    // final processedShifts = allShifts.map((shift) {
+    //   // Only process shifts with scheduled status
+    //   if (shift.status == ShiftStatus.scheduled) {
+    //     // Parse the scheduled start time to get check-in time
+    //     final timeParts = shift.scheduledStartTime.split(':');
+    //     final checkInDateTime = DateTime(
+    //       shift.shiftDate.year,
+    //       shift.shiftDate.month,
+    //       shift.shiftDate.day,
+    //       int.parse(timeParts[0]),
+    //       int.parse(timeParts[1]),
+    //       timeParts.length > 2 ? int.parse(timeParts[2]) : 0,
+    //     );
+    //
+    //     // Parse the scheduled end time to get check-out time
+    //     final endTimeParts = shift.scheduledEndTime.split(':');
+    //     final checkOutDateTime = DateTime(
+    //       shift.shiftDate.year,
+    //       shift.shiftDate.month,
+    //       shift.shiftDate.day,
+    //       int.parse(endTimeParts[0]),
+    //       int.parse(endTimeParts[1]),
+    //       endTimeParts.length > 2 ? int.parse(endTimeParts[2]) : 0,
+    //     );
+    //
+    //     // If check-in time has passed and now is before or at check-out time, change status to inProgress
+    //     if ((now.isAfter(checkInDateTime) || now.isAtSameMomentAs(checkInDateTime)) &&
+    //         (now.isBefore(checkOutDateTime) || now.isAtSameMomentAs(checkOutDateTime))) {
+    //       return EmployeeShiftModel(
+    //         id: shift.id,
+    //         employeeId: shift.employeeId,
+    //         employeeCode: shift.employeeCode,
+    //         departmentId: shift.departmentId,
+    //         shiftDate: shift.shiftDate,
+    //         workScheduleId: shift.workScheduleId,
+    //         scheduledStartTime: shift.scheduledStartTime,
+    //         scheduledEndTime: shift.scheduledEndTime,
+    //         checkInTime: shift.checkInTime,
+    //         checkOutTime: shift.checkOutTime,
+    //         workHours: shift.workHours,
+    //         overtimeHours: shift.overtimeHours,
+    //         breakHours: shift.breakHours,
+    //         lateMinutes: shift.lateMinutes,
+    //         earlyLeaveMinutes: shift.earlyLeaveMinutes,
+    //         status: ShiftStatus.inProgress,
+    //         notes: shift.notes,
+    //         scheduleName: shift.scheduleName,
+    //       );
+    //     }
+    //   }
+    //   return shift;
+    // }).toList();
+    //
+    // return processedShifts;
 
-        // Parse the scheduled end time to get check-out time
-        final endTimeParts = shift.scheduledEndTime.split(':');
-        final checkOutDateTime = DateTime(
-          shift.shiftDate.year,
-          shift.shiftDate.month,
-          shift.shiftDate.day,
-          int.parse(endTimeParts[0]),
-          int.parse(endTimeParts[1]),
-          endTimeParts.length > 2 ? int.parse(endTimeParts[2]) : 0,
-        );
-
-        // If check-in time has passed and now is before or at check-out time, change status to inProgress
-        if ((now.isAfter(checkInDateTime) || now.isAtSameMomentAs(checkInDateTime)) &&
-            (now.isBefore(checkOutDateTime) || now.isAtSameMomentAs(checkOutDateTime))) {
-          return EmployeeShiftModel(
-            id: shift.id,
-            employeeId: shift.employeeId,
-            employeeCode: shift.employeeCode,
-            departmentId: shift.departmentId,
-            shiftDate: shift.shiftDate,
-            workScheduleId: shift.workScheduleId,
-            scheduledStartTime: shift.scheduledStartTime,
-            scheduledEndTime: shift.scheduledEndTime,
-            checkInTime: shift.checkInTime,
-            checkOutTime: shift.checkOutTime,
-            workHours: shift.workHours,
-            overtimeHours: shift.overtimeHours,
-            breakHours: shift.breakHours,
-            lateMinutes: shift.lateMinutes,
-            earlyLeaveMinutes: shift.earlyLeaveMinutes,
-            status: ShiftStatus.inProgress,
-            notes: shift.notes,
-            scheduleName: shift.scheduleName,
-          );
-        }
-      }
-      return shift;
-    }).toList();
-
-    return processedShifts;
+    // Hiện tại trả về status từ BE trực tiếp
+    // Nếu BE trả về IN_PROGRESS thì sẽ hiển thị in progress
+    return allShifts;
   }
 }
 

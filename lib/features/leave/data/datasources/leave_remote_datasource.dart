@@ -274,8 +274,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      debugPrint('🔄 Updating leave request $leaveId');
-      debugPrint('📤 Request body: ${{
+      debugPrint('Updating leave request $leaveId');
+      debugPrint('Request body: ${{
         'start_date': startDate.toIso8601String().split('T')[0],
         'end_date': endDate.toIso8601String().split('T')[0],
         'is_half_day_start': isHalfDayStart,
@@ -398,8 +398,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
     required String cancellationReason,
   }) async {
     try {
-      debugPrint('🔄 Cancelling leave request $leaveId');
-      debugPrint('📤 Request body: ${{
+      debugPrint('Cancelling leave request $leaveId');
+      debugPrint('Request body: ${{
         'cancellation_reason': cancellationReason,
         'cancelled_by': '',
       }}');
@@ -475,6 +475,8 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
     try {
       final response = await dio.get('/leave/leave-types');
 
+      debugPrint('Response data: ${response.data}');
+
       final apiResponse = LeaveApiResponseModel.fromJson(
         response.data,
         (data) => (data as List)
@@ -487,7 +489,11 @@ class LeaveRemoteDataSourceImpl implements LeaveRemoteDataSource {
         if (apiResponse.data == null) {
           throw const ServerException('Leave types data is null');
         }
-        return apiResponse.data!;
+        // Filter to only return ACTIVE leave types
+        final activeLeaveTypes = apiResponse.data!
+            .where((leaveType) => leaveType.status.toUpperCase() == 'ACTIVE')
+            .toList();
+        return activeLeaveTypes;
       } else if (response.statusCode == 401) {
         throw UnauthorizedException(apiResponse.message);
       } else {

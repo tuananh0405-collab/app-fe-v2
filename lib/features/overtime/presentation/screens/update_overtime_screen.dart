@@ -116,8 +116,9 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
         return;
       }
       
-      // Combine date with time
-      final startDateTime = DateTime(
+      
+      // Combine date with time - create local DateTime first
+      final localStartDateTime = DateTime(
         _overtimeDate.year,
         _overtimeDate.month,
         _overtimeDate.day,
@@ -125,7 +126,7 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
         _startTime.minute,
       );
 
-      final endDateTime = DateTime(
+      final localEndDateTime = DateTime(
         _overtimeDate.year,
         _overtimeDate.month,
         _overtimeDate.day,
@@ -133,6 +134,30 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
         _endTime.minute,
       );
 
+      // Validate overtime start time is not in the past
+      if (localStartDateTime.isBefore(DateTime.now())) {
+        showSnackbar(context, 'Cannot update overtime request with a time in the past. Please select a time from now onwards.');
+        return;
+      }
+
+
+    // Convert to UTC by subtracting the local timezone offset
+    // This ensures the actual time value stays the same but is marked as UTC
+    final startDateTime = DateTime.utc(
+      localStartDateTime.year,
+      localStartDateTime.month,
+      localStartDateTime.day,
+      localStartDateTime.hour,
+      localStartDateTime.minute,
+    );
+
+    final endDateTime = DateTime.utc(
+      localEndDateTime.year,
+      localEndDateTime.month,
+      localEndDateTime.day,
+      localEndDateTime.hour,
+      localEndDateTime.minute,
+    );
       debugPrint('Calling updateOvertimeRequest with ID: ${widget.overtime.id}');
       
       ref.read(overtimeControllerProvider.notifier).updateOvertimeRequest(
@@ -155,9 +180,6 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
     final l10n = AppLocalizations.of(context).overtime;
     final overtimeState = ref.watch(overtimeControllerProvider);
     final dateFormat = DateFormat('dd/MM/yyyy');
-
-    // Debug: Print state to check if isSubmitting is stuck
-    debugPrint('OvertimeState - isSubmitting: ${overtimeState.isSubmitting}, isLoading: ${overtimeState.isLoading}');
 
     // Listen for success or error
     ref.listen(overtimeControllerProvider, (previous, next) {
@@ -483,12 +505,18 @@ class _UpdateOvertimeScreenState extends ConsumerState<UpdateOvertimeScreen>
                       color: theme.primaryColor,
                     ),
                   ),
+                  // validator: (value) {
+                  //   if (value == null || value.trim().isEmpty) {
+                  //     return l10n.pleaseEnterReason;
+                  //   }
+                  //   if (value.trim().length < 10) {
+                  //     return l10n.reasonMinLength;
+                  //   }
+                  //   return null;
+                  // },
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return l10n.pleaseEnterReason;
-                    }
-                    if (value.trim().length < 10) {
-                      return l10n.reasonMinLength;
+                      return l10n.enterReason;
                     }
                     return null;
                   },

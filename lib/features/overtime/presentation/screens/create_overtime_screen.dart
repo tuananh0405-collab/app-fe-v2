@@ -122,7 +122,8 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
         return;
       }
 
-      // Combine date with time
+
+      // Combine date with time - create local DateTime
       final startDateTime = DateTime(
         _overtimeDate!.year,
         _overtimeDate!.month,
@@ -138,6 +139,12 @@ class _CreateOvertimeScreenState extends ConsumerState<CreateOvertimeScreen>
         _endTime!.hour,
         _endTime!.minute,
       );
+
+      // Validate overtime start time is not in the past
+      if (startDateTime.isBefore(DateTime.now())) {
+        showSnackbar(context, 'Cannot create overtime request in the past.');
+        return;
+      }
 
       ref.read(overtimeControllerProvider.notifier).createOvertimeRequest(
             // shiftId: _shiftId,

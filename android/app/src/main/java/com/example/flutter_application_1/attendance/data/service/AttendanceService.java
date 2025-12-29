@@ -1,39 +1,30 @@
 package com.example.flutter_application_1.attendance.data.service;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.example.flutter_application_1.attendance.data.api.AttendanceApiController;
 import com.example.flutter_application_1.attendance.data.model.request.RequestFaceVerificationRequest;
-import com.example.flutter_application_1.attendance.data.model.request.ValidateBeaconRequest;
 import com.example.flutter_application_1.attendance.data.model.response.RequestFaceVerificationResponse;
-import com.example.flutter_application_1.attendance.data.model.response.ValidateBeaconResponse;
 import com.example.flutter_application_1.auth.AuthManager;
 import com.example.flutter_application_1.auth.client.ApiClient;
-import com.example.flutter_application_1.faceid.data.api.FaceIdApiController;
-import com.example.flutter_application_1.faceid.data.model.response.FaceIdVerifyResponse;
 
-import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Service for handling attendance check-in flow
- * Implements the 3-step verification process:
- * 1. Beacon Validation
- * 2. GPS Validation + Face Verification Request
- * 3. Face Image Upload
+ * Service for handling attendance face verification requests
+ * Focuses on coordinating face verification API calls
+ * 
+ * Note: Beacon validation is handled by BeaconsService
+ * Note: GPS retrieval is handled by GPSService
  * 
  * Based on CLIENT_API_SEQUENCE.md and CLIENT_ATTENDANCE_FLOW.md
  */
@@ -42,110 +33,51 @@ public class AttendanceService {
     
     private final Context context;
     private final AttendanceApiController attendanceApi;
-    private final FaceIdApiController faceIdApi;
     
-    // Session state
-    private String currentSessionToken;
+    // State
     private Integer currentAttendanceCheckId;
     private Integer currentShiftId;
     
     public AttendanceService(Context context) {
         this.context = context;
         this.attendanceApi = ApiClient.getClient(context).create(AttendanceApiController.class);
-        this.faceIdApi = ApiClient.getClient(context).create(FaceIdApiController.class);
     }
     
     /**
-     * Step 1: Validate Beacon
+     * Request Face Verification
      * 
-     * @param beaconUuid Beacon UUID (e.g., "FDA50693-A4E2-4FB1-AFCF-C6EB07647825")
-     * @param beaconMajor Beacon major number
-     * @param beaconMinor Beacon minor number
-     * @param rssi Signal strength in dBm
-     * @param callback Callback for result
-     */
-    public void validateBeacon(
-            String beaconUuid,
-            int beaconMajor,
-            int beaconMinor,
-            int rssi,
-            AttendanceCallback<ValidateBeaconResponse> callback) {
-        
-        Log.d(TAG, "📡 Step 1: Validating beacon - UUID: " + beaconUuid + 
-                ", Major: " + beaconMajor + ", Minor: " + beaconMinor + ", RSSI: " + rssi);
-
-        
-        // Create request
-        ValidateBeaconRequest request = new ValidateBeaconRequest(
-                beaconUuid, beaconMajor, beaconMinor, rssi);
-        
-    // Call API
-    Call<ValidateBeaconResponse> call = attendanceApi.validateBeacon(request);
-        
-        call.enqueue(new Callback<ValidateBeaconResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<ValidateBeaconResponse> call,
-                                 @NonNull Response<ValidateBeaconResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ValidateBeaconResponse body = response.body();
-                    
-                    if (body.isSuccess() && body.isBeacon_validated()) {
-                        // Save session token for next step
-                        currentSessionToken = body.getSession_token();
-                        Log.d(TAG, " Beacon validated! Session token: " + currentSessionToken);
-                        Log.d(TAG, "📍 Location: " + body.getLocation_name());
-                        Log.d(TAG, "⏰ Expires at: " + body.getExpires_at());
-                        callback.onSuccess(body);
-                    } else {
-                        callback.onFailure(body.getMessage() != null ? 
-                                body.getMessage() : "Beacon validation failed");
-                    }
-                } else {
-                    callback.onFailure("Beacon validation failed: HTTP " + response.code());
-                }
-            }
-            
-            @Override
-            public void onFailure(@NonNull Call<ValidateBeaconResponse> call,
-                                @NonNull Throwable t) {
-                Log.e(TAG, " Beacon validation network error", t);
-                callback.onFailure("Network error: " + t.getMessage());
-            }
-        });
-    }
-    
-    /**
-     * Step 2: Request Face Verification
-     * 
+     * @param sessionToken Session token from beacon validation (BeaconsService)
      * @param checkType "check_in" or "check_out"
-     * @param latitude GPS latitude (optional but recommended)
-     * @param longitude GPS longitude (optional but recommended)
+     * @param latitude GPS latitude (from GPSService)
+     * @param longitude GPS longitude (from GPSService)
      * @param locationAccuracy GPS accuracy in meters
      * @param deviceId Device identifier
+     * @param faceEmbeddingBase64 Face embedding from MediaPipe (FaceIdService)
      * @param callback Callback for result
      */
     public void requestFaceVerification(
+            String sessionToken,
             String checkType,
             Double latitude,
             Double longitude,
             Double locationAccuracy,
             String deviceId,
-            String faceEmbeddingBase64, // 🆕 Face embedding from MediaPipe
+            String faceEmbeddingBase64,
             AttendanceCallback<RequestFaceVerificationResponse> callback) {
         
-        Log.d(TAG, "🎯 Step 2: Requesting face verification");
+        Log.d(TAG, "🎯 Requesting face verification");
         Log.d(TAG, "Check type: " + checkType);
         Log.d(TAG, "GPS: " + latitude + ", " + longitude + " (accuracy: " + locationAccuracy + "m)");
         Log.d(TAG, "Face embedding: " + (faceEmbeddingBase64 != null ? faceEmbeddingBase64.length() + " chars" : "null"));
         
         // Validate session token
-        if (currentSessionToken == null || currentSessionToken.isEmpty()) {
-            Log.e(TAG, "❌ No session token available! currentSessionToken is null or empty");
+        if (sessionToken == null || sessionToken.isEmpty()) {
+            Log.e(TAG, "❌ No session token provided");
             callback.onFailure("No valid session token. Please validate beacon first.");
             return;
         }
         
-        Log.d(TAG, "📝 Using session token: " + currentSessionToken);
+        Log.d(TAG, "📝 Using session token: " + sessionToken);
         
         // Get JWT token
         String token = AuthManager.getInstance(context).getAuthToken();
@@ -159,15 +91,15 @@ public class AttendanceService {
         
         // Create request
         RequestFaceVerificationRequest request = new RequestFaceVerificationRequest(
-                currentSessionToken, checkType, shiftDate);
+                sessionToken, checkType, shiftDate);
         request.setLatitude(latitude);
         request.setLongitude(longitude);
         request.setLocation_accuracy(locationAccuracy);
         request.setDevice_id(deviceId);
-        request.setFace_embedding_base64(faceEmbeddingBase64); // 🆕 Set face embedding
+        request.setFace_embedding_base64(faceEmbeddingBase64);
         
-    // Call API
-    Call<RequestFaceVerificationResponse> call = attendanceApi.requestFaceVerification(request);
+        // Call API
+        Call<RequestFaceVerificationResponse> call = attendanceApi.requestFaceVerification(request);
         
         call.enqueue(new Callback<RequestFaceVerificationResponse>() {
             @Override
@@ -177,10 +109,10 @@ public class AttendanceService {
                     RequestFaceVerificationResponse body = response.body();
                     
                     if (body.isSuccess()) {
-                        // Save attendance check ID for next step
+                        // Save attendance check ID
                         currentAttendanceCheckId = body.getAttendance_check_id();
                         currentShiftId = body.getShift_id();
-                        Log.d(TAG, " Face verification requested!");
+                        Log.d(TAG, "✅ Face verification requested!");
                         Log.d(TAG, "📝 Attendance Check ID: " + currentAttendanceCheckId);
                         Log.d(TAG, "📅 Shift ID: " + currentShiftId);
                         callback.onSuccess(body);
@@ -200,109 +132,19 @@ public class AttendanceService {
             @Override
             public void onFailure(@NonNull Call<RequestFaceVerificationResponse> call,
                                 @NonNull Throwable t) {
-                Log.e(TAG, " Face verification request network error", t);
+                Log.e(TAG, "❌ Face verification request network error", t);
                 callback.onFailure("Network error: " + t.getMessage());
             }
         });
     }
     
     /**
-     * Step 3: Upload Face Image for Verification
-     * 
-     * @param faceImage Captured face image
-     * @param checkType "check_in" or "check_out"
-     * @param callback Callback for result
-     */
-    public void uploadFaceImage(
-            Bitmap faceImage,
-            String checkType,
-            AttendanceCallback<FaceIdVerifyResponse> callback) {
-        
-        Log.d(TAG, "📸 Step 3: Uploading face image for verification");
-        // NOTE: Remote face verification via faceIdApi.verifyFaceForAttendance is deprecated in
-        // favor of using local FaceIdService.verifyFaceIdForRequest inside the UI layer.
-        // This service will therefore NOT perform remote verification. Callers should
-        // perform local verification with FaceIdService and use AttendanceService only
-        // for beacon/verification request steps (validateBeacon/requestFaceVerification).
-
-        Log.w(TAG, "Remote face verification disabled — perform local verification via FaceIdService");
-        callback.onFailure("Remote face verification disabled; perform local verification via FaceIdService");
-    }
-    
-    /**
-     * Complete check-in flow (all 3 steps)
-     * This is a convenience method that chains all steps together
-     */
-    public void performCheckIn(
-            String beaconUuid,
-            int beaconMajor,
-            int beaconMinor,
-            int rssi,
-            Double latitude,
-            Double longitude,
-            Double locationAccuracy,
-            String deviceId,
-            Bitmap faceImage,
-            AttendanceCallback<String> callback) {
-        
-        Log.d(TAG, " Starting complete check-in flow (production API)");
-
-        // Step 1: Validate Beacon
-        validateBeacon(beaconUuid, beaconMajor, beaconMinor, rssi,
-            new AttendanceCallback<ValidateBeaconResponse>() {
-                @Override
-                public void onSuccess(ValidateBeaconResponse beaconResult) {
-                    Log.d(TAG, "Step 1 ✅ - Beacon validated, session_token: " + beaconResult.getSession_token());
-                    
-                    // Step 2: Request Face Verification (tạo attendance_check record)
-                    // pass null for faceEmbeddingBase64 here (no embedding available in this flow)
-                    requestFaceVerification("check_in", latitude, longitude, locationAccuracy, deviceId, null,
-                        new AttendanceCallback<RequestFaceVerificationResponse>() {
-                            @Override
-                            public void onSuccess(RequestFaceVerificationResponse verifyResult) {
-                                Log.d(TAG, "Step 2 ✅ - AttendanceCheckId: " + verifyResult.getAttendance_check_id());
-                                Log.d(TAG, "Step 2 ✅ - ShiftId: " + verifyResult.getShift_id());
-                                
-                                // Step 3: Caller (Fragment) sẽ tự động verify face bằng local AI
-                                // và call FaceIdService.verifyFaceIdForRequest() để gửi embedding
-                                // Backend sẽ nhận event face_verification_completed và update shift
-                                callback.onSuccess("Attendance check created (ID: " + verifyResult.getAttendance_check_id() + 
-                                                 "). Please proceed with face verification.");
-                            }
-                            
-                            @Override
-                            public void onFailure(String error) {
-                                if (error != null && error.contains("Session token expired")) {
-                                    callback.onFailure("Step 2 failed: Session token expired. Please scan beacon again.");
-                                } else {
-                                    callback.onFailure("Step 2 failed: " + error);
-                                }
-                            }
-                        });
-                }
-                
-                @Override
-                public void onFailure(String error) {
-                    callback.onFailure("Step 1 failed: " + error);
-                }
-            });
-    }
-    
-    /**
-     * Reset session state
+     * Reset state
      */
     public void resetSession() {
-        currentSessionToken = null;
         currentAttendanceCheckId = null;
         currentShiftId = null;
-        Log.d(TAG, "Session reset");
-    }
-    
-    /**
-     * Get current session token
-     */
-    public String getCurrentSessionToken() {
-        return currentSessionToken;
+        Log.d(TAG, "🔄 State reset");
     }
     
     /**

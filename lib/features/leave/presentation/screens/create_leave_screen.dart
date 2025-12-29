@@ -6,6 +6,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../flutter_flow/flutter_flow.dart';
 import '../../providers/leave_providers.dart';
 import '../../../auth/providers/auth_providers.dart';
+import '../widgets/compact_leave_balance_card.dart';
 
 class CreateLeaveScreen extends ConsumerStatefulWidget {
   const CreateLeaveScreen({super.key});
@@ -203,6 +204,195 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
     }
   }
 
+  Color _parseColor(String hexColor) {
+    try {
+      final hex = hexColor.replaceAll('#', '');
+      if (hex.length == 6) {
+        return Color(int.parse('FF$hex', radix: 16));
+      }
+      return const Color(0xFF3B82F6); // Default blue
+    } catch (e) {
+      return const Color(0xFF3B82F6); // Default blue
+    }
+  }
+
+  void _showBalanceDetailDialog(
+    BuildContext context,
+    FlutterFlowTheme theme,
+    dynamic leave,
+    dynamic balance,
+    String leaveTypeName,
+    Color color,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.account_balance_wallet,
+                      color: color,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      leaveTypeName,
+                      style: theme.title2.override(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Divider(color: Colors.grey.withValues(alpha: 0.2)),
+              const SizedBox(height: 16),
+              
+              // Balance Details
+              _buildDetailRow(
+                theme,
+                'Year',
+                '${balance.year}',
+                Icons.calendar_today,
+                color,
+              ),
+              const SizedBox(height: 12),
+              _buildDetailRow(
+                theme,
+                'Total Days',
+                '${balance.totalDays}',
+                Icons.format_list_numbered,
+                color,
+              ),
+              const SizedBox(height: 12),
+              _buildDetailRow(
+                theme,
+                'Used Days',
+                '${balance.usedDays}',
+                Icons.check_circle_outline,
+                color,
+              ),
+              const SizedBox(height: 12),
+              _buildDetailRow(
+                theme,
+                'Pending Days',
+                '${balance.pendingDays}',
+                Icons.hourglass_empty,
+                color,
+              ),
+              const SizedBox(height: 12),
+              _buildDetailRow(
+                theme,
+                'Remaining Days',
+                '${balance.remainingDays}',
+                Icons.event_available,
+                color,
+              ),
+              const SizedBox(height: 20),
+              
+              // Close Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Close',
+                    style: theme.subtitle1.override(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(
+    FlutterFlowTheme theme,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 20, color: color),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.bodyText2.override(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: theme.bodyText1.override(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
@@ -218,8 +408,20 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
       if (next.successMessage != null &&
           next.successMessage != previous?.successMessage) {
         showSnackbar(context, leave.translate(next.successMessage!));
-        // Navigate back after successful creation
-        Future.delayed(const Duration(milliseconds: 500), () {
+        // Refresh all leave-related data immediately before navigating back
+        Future.microtask(() async {
+          try {
+            // Refresh leave records, balance, and types in parallel for better performance
+            await Future.wait([
+              ref.read(leaveControllerProvider.notifier).getLeaveRecords(),
+              ref.read(leaveControllerProvider.notifier).getLeaveBalance(),
+              ref.read(leaveControllerProvider.notifier).getLeaveTypes(),
+            ]);
+          } catch (_) {
+            // ignore errors from refresh - user already saw success
+          }
+
+          // Navigate back after data is refreshed
           if (mounted) {
             context.pop();
           }
@@ -292,7 +494,18 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
               //   ),
               // ).animateOnPageLoad(animationsMap['headerAnimation']!),
 
-              const SizedBox(height: 24),
+              
+              // Compact Leave Balance Display
+              if (leaveState.leaveBalances.isNotEmpty) ...[ 
+                CompactLeaveBalanceCard(
+                  theme: theme,
+                  leaveBalances: leaveState.leaveBalances,
+                  leaveTypes: leaveState.leaveTypes,
+                  title: leave.leaveBalance,
+                ).animateOnPageLoad(animationsMap['formAnimation']!),
+              ],
+              const SizedBox(height: 10),
+
 
               // Leave Type Dropdown
               Container(
@@ -352,11 +565,16 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                         ),
                         items: leaveState.leaveTypes
                             .where((leaveType) {
-                              final balances = leaveState.leaveBalances
-                                  .where((b) => b.leaveTypeId == leaveType.id);
-                              if (balances.isNotEmpty) {
-                                return balances.first.remainingDays > 0;
+                              // Filter out inactive leave types
+                              if (leaveType.status.toLowerCase() != 'active') {
+                                return false;
                               }
+                              // TODO: Uncomment if needed to filter by remaining days
+                              // final balances = leaveState.leaveBalances
+                              //     .where((b) => b.leaveTypeId == leaveType.id);
+                              // if (balances.isNotEmpty) {
+                              //   return balances.first.remainingDays > 0;
+                              // }
                               return true;
                             })
                             .map((leaveType) => DropdownMenuItem(
@@ -379,7 +597,8 @@ class _CreateLeaveScreenState extends ConsumerState<CreateLeaveScreen>
                         },
                       ),
               ).animateOnPageLoad(animationsMap['formAnimation']!),
-              const SizedBox(height: 20),
+              
+              const SizedBox(height: 10),
 
               // Date Selection Card
               Container(

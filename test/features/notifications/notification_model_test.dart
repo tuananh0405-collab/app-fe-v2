@@ -18,7 +18,8 @@ void main() {
         'related_entity_type': 'LEAVE_REQUEST',
         'related_entity_id': 456,
         'related_data': {'key': 'value'},
-        'channels': ['IN_APP', 'EMAIL'],
+  // expect PUSH + IN_APP channels
+  'channels': ['IN_APP', 'PUSH'],
         'is_read': false,
         'read_at': null,
         'email_sent': true,
@@ -44,9 +45,9 @@ void main() {
       expect(model.notificationType, NotificationType.leaveApproval);
       expect(model.priority, NotificationPriority.normal);
       expect(model.isRead, false);
-      expect(model.channels.length, 2);
-      expect(model.channels, contains('IN_APP'));
-      expect(model.channels, contains('EMAIL'));
+  expect(model.channels.length, 2);
+  expect(model.channels, contains('IN_APP'));
+  expect(model.channels, contains('PUSH'));
     });
 
     test('should convert NotificationModel to JSON', () {

@@ -90,11 +90,14 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
   }
 
   void _handleSubmit() {
+    final l10n = AppLocalizations.of(context);
+    final leave = l10n.leave;
+
     if (_formKey.currentState!.validate()) {
       if (_startDate == null || _endDate == null) {
         showSnackbar(
           context,
-          AppLocalizations.of(context).leave.pleaseSelectDates,
+          leave.pleaseSelectDates,
           duration: 3,
         );
         return;
@@ -106,6 +109,68 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
           _leaveTypeId == null) {
         showSnackbar(context, 'Thông tin đơn nghỉ không hợp lệ', duration: 3);
         return;
+      }
+
+      // Additional validation based on selected leave type attributes
+      final leaveState = ref.read(leaveControllerProvider);
+      final selectedList = leaveState.leaveTypes
+          .where((lt) => lt.id == _leaveTypeId)
+          .toList();
+      if (selectedList.isNotEmpty) {
+        final selected = selectedList.first;
+
+        // helper to calculate requested days (inclusive). If excludeWeekends is true,
+        // weekend days (Sat, Sun) are not counted.
+        int _calculateRequestedDays(DateTime start, DateTime end, bool excludeWeekends) {
+          var days = 0;
+          var current = DateTime(start.year, start.month, start.day);
+          final last = DateTime(end.year, end.month, end.day);
+          while (!current.isAfter(last)) {
+            if (excludeWeekends) {
+              if (current.weekday != DateTime.saturday && current.weekday != DateTime.sunday) {
+                days++;
+              }
+            } else {
+              days++;
+            }
+            current = current.add(const Duration(days: 1));
+          }
+          return days;
+        }
+
+        final requestedDays = _calculateRequestedDays(_startDate!, _endDate!, selected.excludeWeekends);
+
+        // Check max consecutive days
+        if (selected.maxConsecutiveDays != null && requestedDays > selected.maxConsecutiveDays!) {
+          showSnackbar(context,
+              leave.validationMaxConsecutiveDays(requestedDays, selected.maxConsecutiveDays!),
+              duration: 3);
+          return;
+        }
+
+        // Check max days per year (basic check using requested days only)
+        if (selected.maxDaysPerYear != null && requestedDays > selected.maxDaysPerYear!) {
+          showSnackbar(context,
+              leave.validationMaxDaysPerYear(requestedDays, selected.maxDaysPerYear!),
+              duration: 3);
+          return;
+        }
+
+        // Check minimum notice days
+        final nowDate = DateTime.now();
+        final daysUntilStart = _startDate!.difference(DateTime(nowDate.year, nowDate.month, nowDate.day)).inDays;
+        if (selected.minNoticeDays > 0 && daysUntilStart < selected.minNoticeDays) {
+          showSnackbar(context,
+              leave.validationMinNoticeDays(selected.minNoticeDays),
+              duration: 3);
+          return;
+        }
+
+        // Check requires document
+        if (selected.requiresDocument && _supportingDocUrlController.text.trim().isEmpty) {
+          showSnackbar(context, leave.validationDocumentRequired, duration: 3);
+          return;
+        }
       }
 
       ref
@@ -142,22 +207,23 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
       if (next.successMessage != null &&
           next.successMessage != previous?.successMessage) {
         showSnackbar(context, l10n.leave.translate(next.successMessage!), duration: 3);
-        // Refresh leave list and balances before navigating back so the list
-        // screen shows updated data immediately.
-        Future.delayed(const Duration(milliseconds: 200), () async {
+        // Refresh all leave-related data immediately before navigating back
+        Future.microtask(() async {
           try {
-            await ref.read(leaveControllerProvider.notifier).getLeaveRecords();
-            await ref.read(leaveControllerProvider.notifier).getLeaveBalance();
+            // Refresh leave records, balance, and types in parallel for better performance
+            await Future.wait([
+              ref.read(leaveControllerProvider.notifier).getLeaveRecords(),
+              ref.read(leaveControllerProvider.notifier).getLeaveBalance(),
+              ref.read(leaveControllerProvider.notifier).getLeaveTypes(),
+            ]);
           } catch (_) {
             // ignore errors from refresh - user already saw success
           }
 
-          // Small delay to let UI update, then pop
-          Future.delayed(const Duration(milliseconds: 200), () {
-            if (mounted) {
-              context.pop();
-            }
-          });
+          // Navigate back after data is refreshed
+          if (mounted) {
+            context.pop();
+          }
         });
       } else if (next.errorMessage != null &&
           next.errorMessage != previous?.errorMessage) {
@@ -336,12 +402,18 @@ class _UpdateLeaveScreenState extends ConsumerState<UpdateLeaveScreen> {
                         ),
                         items: leaveState.leaveTypes
                             .where((leaveType) {
+                              // Always show the currently selected leave type (for editing)
                               if (_leaveTypeId == leaveType.id) return true;
-                              final balances = leaveState.leaveBalances
-                                  .where((b) => b.leaveTypeId == leaveType.id);
-                              if (balances.isNotEmpty) {
-                                return balances.first.remainingDays > 0;
+                              // Filter out inactive leave types
+                              if (leaveType.status.toLowerCase() != 'active') {
+                                return false;
                               }
+                              // TODO: Uncomment if needed to filter by remaining days
+                              // final balances = leaveState.leaveBalances
+                              //     .where((b) => b.leaveTypeId == leaveType.id);
+                              // if (balances.isNotEmpty) {
+                              //   return balances.first.remainingDays > 0;
+                              // }
                               return true;
                             })
                             .map((leaveType) => DropdownMenuItem(

@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
@@ -11,16 +12,37 @@ import 'core/localization/app_localizations.dart';
 import 'core/services/push_notification_providers.dart';
 import 'core/services/push_notification_service.dart';
 import 'faceid_channel.dart';
+import 'gps_method_channel.dart';
 import 'flutter_flow/flutter_flow.dart';
 import 'features/face_id/face_id_success_handler.dart';
-
+import 'core/services/push_notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'core/providers/common_providers.dart';
 
 // Global key for navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+/// Background message handler for Firebase Messaging
+/// This must be a top-level function
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Initialize Firebase if not already initialized
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  debugPrint('🔔 Background message received: ${message.messageId}');
+  debugPrint('🔔 Title: ${message.notification?.title}');
+  debugPrint('🔔 Body: ${message.notification?.body}');
+  debugPrint('🔔 Data: ${message.data}');
+  
+  // Note: You can't update UI from here, but you can process data
+  // and show local notifications if needed
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Hive for persistent storage
+  await Hive.initFlutter();
   
   // Initialize SharedPreferences
   final sharedPreferences = await SharedPreferences.getInstance();
@@ -45,6 +67,12 @@ void main() async {
   
   // Initialize Face ID channel
   FaceIdChannel.init();
+  
+  // Initialize GPS method channel
+  GpsMethodChannel.init();
+
+  // Initialize Firebase Messaging
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   runApp(ProviderScope(
     overrides: [
@@ -73,9 +101,12 @@ class _PushNotificationInitializerState extends ConsumerState<PushNotificationIn
   @override
   void initState() {
     super.initState();
-    // Initialize push notifications after first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initPushNotifications();
+    // Delay push notification initialization to avoid blocking startup
+    // This is not critical for initial app launch
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        _initPushNotifications();
+      }
     });
   }
 
@@ -98,10 +129,10 @@ class _PushNotificationInitializerState extends ConsumerState<PushNotificationIn
           // }
         },
         onForegroundMessage: (message) {
-          debugPrint('📬 Foreground message received: ${message.messageId}');
-          debugPrint('📬 Title: ${message.notification?.title}');
-          debugPrint('📬 Body: ${message.notification?.body}');
-          debugPrint('📬 Data: ${message.data}');
+          debugPrint('Foreground message received: ${message.messageId}');
+          debugPrint('Title: ${message.notification?.title}');
+          debugPrint('Body: ${message.notification?.body}');
+          debugPrint('Data: ${message.data}');
           
           // Local notification will be shown automatically by the service
         },

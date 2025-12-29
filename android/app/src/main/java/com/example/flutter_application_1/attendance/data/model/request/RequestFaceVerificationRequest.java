@@ -32,7 +32,7 @@ public class RequestFaceVerificationRequest {
     private String ip_address;
 
     @SerializedName("face_embedding_base64")
-    private String face_embedding_base64;  // 🆕 Face embedding for verification
+    private String face_embedding_base64; 
 
     public RequestFaceVerificationRequest(String sessionToken, String checkType, String shiftDate) {
         this.session_token = sessionToken;

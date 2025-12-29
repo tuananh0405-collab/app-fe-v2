@@ -28,9 +28,9 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
     _focusedDay = now;
     _selectedDay = now;
     _rangeStart = DateTime(now.year, now.month, 1);
-    _rangeEnd = DateTime(now.year, now.month + 2, 0);
+    _rangeEnd = DateTime(now.year, now.month + 1, 0); // Changed from +2 to +1 (1 month instead of 3)
 
-    // Load shifts for the next 3 months
+    // Load shifts for current month only (faster initial load)
     Future.microtask(() {
       ref.read(workScheduleControllerProvider.notifier).loadShifts(
             fromDate: _rangeStart,
@@ -630,14 +630,14 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
         color = Color(int.parse('0xFF${colorHex.substring(1)}'));
         bgColor = Color(int.parse('0x33${colorHex.substring(1)}')); // 20% opacity
       } else {
-        // Fallback colors
-        color = theme.error;
-        bgColor = theme.error.withValues(alpha: 0.2);
+        // Fallback colors: purple for leave
+        color = Colors.purple;
+        bgColor = Colors.purple.withValues(alpha: 0.2);
       }
     } catch (e) {
-      // Fallback colors if parsing fails
-      color = theme.error;
-      bgColor = theme.error.withValues(alpha: 0.2);
+      // Fallback colors if parsing fails: purple for leave
+      color = Colors.purple;
+      bgColor = Colors.purple.withValues(alpha: 0.2);
     }
 
     return Container(
@@ -701,66 +701,111 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
     final timeFormat = DateFormat('HH:mm');
     
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFEDD5), // orange-100
+        color: theme.secondaryBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFFDBA74), // orange-300
+          color: const Color(0xFFFDBA74).withValues(alpha: 0.3), // orange-300 with transparency
           width: 1,
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFDBA74).withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.timer_outlined,
-              size: 24,
-              color: Color(0xFF7C2D12), // orange-900
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with OT Badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
                   'Overtime',
                   style: theme.subtitle2.override(
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF7C2D12), // orange-900
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${timeFormat.format(overtime.startTime)} - ${timeFormat.format(overtime.endTime)}',
-                  style: theme.bodyText2.override(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF7C2D12),
-                  ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDBA74).withValues(alpha: 0.2), // orange-300
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                if (overtime.reason != null && overtime.reason.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      overtime.reason,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.timer_outlined,
+                      size: 12,
+                      color: Color(0xFF7C2D12), // orange-900
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'OT',
                       style: theme.bodyText2.override(
                         fontSize: 11,
-                        color: const Color(0xFF7C2D12).withValues(alpha: 0.8),
+                        color: const Color(0xFF7C2D12),
+                        fontWeight: FontWeight.w600,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-              ],
-            ),
+                  ],
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 12),
+          
+          // Scheduled Time
+          _buildDetailRow(
+            theme,
+            Icons.access_time,
+            'Time',
+            '${timeFormat.format(overtime.startTime)} - ${timeFormat.format(overtime.endTime)}',
+          ),
+          
+          // Reason
+          if (overtime.reason != null && overtime.reason.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: theme.primaryBackground,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.note_outlined,
+                      size: 14,
+                      color: theme.secondaryText,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        overtime.reason,
+                        style: theme.bodyText2.override(
+                          fontSize: 12,
+                          color: theme.secondaryText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -879,16 +924,16 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
                 '${shift.overtimeHours.toStringAsFixed(1)}h',
               ),
             ),
-          if (shift.breakHours > 0)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _buildDetailRow(
-                theme,
-                Icons.coffee_outlined,
-                'Break',
-                '${shift.breakHours.toStringAsFixed(1)}h',
-              ),
-            ),
+          // if (shift.breakHours > 0)
+          //   Padding(
+          //     padding: const EdgeInsets.only(top: 8),
+          //     child: _buildDetailRow(
+          //       theme,
+          //       Icons.coffee_outlined,
+          //       'Break',
+          //       '${shift.breakHours.toStringAsFixed(1)}h',
+          //     ),
+          //   ),
           if (shift.lateMinutes > 0)
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -897,7 +942,7 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
                 Icons.warning_amber_rounded,
                 'Late',
                 '${shift.lateMinutes}min',
-                color: theme.error,
+                // color: theme.error,
               ),
             ),
           if (shift.earlyLeaveMinutes > 0)
@@ -988,9 +1033,9 @@ class _WorkScheduleScreenState extends ConsumerState<WorkScheduleScreen> {
   Color _getStatusColor(ShiftStatus status, FlutterFlowTheme theme) {
     switch (status) {
       case ShiftStatus.scheduled:
-        return theme.warning;
+        return Colors.blue; // incoming: blue
       case ShiftStatus.inProgress:
-        return theme.primaryColor;
+        return Colors.amber; // in progress: yellow
       case ShiftStatus.completed:
         return theme.success;
       case ShiftStatus.absent:

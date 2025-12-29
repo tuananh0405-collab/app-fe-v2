@@ -28,6 +28,10 @@ public class ApiClient {
             httpClient.connectTimeout(60, TimeUnit.SECONDS);
             httpClient.readTimeout(60, TimeUnit.SECONDS);
             httpClient.writeTimeout(60, TimeUnit.SECONDS);
+            
+            // Add connection pool to prevent resource leaks
+            httpClient.connectionPool(new okhttp3.ConnectionPool(5, 5, TimeUnit.MINUTES));
+            
             httpClient.addInterceptor(logging);
             
             // Add auth token interceptor

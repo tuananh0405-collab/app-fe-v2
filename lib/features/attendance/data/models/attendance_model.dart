@@ -42,13 +42,28 @@ class AttendanceShiftModel extends Equatable {
       scheduledEndTime: json['scheduled_end_time'],
       checkInTime: json['check_in_time'],
       checkOutTime: json['check_out_time'],
-      workHours: (json['work_hours'] as num).toDouble(),
-      overtimeHours: (json['overtime_hours'] as num).toDouble(),
-      lateMinutes: json['late_minutes'] as int,
-      earlyLeaveMinutes: json['early_leave_minutes'] as int,
+      workHours: _parseDouble(json['work_hours']),
+      overtimeHours: _parseDouble(json['overtime_hours']),
+      lateMinutes: _parseInt(json['late_minutes']),
+      earlyLeaveMinutes: _parseInt(json['early_leave_minutes']),
       status: _parseStatus(json['status']),
       notes: json['notes'],
     );
+  }
+
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 
   static ShiftStatus _parseStatus(String status) {
@@ -135,8 +150,8 @@ class AttendanceSummaryModel extends Equatable {
       daysPresent: json['days_present'],
       daysAbsent: json['days_absent'],
       daysOnLeave: json['days_on_leave'],
-      totalWorkHours: (json['total_work_hours'] as num).toDouble(),
-      totalOvertimeHours: (json['total_overtime_hours'] as num).toDouble(),
+      totalWorkHours: (json['total_work_hours'] as num?)?.toDouble() ?? 0.0,
+      totalOvertimeHours: (json['total_overtime_hours'] as num?)?.toDouble() ?? 0.0,
       timesLate: json['times_late'],
       totalLateMinutes: json['total_late_minutes'],
       timesEarlyLeave: json['times_early_leave'],

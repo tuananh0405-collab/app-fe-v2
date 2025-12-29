@@ -11,7 +11,7 @@ class JwtHelper {
     try {
       final parts = token.split('.');
       if (parts.length != 3) {
-        debugPrint('⚠️ Invalid JWT token format');
+        debugPrint('Invalid JWT token format');
         return null;
       }
 
@@ -24,7 +24,7 @@ class JwtHelper {
       
       return jsonDecode(decoded) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('❌ Error decoding JWT: $e');
+      debugPrint('Error decoding JWT: $e');
       return null;
     }
   }
@@ -57,13 +57,13 @@ class JwtHelper {
       final accessToken = box.get('accessToken') as String?;
       
       if (accessToken == null) {
-        debugPrint('⚠️ No access token found in storage');
+        debugPrint('No access token found in storage');
         return null;
       }
 
       return getEmployeeIdFromToken(accessToken);
     } catch (e) {
-      debugPrint('❌ Error getting employee ID from storage: $e');
+      debugPrint('Error getting employee ID from storage: $e');
       return null;
     }
   }

@@ -48,9 +48,9 @@ Future<void> init() async {
     () => Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 30),
+        connectTimeout: const Duration(seconds: 15), // Reduced from 30s
+        receiveTimeout: const Duration(seconds: 15), // Reduced from 30s
+        sendTimeout: const Duration(seconds: 15), // Reduced from 30s
         headers: ApiConstants.defaultHeaders,
         validateStatus: (status) => status != null && status < 500,
       ),

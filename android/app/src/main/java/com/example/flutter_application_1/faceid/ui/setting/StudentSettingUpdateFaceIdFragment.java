@@ -92,7 +92,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
     private static final float MAX_CENTER_MOVE_RATIO = 0.03f; // 3% of face size
     private static final float MAX_SIZE_DELTA_RATIO = 0.02f;  // 2% size change
 
-    // 🔄 HANDLERS
+    // HANDLERS
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Nullable
@@ -143,7 +143,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
             if (userId != null && !userId.isEmpty()) {
                 // Save to AuthManager immediately
                 AuthManager.getInstance(requireContext()).setUserId(userId);
-                Log.d(TAG, "📝 Received userId from Intent: " + userId);
+                Log.d(TAG, "Received userId from Intent: " + userId);
             }
         }
         
@@ -161,7 +161,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
         // 4. Face Tracker with optimized settings for stability
         faceTracker = new FaceTracker(10); // Increased from 8 to 10 frames for better stability (~ 0.33 seconds)
 
-        Log.d(TAG, "📦 All components initialized successfully");
+        Log.d(TAG, "All components initialized successfully");
     }
 
     private void setupCameraAndOverlay() {
@@ -189,11 +189,11 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
     }
 
     /**
-     * 🔄 State change callback from StateManager
+     * State change callback from StateManager
      */
     private void onStateChanged(FaceRegistrationState state, String message) {
         if (!isAdded() || binding == null) {
-            Log.w(TAG, "⚠️ Fragment not valid for state change: " + state);
+            Log.w(TAG, "Fragment not valid for state change: " + state);
             return;
         }
 
@@ -261,7 +261,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
     private void handleStateActions(FaceRegistrationState state) {
         // Kiểm tra xem fragment có còn hoạt động không
         if (!isAdded() || getActivity() == null) {
-            Log.w(TAG, "⚠️ Fragment not valid for state action: " + state);
+            Log.w(TAG, "Fragment not valid for state action: " + state);
             return;
         }
 
@@ -338,7 +338,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
 
             case LIVENESS_CHALLENGE:
                 // Hiển thị UI cho liveness challenge
-                Log.d(TAG, "🔄 Activating Liveness Challenge");
+                Log.d(TAG, "Activating Liveness Challenge");
                 if (binding != null && binding.tvStatusMessage != null) {
                     binding.tvStatusMessage.setText("Look at the camera and blink");
                 }
@@ -384,7 +384,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
 
             case FACE_REAL:
                 //  Liveness verified! Auto-transition to capture and update
-                Log.d(TAG, "🎉 Face is REAL - Starting automatic capture and update");
+                Log.d(TAG, "Face is REAL - Starting automatic capture and update");
                 livenessVerified = true;
                 
                 // Update overlay color to success
@@ -518,7 +518,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
             }
             Log.d(TAG, " SpoofDetectionManager initialized with oval boundary");
         } else {
-            Log.w(TAG, "⚠️ FaceSpoofDetector not available, using fallback detection");
+            Log.w(TAG, "FaceSpoofDetector not available, using fallback detection");
         }
     }
 
@@ -1023,7 +1023,7 @@ public class StudentSettingUpdateFaceIdFragment extends Fragment
     }
 
     if (currentFrameBitmap == null || currentFaceRect == null) {
-        Log.w(TAG, "⚠️ Cannot capture - no frame or face rect");
+        Log.w(TAG, "Cannot capture - no frame or face rect");
         stateManager.transitionTo(FaceRegistrationState.FAILED_OTHER,
                 "Capture failed - no data available");
         return;
@@ -1150,7 +1150,7 @@ String userId;
                         return;
                     }
                     
-                    Log.w(TAG, "⚠️ Unexpected onAlreadyRegistered callback during update");
+                    Log.w(TAG, "Unexpected onAlreadyRegistered callback during update");
                     stateManager.transitionTo(FaceRegistrationState.SUCCESS, 
                             "Face ID updated successfully!");
                     
@@ -1165,7 +1165,7 @@ String userId;
 }
 
     /**
-     * 🎉 Handle success - Navigate to Success Activity
+     * Handle success - Navigate to Success Activity
      */
     private void handleSuccessState() {
     Log.d(TAG, "==================== handleSuccessState START ====================");
@@ -1186,7 +1186,7 @@ String userId;
                 bitmapPath = saveBitmapToTempFile(currentFrameBitmap);
                 Log.d(TAG, " Bitmap saved to: " + bitmapPath);
             } else {
-                Log.w(TAG, "⚠️ currentFrameBitmap is null");
+                Log.w(TAG, "currentFrameBitmap is null");
             }
         } catch (Exception e) {
             Log.e(TAG, " Error saving bitmap", e);
@@ -1195,7 +1195,7 @@ String userId;
         String userId = AuthManager.getInstance(requireContext()).getCurrentUserId();
         String userName = AuthManager.getInstance(requireContext()).getCurrentUserName();
         
-        Log.d(TAG, "📝 Preparing intent with:");
+        Log.d(TAG, "Preparing intent with:");
         Log.d(TAG, "  - userId: " + userId);
         Log.d(TAG, "  - userName: " + userName);
         Log.d(TAG, "  - bitmapPath: " + bitmapPath);
@@ -1435,7 +1435,7 @@ String userId;
      */
     private void backToSetup() {
         try {
-            Log.d(TAG, "🔄 Returning to setup screen");
+            Log.d(TAG, "Returning to setup screen");
 
             // Stop camera and fully reset to cancel any pending operations
             stopCamera();
@@ -1751,7 +1751,7 @@ String userId;
             mainHandler.removeCallbacksAndMessages(null);
         }
 
-        Log.d(TAG, "🔄 All components reset");
+        Log.d(TAG, "All components reset");
     }
 
     @Override
@@ -1818,7 +1818,7 @@ String userId;
         faceOverlayView = null;
         binding = null;
 
-        Log.d(TAG, "🧹 Fragment cleaned up");
+        Log.d(TAG, "Fragment cleaned up");
     }
     // Thêm các biến UI cần thiết
     private ProgressBar analysisProgressBar;

@@ -38,8 +38,8 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
     final employeeIdStr = authState.user?.employeeId;
     final employeeId = employeeIdStr != null ? int.tryParse(employeeIdStr) : null;
 
-    print('🔄 [WorkSchedule] Loading shifts from $fromDate to $toDate');
-    print('👤 [WorkSchedule] Employee ID: $employeeId');
+    print('[WorkSchedule] Loading shifts from $fromDate to $toDate');
+    print('[WorkSchedule] Employee ID: $employeeId');
 
     try {
       // Fetch all data in parallel
@@ -52,7 +52,7 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
             employeeId: employeeId,
           ),
         ).then((result) {
-          print('✅ [WorkSchedule] Shifts result: ${result.fold((l) => 'Error: ${l.message}', (r) => '${r.length} shifts')}');
+          print('[WorkSchedule] Shifts result: ${result.fold((l) => 'Error: ${l.message}', (r) => '${r.length} shifts')}');
           return result.fold((l) => null, (r) => r);
         }),
         
@@ -60,16 +60,16 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
         ref.read(getLeaveRecordsUseCaseProvider)(
           const GetLeaveRecordsParams(status: 'APPROVED'),
         ).then((result) {
-          print('✅ [WorkSchedule] Leaves result: ${result.fold((l) => 'Error: ${l.message}', (r) => '${r.length} leaves')}');
+          print('[WorkSchedule] Leaves result: ${result.fold((l) => 'Error: ${l.message}', (r) => '${r.length} leaves')}');
           return result.fold((l) => null, (r) => r);
         }),
         
         // 3. Fetch holidays
         _holidayDataSource.getHolidays(limit: 100).then((holidays) {
-          print('✅ [WorkSchedule] Holidays result: ${holidays.length} holidays');
+          print('[WorkSchedule] Holidays result: ${holidays.length} holidays');
           return holidays;
         }).catchError((e) {
-          print('❌ [WorkSchedule] Holidays error: $e');
+          print('[WorkSchedule] Holidays error: $e');
           return <HolidayModel>[];  // Return empty list of correct type
         }),
         
@@ -77,7 +77,7 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
         ref.read(getMyOvertimeRequestsUseCaseProvider)(
           const GetMyOvertimeRequestsParams(limit: 1000),
         ).then((result) {
-          print('✅ [WorkSchedule] Overtimes result: ${result.fold((l) => 'Error: ${l.message}', (r) => '${r.length} overtimes')}');
+          print('[WorkSchedule] Overtimes result: ${result.fold((l) => 'Error: ${l.message}', (r) => '${r.length} overtimes')}');
           return result.fold((l) => null, (r) => r);
         }),
         
@@ -85,7 +85,7 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
         ref.read(getLeaveTypesUseCaseProvider)(
           const NoParams(),
         ).then((result) {
-          print('✅ [WorkSchedule] Leave types result: ${result.fold((l) => 'Error: ${l.message}', (r) => '${r.length} types')}');
+          print('[WorkSchedule] Leave types result: ${result.fold((l) => 'Error: ${l.message}', (r) => '${r.length} types')}');
           return result.fold((l) => null, (r) => r);
         }),
       ]);
@@ -96,7 +96,7 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
       final overtimes = results[3] as List<dynamic>?;
       final leaveTypes = results[4] as List<dynamic>?;
 
-      print('📊 [WorkSchedule] Final results:');
+      print('[WorkSchedule] Final results:');
       print('  - Shifts: ${shifts?.length ?? 0}');
       print('  - Leaves: ${leaves?.length ?? 0}');
       print('  - Holidays: ${holidays.length}');
@@ -104,7 +104,7 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
       print('  - Leave Types: ${leaveTypes?.length ?? 0}');
 
       if (shifts == null) {
-        print('❌ [WorkSchedule] Failed to load shifts');
+        print('[WorkSchedule] Failed to load shifts');
         state = state.copyWith(
           isLoading: false,
           errorMessage: 'Failed to load shifts',
@@ -121,9 +121,9 @@ class WorkScheduleController extends Notifier<WorkScheduleState> {
         leaveTypes: (leaveTypes ?? []).cast(),
       );
       
-      print('✅ [WorkSchedule] State updated successfully');
+      print('[WorkSchedule] State updated successfully');
     } catch (e, stackTrace) {
-      print('❌ [WorkSchedule] Exception: $e');
+      print('[WorkSchedule] Exception: $e');
       print('Stack trace: $stackTrace');
       state = state.copyWith(
         isLoading: false,

@@ -23,18 +23,39 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+<<<<<<< HEAD
       debugPrint('🔥 [BACKGROUND] Firebase initialized');
+=======
+>>>>>>> aa9c2773ad6f5d3d6a8877252fb915bbdf459d4e
     }
     
-    debugPrint('📩 [BACKGROUND] Received message: ${message.messageId}');
-    debugPrint('   Data: ${message.data}');
+    debugPrint('\n' + '='*80);
+    debugPrint('📩 [BACKGROUND NOTIFICATION RECEIVED]');
+    debugPrint('='*80);
+    debugPrint('Message ID: ${message.messageId}');
+    debugPrint('Sent Time: ${message.sentTime}');
+    debugPrint('\n--- Notification ---');
+    if (message.notification != null) {
+      debugPrint('Title: ${message.notification!.title}');
+      debugPrint('Body: ${message.notification!.body}');
+      debugPrint('Android Channel ID: ${message.notification!.android?.channelId}');
+    } else {
+      debugPrint('No notification payload (data-only message)');
+    }
+    debugPrint('\n--- Data Payload ---');
+    message.data.forEach((key, value) {
+      debugPrint('  $key: $value (${value.runtimeType})');
+    });
     
     // Check if this is a GPS check request (silent push)
     final messageType = message.data['type'] as String?;
     final silent = message.data['silent']?.toString(); // Convert to string for comparison
     final action = message.data['action'] as String?; // New: check action field
     
-    debugPrint('📩 [BACKGROUND] Type: $messageType, Silent: $silent, Action: $action');
+    debugPrint('\n--- Message Classification ---');
+    debugPrint('Type: $messageType');
+    debugPrint('Silent: $silent');
+    debugPrint('Action: $action');
     
     // Check both old and new format
     final isGpsCheck = messageType == 'GPS_CHECK_REQUEST' && 
@@ -42,7 +63,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
                        action == 'BACKGROUND_GPS_SYNC';
     
     if (isGpsCheck) {
-      debugPrint('📍 [BACKGROUND] GPS check request detected - processing...');
+      debugPrint('[BACKGROUND] GPS check request detected - processing...');
       
       // Initialize Hive to get access token
       if (!Hive.isBoxOpen('auth')) {
@@ -54,7 +75,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final accessToken = authBox.get('accessToken') as String?;
       
       if (accessToken == null || accessToken.isEmpty) {
-        debugPrint('⚠️ [BACKGROUND] No access token found - skipping GPS check');
+        debugPrint('[BACKGROUND] No access token found - skipping GPS check');
         return;
       }
       
@@ -75,10 +96,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final gpsTrackingService = GpsTrackingService(dio);
       await gpsTrackingService.handleGpsCheckRequest(message.data);
       
-      debugPrint('✅ [BACKGROUND] GPS check request processed');
+      debugPrint('[BACKGROUND] GPS check request processed');
     }
   } catch (e) {
-    debugPrint('❌ [BACKGROUND] Error: $e');
+    debugPrint('[BACKGROUND] Error: $e');
   }
 }
 
@@ -227,21 +248,37 @@ class PushNotificationService {
 
   /// Handle foreground messages
   void _handleForegroundMessage(RemoteMessage message) {
-    debugPrint('📩 [FOREGROUND] Received message: ${message.messageId}');
-    debugPrint('   Data: ${message.data}');
+    debugPrint('\n' + '='*80);
+    debugPrint('📩 [FOREGROUND NOTIFICATION RECEIVED]');
+    debugPrint('='*80);
+    debugPrint('Message ID: ${message.messageId}');
+    debugPrint('Sent Time: ${message.sentTime}');
+    debugPrint('\n--- Notification ---');
+    if (message.notification != null) {
+      debugPrint('Title: ${message.notification!.title}');
+      debugPrint('Body: ${message.notification!.body}');
+      debugPrint('Android Channel ID: ${message.notification!.android?.channelId}');
+      debugPrint('iOS Sound: ${message.notification!.apple?.sound}');
+    } else {
+      debugPrint('No notification payload (data-only message)');
+    }
+    debugPrint('\n--- Data Payload ---');
+    message.data.forEach((key, value) {
+      debugPrint('  $key: $value (${value.runtimeType})');
+    });
     
     // Check if this is a GPS check request (silent push)
     final messageType = message.data['type'] as String?;
     final silent = message.data['silent'] as String?; // Note: silent comes as String from FCM metadata
     
     if (messageType == 'GPS_CHECK_REQUEST' && silent == 'true') {
-      debugPrint('📍 [FOREGROUND] GPS check request detected - processing...');
+      debugPrint('[FOREGROUND] GPS check request detected - processing...');
       
       // Handle GPS check in foreground
       if (gpsTrackingService != null) {
         gpsTrackingService!.handleGpsCheckRequest(message.data);
       } else {
-        debugPrint('⚠️ GPS tracking service not available');
+        debugPrint('GPS tracking service not available');
       }
       
       // Don't show notification for silent GPS requests
@@ -295,11 +332,33 @@ class PushNotificationService {
 
   /// Handle notification tap
   void _handleNotificationTap(RemoteMessage message) {
+    debugPrint('\n' + '='*80);
+    debugPrint('👆 [NOTIFICATION TAPPED]');
+    debugPrint('='*80);
+    debugPrint('Message ID: ${message.messageId}');
+    if (message.notification != null) {
+      debugPrint('Title: ${message.notification!.title}');
+      debugPrint('Body: ${message.notification!.body}');
+    }
+    debugPrint('\n--- Data Payload ---');
+    message.data.forEach((key, value) {
+      debugPrint('  $key: $value');
+    });
+    debugPrint('='*80 + '\n');
+    
     onNotificationTapped?.call(message);
   }
 
   /// Handle local notification tap
   void _onLocalNotificationTapped(NotificationResponse response) {
+    debugPrint('\n' + '='*80);
+    debugPrint('👆 [LOCAL NOTIFICATION TAPPED]');
+    debugPrint('='*80);
+    debugPrint('Notification ID: ${response.id}');
+    debugPrint('Action ID: ${response.actionId}');
+    debugPrint('Input: ${response.input}');
+    debugPrint('Payload: ${response.payload}');
+    debugPrint('='*80 + '\n');
     // Parse payload and handle accordingly
   }
 

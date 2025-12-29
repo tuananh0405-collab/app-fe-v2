@@ -32,7 +32,7 @@ public class StudentSettingVerifyFaceIdActivity extends AppCompatActivity {
                 }
                 Log.d("VerifyActivity", " Passing verification args: " + requestId + ", " + sessionId + ", expiresAt: " + expiresAt);
             } else {
-                Log.w("VerifyActivity", "⚠️ No verification args found in intent");
+                Log.w("VerifyActivity", "No verification args found in intent");
             }
             
             fragment.setArguments(args);

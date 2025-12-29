@@ -110,7 +110,7 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
     private boolean isRegistering = false; // Ngăn gọi API nhiều lần
     private boolean hasStartedRegistration = false; // Track xem đã bắt đầu registration chưa
     
-    // ✅ SUCCESS FLAG - Prevent processing after successful registration or error
+    // SUCCESS FLAG - Prevent processing after successful registration or error
     private boolean verificationCompleted = false;
 
 
@@ -188,7 +188,7 @@ public class StudentSettingRegisterFaceIdFragment extends Fragment
     }
 
     /**
-     * 🔄 State change callback from StateManager
+     * State change callback from StateManager
      */
     private void onStateChanged(FaceRegistrationState state, String message) {
         if (!isAdded() || binding == null) {
@@ -1028,7 +1028,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         
         // Set flag to prevent duplicate processing
         verificationCompleted = true;
-        Log.d(TAG, "✅ Verification completed flag set");
+        Log.d(TAG, "Verification completed flag set");
 
         try {
             stopCamera();
@@ -1040,7 +1040,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
                     bitmapPath = saveBitmapToTempFile(currentFrameBitmap);
                     Log.d(TAG, " Bitmap saved to: " + bitmapPath);
                 } else {
-                    Log.w(TAG, "⚠️ currentFrameBitmap is null");
+                    Log.w(TAG, "currentFrameBitmap is null");
                 }
             } catch (Exception e) {
                 Log.e(TAG, " Error saving bitmap", e);
@@ -1134,7 +1134,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         
         // Set flag to prevent duplicate processing
         verificationCompleted = true;
-        Log.d(TAG, "✅ Verification completed flag set (error state)");
+        Log.d(TAG, "Verification completed flag set (error state)");
 
         // Prepare error message based on state
         String title = "Registration Failed";
@@ -1351,7 +1351,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
         } else if (newState == FaceIdEnhancer.AuthState.VERIFIED) {
             //  FIX: Kiểm tra flag trước khi proceed
             if (hasStartedRegistration) {
-                Log.w(TAG, "⚠️ Liveness verified but registration already started, skipping");
+                Log.w(TAG, "Liveness verified but registration already started, skipping");
                 return;
             }
             
@@ -1601,12 +1601,12 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
        private void startAnalysis() {
         //  CHECK: Nếu đã bắt đầu registration, không start analysis nữa
         if (hasStartedRegistration) {
-            Log.w(TAG, "⚠️ Registration already started, skipping analysis");
+            Log.w(TAG, "Registration already started, skipping analysis");
             return;
         }
         
         if (isAnalyzing) {
-            Log.w(TAG, "⚠️ Already analyzing, skipping");
+            Log.w(TAG, "Already analyzing, skipping");
             return;
         }
 
@@ -1687,7 +1687,7 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
             
             //  CHECK: Double-check trước khi proceed
             if (hasStartedRegistration) {
-                Log.w(TAG, "⚠️ Registration already started during analysis, skipping");
+                Log.w(TAG, "Registration already started during analysis, skipping");
                 return;
             }
 
@@ -1811,18 +1811,18 @@ Log.d("StudentSettingRegisterFaceIdFragment", "============================= HAN
     private void captureAndRegisterFace() {
         // Check if verification has already completed successfully
         if (verificationCompleted) {
-            Log.w(TAG, "⚠️ Verification already completed, ignoring duplicate request");
+            Log.w(TAG, "Verification already completed, ignoring duplicate request");
             return;
         }
         
         //  CHECK: Ngăn gọi nhiều lần
         if (isRegistering) {
-            Log.w(TAG, "⚠️ Registration already in progress, skipping duplicate call");
+            Log.w(TAG, "Registration already in progress, skipping duplicate call");
             return;
         }
         
         if (hasStartedRegistration) {
-            Log.w(TAG, "⚠️ Registration already started, skipping duplicate call");
+            Log.w(TAG, "Registration already started, skipping duplicate call");
             return;
         }
         

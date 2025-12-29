@@ -26,7 +26,22 @@ class CustomDioLogger extends Interceptor {
 
   void _logRequest(RequestOptions options) {
     if (kDebugMode) {
-      print('│ ===============> 🚀 REQUEST: ${options.method} ${options.uri}');
+      print('│ ======> REQUEST: ${options.method} ${options.uri}');
+      
+      // Log query parameters
+      if (options.queryParameters.isNotEmpty) {
+        print('│ Query Parameters: ${options.queryParameters}');
+      }
+      
+      // Log request body/data
+      if (options.data != null) {
+        print('│ Request Data: ${options.data}');
+      }
+      
+      // Log headers (optional, uncomment if needed)
+      // print('│ Headers: ${options.headers}');
+      
+      print('└─────────────────────────────────────────────────────────────');
     }
   }
 
@@ -37,14 +52,14 @@ class CustomDioLogger extends Interceptor {
           ? '✅' 
           : '⚠️';
       
-      print('│ ===============> $emoji RESPONSE: $statusCode');
+      print('│ ============> RESPONSE: $statusCode');
     }
   }
 
   void _logError(DioException err) {
     if (kDebugMode) {
       print('┌─────────────────────────────────────────────────────────────');
-      print('│ ❌ ERROR: ${err.requestOptions.method} ${err.requestOptions.uri}');
+      print('│ ERROR: ${err.requestOptions.method} ${err.requestOptions.uri}');
       print('│ Type: ${err.type}');
       print('│ Status: ${err.response?.statusCode}');
       print('│ Message: ${err.message}');
